@@ -1,0 +1,25 @@
+{
+  "name": "pmt",
+  "version": "1.0.0",
+  "description": "project management software",
+  "main": "app.js",
+  "scripts": {
+    "test": "npm start"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@nepalutils/nepal-geodata": "^1.0.3",
+    "axios": "^1.7.9",
+    "bcrypt": "^5.1.1",
+    "body-parser": "^1.20.3",
+    "crypto": "^1.0.1",
+    "ejs-mate": "^4.0.0",
+    "express": "^4.21.2",
+    "express-session": "^1.18.1",
+    "fs": "^0.0.1-security",
+    "method-override": "^3.0.0",
+    "mongoose": "^8.9.4",
+    "nodemailer": "^6.9.16"
+  }
+}

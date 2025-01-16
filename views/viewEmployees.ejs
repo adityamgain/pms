@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>View Employees</title>
+</head>
+<body>
+  <h1>Employees List</h1>
+  <table>
+    <thead>
+      <tr>
+        <th>Employee ID</th>
+        <th>Name</th>
+        <th>Address</th>
+        <th>Email</th>
+        <th>Designation</th>
+        <th>Authorization Level</th>
+        <th>Date of Joining</th>
+        <th>Actions</th>
+      </tr>
+    </thead>
+    <tbody>
+      <% employees.forEach(employee => { %>
+        <tr>
+          <td><%= employee.employeeId %></td>
+          <td><%= employee.name %></td>
+          <td><%= employee.address %></td>
+          <td><%= employee.email %></td>
+          <td><%= employee.designation %></td>
+          <td><%= employee.authorizationLevel %></td>
+          <td><%= employee.dateOfJoining.toISOString().split('T')[0] %></td>
+          <td>
+            <a href="/employee/edit/<%= employee._id %>">Edit</a>
+            <a href="/employee/delete/<%= employee._id %>">Delete</a>
+          </td>
+        </tr>
+      <% }) %>
+    </tbody>
+  </table>
+</body>
+</html>

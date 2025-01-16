@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Data for <%= schema.name %></title>
+  <style>
+    table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+    th, td {
+      border: 1px solid #ddd;
+      padding: 8px;
+      text-align: left;
+    }
+    th {
+      background-color: #f2f2f2;
+    }
+  </style>
+</head>
+<body>
+  <h1>Data for Schema: <%= schema.name %></h1>
+  <% if (data.length === 0) { %>
+    <p>No data available for this schema.</p>
+  <% } else { %>
+    <table>
+      <thead>
+        <tr>
+          <% Object.keys(data[0]._doc).forEach(key => { %>
+            <th><%= key %></th>
+          <% }) %>
+        </tr>
+      </thead>
+      <tbody>
+        <% data.forEach(item => { %>
+          <tr>
+            <% Object.values(item._doc).forEach(value => { %>
+              <td><%= value %></td>
+            <% }) %>
+          </tr>
+        <% }) %>
+      </tbody>
+    </table>
+  <% } %>
+  <a href="/schemas">Back to Schema List</a>
+</body>
+</html>

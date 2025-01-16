@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Schema List</title>
+  <style>
+    table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+    th, td {
+      border: 1px solid #ddd;
+      padding: 8px;
+      text-align: left;
+    }
+    th {
+      background-color: #f2f2f2;
+    }
+    button {
+      background-color: #4CAF50;
+      color: white;
+      border: none;
+      padding: 10px 15px;
+      cursor: pointer;
+      margin-right: 10px;
+    }
+    button:hover {
+      background-color: #45a049;
+    }
+    a {
+      text-decoration: none;
+      color: white;
+    }
+  </style>
+</head>
+<body>
+  <h1>Available Schemas</h1>
+  <table>
+    <thead>
+      <tr>
+        <th>Schema Name</th>
+        <th>Actions</th>
+      </tr>
+    </thead>
+    <tbody>
+      <% schemas.forEach(schema => { %>
+        <tr>
+          <td><%= schema.name %></td>
+          <td>
+            <!-- Button to view schema data -->
+            <button>
+              <a href="/data/<%= schema._id %>">View Data</a>
+            </button>
+
+            <!-- Button to open form for schema data entry -->
+            <button>
+              <a href="/form/<%= schema._id %>">Open Form</a>
+            </button>
+
+        <form action="/delete/schema/<%= schema._id %>" method="POST" style="display:inline;">
+          <button type="submit">Delete Schema</button>
+        </form>
+        
+          </td>
+        </tr>
+      <% }) %>
+    </tbody>
+  </table>
+</body>
+</html>

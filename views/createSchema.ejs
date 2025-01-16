@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Create Schema</title>
+</head>
+<body>
+  <h1>Create Schema</h1>
+  <form action="/api/schema" method="POST">
+    <input type="hidden" name="schemaUnderProject" value="<%= schemaUnderProject %>" />
+
+    <label for="name">Schema Name</label>
+    <input type="text" id="name" name="name" required />
+
+    <h3>Fields</h3>
+    <div id="fields">
+      <!-- Default Field Block -->
+      <div class="field" data-field-index="0">
+        <label for="fieldName">Field Name</label>
+        <input type="text" name="fields[0][fieldName]" required />
+
+        <label for="fieldType">Field Type</label>
+        <select name="fields[0][fieldType]" required class="fieldType">
+          <option value="text">Text</option>
+          <option value="number">Number</option>
+          <option value="select">Select (Dropdown)</option>
+          <option value="checkbox">Select Many (Checkbox)</option>
+          <option value="date">Date</option>
+          <option value="time">Time</option>
+          <option value="decimal">Decimal</option>
+          <option value="boolean">Boolean</option>
+          <option value="location">Location (Province/District/Municipality)</option>
+        </select>
+
+        <label for="required">Required</label>
+        <input type="checkbox" name="fields[0][required]" />
+
+        <!-- Options for select fields -->
+        <div class="options-container" style="display: none;">
+          <label for="options">Options</label>
+          <div id="options-0">
+            <div class="option">
+              <input type="text" name="fields[0][options][]" placeholder="Option 1">
+              <button type="button" class="deleteOption">Delete Option</button>
+            </div>
+          </div>
+          <button type="button" class="addOption" data-field-index="0">Add Option</button>
+        </div>
+
+        <!-- Options for checkbox fields -->
+        <div class="checkbox-options-container" style="display: none;">
+          <label for="options">Options</label>
+          <div id="checkbox-options-0">
+            <div class="checkbox-option">
+              <input type="text" name="fields[0][options][]" placeholder="Option 1">
+              <button type="button" class="deleteCheckboxOption">Delete Checkbox Option</button>
+            </div>
+          </div>
+          <button type="button" class="addCheckboxOption" data-field-index="0">Add Checkbox Option</button>
+        </div>
+
+        <button type="button" class="deleteField">Delete Field</button>
+      </div>
+    </div>
+
+    <button type="button" id="addField">Add Field</button>
+    <button type="submit">Create Schema</button>
+  </form>
+
+  <script>
+    let fieldIndex = 1;
+
+    // Add Field
+    document.getElementById("addField").addEventListener("click", function () {
+      const fieldTemplate = `
+        <div class="field" data-field-index="${fieldIndex}">
+          <label for="fieldName">Field Name</label>
+          <input type="text" name="fields[${fieldIndex}][fieldName]" required />
+
+          <label for="fieldType">Field Type</label>
+          <select name="fields[${fieldIndex}][fieldType]" required class="fieldType">
+            <option value="text">Text</option>
+            <option value="number">Number</option>
+            <option value="select">Select (Dropdown)</option>
+            <option value="checkbox">Select Many (Checkbox)</option>
+            <option value="date">Date</option>
+            <option value="time">Time</option>
+            <option value="decimal">Decimal</option>
+            <option value="boolean">Boolean</option>
+            <option value="location">Location (Province/District/Municipality)</option>
+          </select>
+
+          <label for="required">Required</label>
+          <input type="checkbox" name="fields[${fieldIndex}][required]" />
+
+          <!-- Options for select fields -->
+          <div class="options-container" style="display: none;">
+            <label for="options">Options</label>
+            <div id="options-${fieldIndex}">
+              <div class="option">
+                <input type="text" name="fields[${fieldIndex}][options][]" placeholder="Option 1">
+                <button type="button" class="deleteOption">Delete Option</button>
+              </div>
+            </div>
+            <button type="button" class="addOption" data-field-index="${fieldIndex}">Add Option</button>
+          </div>
+
+          <!-- Options for checkbox fields -->
+          <div class="checkbox-options-container" style="display: none;">
+            <label for="options">Options</label>
+            <div id="checkbox-options-${fieldIndex}">
+              <div class="checkbox-option">
+                <input type="text" name="fields[${fieldIndex}][options][]" placeholder="Option 1">
+                <button type="button" class="deleteCheckboxOption">Delete Checkbox Option</button>
+              </div>
+            </div>
+            <button type="button" class="addCheckboxOption" data-field-index="${fieldIndex}">Add Checkbox Option</button>
+          </div>
+
+          <button type="button" class="deleteField">Delete Field</button>
+        </div>
+      `;
+
+      const fieldsContainer = document.getElementById("fields");
+      fieldsContainer.insertAdjacentHTML("beforeend", fieldTemplate);
+      fieldIndex++;
+    });
+
+    // Delete field
+    document.addEventListener("click", function (e) {
+      if (e.target.classList.contains("deleteField")) {
+        e.target.closest(".field").remove();
+      }
+    });
+
+    // Toggle options container visibility based on selected field type
+    document.addEventListener("change", function (e) {
+      if (e.target.classList.contains("fieldType")) {
+        const field = e.target.closest(".field");
+        const optionsContainer = field.querySelector(".options-container");
+        const checkboxOptionsContainer = field.querySelector(".checkbox-options-container");
+
+        optionsContainer.style.display = e.target.value === "select" ? "block" : "none";
+        checkboxOptionsContainer.style.display = e.target.value === "checkbox" ? "block" : "none";
+      }
+    });
+
+    // Add option to dropdown
+    document.addEventListener("click", function (e) {
+      if (e.target.classList.contains("addOption")) {
+        const fieldIndex = e.target.dataset.fieldIndex;
+        const optionsContainer = document.getElementById(`options-${fieldIndex}`);
+        const optionTemplate = `
+          <div class="option">
+            <input type="text" name="fields[${fieldIndex}][options][]" placeholder="Option">
+            <button type="button" class="deleteOption">Delete Option</button>
+          </div>
+        `;
+        optionsContainer.insertAdjacentHTML("beforeend", optionTemplate);
+      }
+    });
+
+    // Add option to checkbox
+    document.addEventListener("click", function (e) {
+      if (e.target.classList.contains("addCheckboxOption")) {
+        const fieldIndex = e.target.dataset.fieldIndex;
+        const checkboxOptionsContainer = document.getElementById(`checkbox-options-${fieldIndex}`);
+        const checkboxOptionTemplate = `
+          <div class="checkbox-option">
+            <input type="text" name="fields[${fieldIndex}][options][]" placeholder="Option">
+            <button type="button" class="deleteCheckboxOption">Delete Checkbox Option</button>
+          </div>
+        `;
+        checkboxOptionsContainer.insertAdjacentHTML("beforeend", checkboxOptionTemplate);
+      }
+    });
+
+    // Delete dropdown option
+    document.addEventListener("click", function (e) {
+      if (e.target.classList.contains("deleteOption")) {
+        e.target.closest(".option").remove();
+      }
+    });
+
+    // Delete checkbox option
+    document.addEventListener("click", function (e) {
+      if (e.target.classList.contains("deleteCheckboxOption")) {
+        e.target.closest(".checkbox-option").remove();
+      }
+    });
+  </script>
+</body>
+</html>
+
