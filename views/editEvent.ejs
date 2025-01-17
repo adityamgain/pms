@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Edit Event</title>
+  <style>
+    /* Add your styles here */
+  </style>
+</head>
+<body>
+  <h1>Edit Event: <%= event.title %></h1>
+
+  <form action="/event/edit/<%= event._id %>" method="POST">
+    <label for="title">Title:</label>
+    <input type="text" name="title" id="title" value="<%= event.title %>" required>
+
+    <label for="description">Description:</label>
+    <textarea name="description" id="description" required><%= event.description %></textarea>
+
+    <label for="date">Date:</label>
+    <input type="date" name="date" id="date" value="<%= event.date.toISOString().split('T')[0] %>" required>
+
+    <label for="location">Location:</label>
+    <input type="text" name="location" id="location" value="<%= event.location %>" required>
+
+    <label for="organizer">Organizer:</label>
+    <input type="text" name="organizer" id="organizer" value="<%= event.organizer %>" required>
+
+    <label for="status">Status:</label>
+    <select name="status" id="status" required>
+      <option value="planned" <%= event.status === 'planned' ? 'selected' : '' %>>Planned</option>
+      <option value="ongoing" <%= event.status === 'ongoing' ? 'selected' : '' %>>Ongoing</option>
+      <option value="completed" <%= event.status === 'completed' ? 'selected' : '' %>>Completed</option>
+    </select>
+
+    <label for="attendees">Attendees:</label>
+    <% event.attendees.forEach((attendee, index) => { %>
+      <div class="attendee">
+        <label for="attendee_<%= index %>_name">Name:</label>
+        <input type="text" name="attendees[<%= index %>][name]" id="attendee_<%= index %>_name" value="<%= attendee.name %>" required>
+
+        <label for="attendee_<%= index %>_gender">Gender:</label>
+        <select name="attendees[<%= index %>][gender]" id="attendee_<%= index %>_gender" required>
+          <option value="Male" <%= attendee.gender === 'Male' ? 'selected' : '' %>>Male</option>
+          <option value="Female" <%= attendee.gender === 'Female' ? 'selected' : '' %>>Female</option>
+          <option value="Other" <%= attendee.gender === 'Other' ? 'selected' : '' %>>Other</option>
+        </select>
+
+        <label for="attendee_<%= index %>_contact">Contact:</label>
+        <input type="text" name="attendees[<%= index %>][contact]" id="attendee_<%= index %>_contact" value="<%= attendee.contact %>" required>
+
+        <label for="attendee_<%= index %>_otherInfo">Other Info:</label>
+        <textarea name="attendees[<%= index %>][otherInfo]" id="attendee_<%= index %>_otherInfo"><%= attendee.otherInfo %></textarea>
+      </div>
+    <% }) %>
+
+    <button type="submit">Update Event</button>
+  </form>
+</body>
+</html>

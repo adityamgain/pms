@@ -10,11 +10,18 @@ const SchemaDefinitionSchema = new mongoose.Schema({
       fieldName: { type: String, required: true },
       fieldType: { type: String, required: true },
       required: { type: Boolean, default: false },
-      options: { type: [String], default: [] }
+      options: { type: [String], default: [] },
+      attendeeFields: {
+        type: [{
+          fieldName: { type: String, required: true },
+          fieldType: { type: String, required: true },
+        }],
+        default: []
+      }
     }
   ],
   under_project: {
-    type: String, // or ObjectId if referencing another collection
+    type: String, // You may want to reference an ObjectId instead if this is linked to another model
     required: true
   }
 });

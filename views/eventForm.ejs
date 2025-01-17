@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Create Event</title>
+</head>
+<body>
+
+  <h1>Create Event for <%= projectName %></h1>
+
+  <form action="/schema/add-event" method="POST">
+    <!-- Hidden input to store project ID -->
+    <input type="hidden" name="under_project" value="<%= projectName %>">
+
+    <label for="title">Event Title:</label>
+    <input type="text" id="title" name="title" required>
+
+    <label for="description">Description:</label>
+    <textarea id="description" name="description" required></textarea>
+
+    <label for="date">Event Date:</label>
+    <input type="date" id="date" name="date" required>
+
+    <label for="location">Location:</label>
+    <input type="text" id="location" name="location" required>
+
+    <label for="organizer">Organizer:</label>
+    <input type="text" id="organizer" name="organizer" required>
+
+    <label for="status">Status:</label>
+    <select name="status" id="status">
+      <option value="planned">Planned</option>
+      <option value="ongoing">Ongoing</option>
+      <option value="completed">Completed</option>
+    </select>
+
+    <label for="attendees">Attendees:</label>
+    <input type="number" id="attendees" name="attendeesCount" min="1" required>
+    
+    <div id="attendeeFields"></div>
+
+    <button type="submit">Create Event</button>
+  </form>
+
+  <script>
+    document.getElementById('attendees').addEventListener('input', function() {
+      const attendeeCount = parseInt(this.value) || 0;
+      const attendeeFieldsContainer = document.getElementById('attendeeFields');
+      attendeeFieldsContainer.innerHTML = ''; // Clear any previous fields
+
+      for (let i = 0; i < attendeeCount; i++) {
+        const div = document.createElement('div');
+        div.classList.add('attendee');
+
+        div.innerHTML = `
+          <h3>Attendee ${i + 1}</h3>
+          <label for="attendeeName${i}">Name:</label>
+          <input type="text" name="attendees[${i}][name]" required>
+
+          <label for="attendeeGender${i}">Gender:</label>
+          <select name="attendees[${i}][gender]" required>
+            <option value="Male">Male</option>
+            <option value="Female">Female</option>
+            <option value="Other">Other</option>
+          </select>
+
+          <label for="attendeeContact${i}">Contact:</label>
+          <input type="text" name="attendees[${i}][contact]" required>
+
+          <label for="attendeeOtherInfo${i}">Other Info:</label>
+          <input type="text" name="attendees[${i}][otherInfo]">
+        `;
+        
+        attendeeFieldsContainer.appendChild(div);
+      }
+    });
+  </script>
+
+</body>
+</html>

@@ -1,0 +1,64 @@
+<h1>Event Details: <%= event.title %></h1>
+
+<!-- Event Information -->
+<div>
+  <h2>Event Information</h2>
+  <p><strong>Title:</strong> <%= event.title %></p>
+  <p><strong>Date:</strong> <%= event.date.toDateString() %></p>
+  <p><strong>Location:</strong> <%= event.location %></p>
+  <p><strong>Status:</strong> <%= event.status %></p>
+  <p><strong>Description:</strong> <%= event.description || 'No description available' %></p>
+  
+  <h3>Attendees:</h3>
+  <% if (event.attendees && event.attendees.length > 0) { %>
+    <table>
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Contact</th>
+          <th>Other Details</th>
+        </tr>
+      </thead>
+      <tbody>
+        <% event.attendees.forEach(attendee => { %>
+          <tr>
+            <td><%= attendee.name %></td>
+            <td><%= attendee.contact %></td>
+            <td><%= attendee.otherDetails || 'No details' %></td>
+          </tr>
+        <% }) %>
+      </tbody>
+    </table>
+  <% } else { %>
+    <p>No attendees yet.</p>
+  <% } %>
+  
+  <!-- Project Information -->
+  <h3>Project Information:</h3>
+  <% if (event.under_project) { %>
+    <p><strong>Under Project Title:</strong> <%= event.under_project.name %></p>
+    <p><strong>Under Project Description:</strong> <%= event.under_project.description || 'No description available' %></p>
+  <% } else { %>
+    <p>No project assigned to this event.</p>
+  <% } %>
+
+  <!-- Project Under Information -->
+  <h3>Project Under Information:</h3>
+  <% if (event.project_under) { %>
+    <p><strong>Project Under Title:</strong> <%= event.project_under.title %></p>
+    <p><strong>Project Under Description:</strong> <%= event.project_under.description || 'No description available' %></p>
+  <% } else { %>
+    <p>No project under this event.</p>
+  <% } %>
+</div>
+
+<!-- Buttons for editing or deleting the event -->
+<div>
+  <button>
+    <a href="/event/edit/<%= event._id %>">Edit Event</a>
+  </button>
+
+  <form action="/event/delete/<%= event._id %>" method="POST" style="display:inline;">
+    <button type="submit">Delete Event</button>
+  </form>
+</div>

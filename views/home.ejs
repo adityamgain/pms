@@ -1,30 +1,86 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Nawalpur Tourism</title>
+    <title>MEAL</title>
     <link rel="stylesheet" href="/css/home.css">
 </head>
 <body>
-<h1>Project Management App</h1>
 
+<div id="page_wrapper">
+  <div id="sidenav" class="sidenav">
+    <div class="sidenav_header">
+      <div class="logo_section">
+        <i class='bx bxl-foursquare'></i>
+        <h3>MEAL</h3>
+      </div>
+      
+      <a href="/" class="sidenav_link active">
+        <i class='bx bx-folder'></i>
+        <h3>Projects</h3>
+      </a>
+      
+      <a href="/profile" class="sidenav_link">
+        <i class='bx bx-briefcase'></i>
+        <h3>Profile</h3>
+      </a>
+      
+      <a href="#" class="sidenav_link">
+        <i class='bx bx-file'></i>
+        <h3>Files</h3>
+      </a>
+      
+      <a href="#" class="sidenav_link">
+        <i class='bx bx-calendar'></i>
+        <h3>Calendar</h3>
+        <button disabled class="external_link">
+          <i class='bx bx-link-external'></i>
+        </button> 
+      </a>
+    </div>
+    <div class="sidenav_footer">
+      <a href="#" class="sidenav_link">
+        <i class='bx bx-rocket'></i>
+        <h3>Report</h3>
+      </a>
+    </div>
+    
+    <button id="nav_collapse_btn">
+      <i class='bx bxs-chevrons-left'></i>
+    </button>
+  </div>
+  
+  <main>
+    <header>
+      <div class="text">
+        <h2>Projects</h2> 
+        <p>Overview of the status, progress, and performance of projects</p>
+      </div>
+    </header>
 
-  <a href="/agriculture" class="button">Nature-based commercial agriculture</a><br>
-  <a href="/forest" class="button">Sustainable Forest Management</a><br>
-  <a href="/water" class="button">Water</a><br>
-  <a href="/climate" class="button">Climate change</a><br>
-<p>
+    <section>
+      <h3>Project Categories</h3>
+      <div class="square-box-group">
+        <a href="/agriculture" class="square-box box1">Nature-based Commercial Agriculture</a>
+        <a href="/forest" class="square-box box2">Sustainable Forest Management</a>
+        <a href="/water" class="square-box box3">Water</a>
+        <a href="/climate" class="square-box box4">Climate Change</a>
+      </div>
+    </section>
 
-  <a href="/schemas" class="button">View all schemas</a>
+    <section>
+      <h3>Additional Resources</h3>
+      <div class="button-group">
+        <a href="/schemas" class="button">View All Schemas</a>
+        <a href="/employee" class="button">View All Employees</a>
+        <a href="/employee/add" class="button">Add New Employee</a>
+      </div>
+    </section>
+  </main>
+</div>
 
-<br>
-  <a href="/employee" class="button">View all employees</a>
-  <a href="/employee/add" class="button">Add new emplpyee</a>
-
-
-
+<script src="/script/home.js"></script>
 
 </body>
 </html>

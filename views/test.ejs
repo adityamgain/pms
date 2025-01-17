@@ -1,0 +1,466 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Create Schema</title>
+</head>
+<body>
+  <h1>Create Schema</h1>
+  <form action="/api/schema" method="POST">
+    <input type="hidden" name="schemaUnderProject" value="<%= schemaUnderProject %>" />
+
+    <label for="name">Schema Name</label>
+    <input type="text" id="name" name="name" required />
+
+    <h3>Fields</h3>
+    <div id="fields">
+      <!-- Default Field Block -->
+      <div class="field" data-field-index="0">
+        <label for="fieldName">Field Name</label>
+        <input type="text" name="fields[0][fieldName]" required />
+
+        <label for="fieldType">Field Type</label>
+        <select name="fields[0][fieldType]" required class="fieldType">
+          <option value="text">Text</option>
+          <option value="number">Number</option>
+          <option value="select">Select (Dropdown)</option>
+          <option value="checkbox">Select Many (Checkbox)</option>
+          <option value="date">Date</option>
+          <option value="time">Time</option>
+          <option value="decimal">Decimal</option>
+          <option value="boolean">Boolean</option>
+          <option value="location">Location (Province/District/Municipality)</option>
+          <option value="attendee">Attendee</option>
+        </select>
+
+        <label for="required">Required</label>
+        <input type="checkbox" name="fields[0][required]" />
+
+        <!-- Options for select fields -->
+        <div class="options-container" style="display: none;">
+          <label for="options">Options</label>
+          <div id="options-0">
+            <div class="option">
+              <input type="text" name="fields[0][options][]" placeholder="Option 1">
+              <button type="button" class="deleteOption">Delete Option</button>
+            </div>
+          </div>
+          <button type="button" class="addOption" data-field-index="0">Add Option</button>
+        </div>
+
+        <!-- Attendee form -->
+        <div class="attendee-container" style="display: none;">
+          <h4>Attendee Details</h4>
+          <div id="attendee-fields-0">
+            <div class="attendee-field" data-attendee-index="0">
+              <label for="attendeeFieldName">Attendee Field Name</label>
+              <input type="text" name="fields[0][attendeeFields][0][fieldName]" required />
+
+              <label for="attendeeFieldType">Attendee Field Type</label>
+              <select name="fields[0][attendeeFields][0][fieldType]" required>
+                <option value="text">Text</option>
+                <option value="number">Number</option>
+                <option value="date">Date</option>
+              </select>
+              <button type="button" class="deleteAttendeeField">Delete Attendee Field</button>
+            </div>
+          </div>
+          <button type="button" class="addAttendeeField" data-field-index="0">Add Attendee Field</button>
+        </div>
+
+        <button type="button" class="deleteField">Delete Field</button>
+      </div>
+    </div>
+
+    <button type="button" id="addField">Add Field</button>
+    <button type="submit">Create Schema</button>
+  </form>
+
+  <script>
+    let fieldIndex = 1;
+
+    // Add Field
+    document.getElementById("addField").addEventListener("click", function () {
+      const fieldTemplate = `
+        <div class="field" data-field-index="${fieldIndex}">
+          <label for="fieldName">Field Name</label>
+          <input type="text" name="fields[${fieldIndex}][fieldName]" required />
+
+          <label for="fieldType">Field Type</label>
+          <select name="fields[${fieldIndex}][fieldType]" required class="fieldType">
+            <option value="text">Text</option>
+            <option value="number">Number</option>
+            <option value="select">Select (Dropdown)</option>
+            <option value="checkbox">Select Many (Checkbox)</option>
+            <option value="date">Date</option>
+            <option value="time">Time</option>
+            <option value="decimal">Decimal</option>
+            <option value="boolean">Boolean</option>
+            <option value="location">Location (Province/District/Municipality)</option>
+            <option value="attendee">Attendee</option>
+          </select>
+
+          <label for="required">Required</label>
+          <input type="checkbox" name="fields[${fieldIndex}][required]" />
+
+          <!-- Options for select fields -->
+        <div class="options-container" style="display: none;">
+          <label for="options">Options</label>
+          <div id="options-0">
+            <div class="option">
+              <input type="text" name="fields[0][options][]" placeholder="Option 1">
+              <button type="button" class="deleteOption">Delete Option</button>
+            </div>
+          </div>
+          <button type="button" class="addOption" data-field-index="0">Add Option</button>
+        </div>
+
+          <!-- Attendee form -->
+          <div class="attendee-container" style="display: none;">
+            <h4>Attendee Details</h4>
+            <div id="attendee-fields-${fieldIndex}">
+              <div class="attendee-field" data-attendee-index="0">
+                <label for="attendeeFieldName">Attendee Field Name</label>
+                <input type="text" name="fields[${fieldIndex}][attendeeFields][0][fieldName]" required />
+
+                <label for="attendeeFieldType">Attendee Field Type</label>
+                <select name="fields[${fieldIndex}][attendeeFields][0][fieldType]" required>
+                  <option value="text">Text</option>
+                  <option value="number">Number</option>
+                  <option value="date">Date</option>
+                </select>
+                <button type="button" class="deleteAttendeeField">Delete Attendee Field</button>
+              </div>
+            </div>
+            <button type="button" class="addAttendeeField" data-field-index="${fieldIndex}">Add Attendee Field</button>
+          </div>
+
+          <button type="button" class="deleteField">Delete Field</button>
+        </div>
+      `;
+
+      const fieldsContainer = document.getElementById("fields");
+      fieldsContainer.insertAdjacentHTML("beforeend", fieldTemplate);
+      fieldIndex++;
+    });
+
+    // Delete field
+    document.addEventListener("click", function (e) {
+      if (e.target.classList.contains("deleteField")) {
+        e.target.closest(".field").remove();
+      }
+    });
+
+
+    // Toggle attendee fields visibility based on selected field type
+    document.addEventListener("change", function (e) {
+      if (e.target.classList.contains("fieldType")) {
+        const field = e.target.closest(".field");
+        const attendeeContainer = field.querySelector(".attendee-container");
+        const optionsContainer = field.querySelector(".options-container");
+
+        if (e.target.value === "attendee") {
+          attendeeContainer.style.display = "block";
+          optionsContainer.style.display = "none";
+        } else if (e.target.value === "select" || e.target.value === "checkbox") {
+          attendeeContainer.style.display = "none";
+          optionsContainer.style.display = "block";
+        } else {
+          attendeeContainer.style.display = "none";
+          optionsContainer.style.display = "none";
+        }
+      }
+    });
+
+    // Toggle options container visibility based on selected field type
+    document.addEventListener("change", function (e) {
+      if (e.target.classList.contains("fieldType")) {
+        const field = e.target.closest(".field");
+        const optionsContainer = field.querySelector(".options-container");
+        const checkboxOptionsContainer = field.querySelector(".checkbox-options-container");
+
+        optionsContainer.style.display = e.target.value === "select" ? "block" : "none";
+        checkboxOptionsContainer.style.display = e.target.value === "checkbox" ? "block" : "none";
+      }
+    });
+
+    // Add option to dropdown
+    document.addEventListener("click", function (e) {
+      if (e.target.classList.contains("addOption")) {
+        const fieldIndex = e.target.dataset.fieldIndex;
+        const optionsContainer = document.getElementById(`options-${fieldIndex}`);
+        const optionTemplate = `
+          <div class="option">
+            <input type="text" name="fields[${fieldIndex}][options][]" placeholder="Option">
+            <button type="button" class="deleteOption">Delete Option</button>
+          </div>
+        `;
+        optionsContainer.insertAdjacentHTML("beforeend", optionTemplate);
+      }
+    });
+
+    // Add Attendee Field
+    document.addEventListener("click", function (e) {
+      if (e.target.classList.contains("addAttendeeField")) {
+        const fieldIndex = e.target.dataset.fieldIndex;
+        const attendeeFieldsContainer = document.getElementById(`attendee-fields-${fieldIndex}`);
+        const attendeeIndex = attendeeFieldsContainer.querySelectorAll(".attendee-field").length;
+        const attendeeFieldTemplate = `
+          <div class="attendee-field" data-attendee-index="${attendeeIndex}">
+            <label for="attendeeFieldName">Attendee Field Name</label>
+            <input type="text" name="fields[${fieldIndex}][attendeeFields][${attendeeIndex}][fieldName]" required />
+
+            <label for="attendeeFieldType">Attendee Field Type</label>
+            <select name="fields[${fieldIndex}][attendeeFields][${attendeeIndex}][fieldType]" required>
+              <option value="text">Text</option>
+              <option value="number">Number</option>
+              <option value="date">Date</option>
+            </select>
+            <button type="button" class="deleteAttendeeField">Delete Attendee Field</button>
+          </div>
+        `;
+        attendeeFieldsContainer.insertAdjacentHTML("beforeend", attendeeFieldTemplate);
+      }
+    });
+@
+    // Delete dropdown option
+    document.addEventListener("click", function (e) {
+      if (e.target.classList.contains("deleteOption")) {
+        e.target.closest(".option").remove();
+      }
+    });
+
+    // Delete Attendee Field
+    document.addEventListener("click", function (e) {
+      if (e.target.classList.contains("deleteAttendeeField")) {
+        e.target.closest(".attendee-field").remove();
+      }
+    });
+  </script>
+</body>
+</html>
+
+
+
+
+
+
+
+
+
+
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Create Schema</title>
+</head>
+<body>
+  <h1>Create Schema</h1>
+  <form id="schemaForm" action="/api/schema" method="POST">
+    <label for="name">Schema Name</label>
+    <input type="text" id="name" name="name" required />
+
+    <h3>Fields</h3>
+    <div id="fields">
+      <!-- Default field block -->
+      <div class="field" data-field-index="0">
+        <label>Field Name</label>
+        <input type="text" name="fields[0][fieldName]" required />
+
+        <label>Field Type</label>
+        <select name="fields[0][fieldType]" class="fieldType" required>
+          <option value="text">Text</option>
+          <option value="number">Number</option>
+          <option value="select">Select (Dropdown)</option>
+          <option value="checkbox">Checkbox</option>
+          <option value="date">Date</option>
+          <option value="time">Time</option>
+          <option value="decimal">Decimal</option>
+          <option value="boolean">Boolean</option>
+          <option value="location">Location</option>
+          <option value="attendee">Attendee</option>
+        </select>
+
+        <label>Required</label>
+        <input type="checkbox" name="fields[0][required]" />
+
+        <!-- Options container (for select/checkbox types) -->
+        <div class="options-container" style="display: none;">
+          <label>Options</label>
+          <div id="options-0">
+            <div class="option">
+              <input type="text" name="fields[0][options][]" placeholder="Option 1" />
+              <button type="button" class="deleteOption">Delete Option</button>
+            </div>
+          </div>
+          <button type="button" class="addOption" data-field-index="0">Add Option</button>
+        </div>
+
+        <!-- Attendee container (for attendee type) -->
+        <div class="attendee-container" style="display: none;">
+          <h4>Attendee Fields</h4>
+          <div id="attendee-fields-0">
+            <div class="attendee-field">
+              <label>Attendee Field Name</label>
+              <input type="text" name="fields[0][attendeeFields][0][fieldName]" required />
+
+              <label>Attendee Field Type</label>
+              <select name="fields[0][attendeeFields][0][fieldType]" required>
+                <option value="text">Text</option>
+                <option value="number">Number</option>
+                <option value="boolean">Boolean</option>
+              </select>
+
+              <label>Required</label>
+              <input type="checkbox" name="fields[0][attendeeFields][0][required]" />
+              <button type="button" class="deleteAttendeeField">Delete Attendee Field</button>
+            </div>
+          </div>
+          <button type="button" class="addAttendeeField" data-field-index="0">Add Attendee Field</button>
+        </div>
+
+        <button type="button" class="deleteField">Delete Field</button>
+      </div>
+    </div>
+
+    <button type="button" id="addField">Add Field</button>
+    <button type="submit">Submit Schema</button>
+  </form>
+
+  <script>
+    let fieldIndex = 1;
+
+    // Add a new field
+    document.getElementById("addField").addEventListener("click", () => {
+      const fieldsContainer = document.getElementById("fields");
+      const fieldTemplate = `
+        <div class="field" data-field-index="${fieldIndex}">
+          <label>Field Name</label>
+          <input type="text" name="fields[${fieldIndex}][fieldName]" required />
+
+          <label>Field Type</label>
+          <select name="fields[${fieldIndex}][fieldType]" class="fieldType" required>
+            <option value="text">Text</option>
+            <option value="number">Number</option>
+            <option value="select">Select (Dropdown)</option>
+            <option value="checkbox">Checkbox</option>
+            <option value="date">Date</option>
+            <option value="time">Time</option>
+            <option value="decimal">Decimal</option>
+            <option value="boolean">Boolean</option>
+            <option value="location">Location</option>
+            <option value="attendee">Attendee</option>
+          </select>
+
+          <label>Required</label>
+          <input type="checkbox" name="fields[${fieldIndex}][required]" />
+
+          <div class="options-container" style="display: none;">
+            <label>Options</label>
+            <div id="options-${fieldIndex}">
+              <div class="option">
+                <input type="text" name="fields[${fieldIndex}][options][]" placeholder="Option 1" />
+                <button type="button" class="deleteOption">Delete Option</button>
+              </div>
+            </div>
+            <button type="button" class="addOption" data-field-index="${fieldIndex}">Add Option</button>
+          </div>
+
+          <div class="attendee-container" style="display: none;">
+            <h4>Attendee Fields</h4>
+            <div id="attendee-fields-${fieldIndex}">
+              <div class="attendee-field">
+                <label>Attendee Field Name</label>
+                <input type="text" name="fields[${fieldIndex}][attendeeFields][0][fieldName]" required />
+
+                <label>Attendee Field Type</label>
+                <select name="fields[${fieldIndex}][attendeeFields][0][fieldType]" required>
+                  <option value="text">Text</option>
+                  <option value="number">Number</option>
+                  <option value="boolean">Boolean</option>
+                </select>
+
+                <label>Required</label>
+                <input type="checkbox" name="fields[${fieldIndex}][attendeeFields][0][required]" />
+                <button type="button" class="deleteAttendeeField">Delete Attendee Field</button>
+              </div>
+            </div>
+            <button type="button" class="addAttendeeField" data-field-index="${fieldIndex}">Add Attendee Field</button>
+          </div>
+
+          <button type="button" class="deleteField">Delete Field</button>
+        </div>
+      `;
+      
+      const fieldsContainer = document.getElementById("fields");
+      fieldsContainer.insertAdjacentHTML("beforeend", fieldTemplate);
+      fieldIndex++;
+    });
+
+    // Handle dynamic behaviors
+    document.addEventListener("change", (e) => {
+      if (e.target.classList.contains("fieldType")) {
+        const field = e.target.closest(".field");
+        const fieldType = e.target.value;
+
+        // Show options or attendee fields based on field type
+        field.querySelector(".options-container").style.display = fieldType === "select" || fieldType === "checkbox" ? "block" : "none";
+        field.querySelector(".attendee-container").style.display = fieldType === "attendee" ? "block" : "none";
+      }
+    });
+
+    document.addEventListener("click", (e) => {
+      if (e.target.classList.contains("deleteField")) {
+        e.target.closest(".field").remove();
+      }
+
+      if (e.target.classList.contains("addOption")) {
+        const fieldIndex = e.target.dataset.fieldIndex;
+        const optionsContainer = document.getElementById(`options-${fieldIndex}`);
+        const optionTemplate = `
+          <div class="option">
+            <input type="text" name="fields[${fieldIndex}][options][]" placeholder="Option" />
+            <button type="button" class="deleteOption">Delete Option</button>
+          </div>
+        `;
+        optionsContainer.insertAdjacentHTML("beforeend", optionTemplate);
+      }
+
+      if (e.target.classList.contains("deleteOption")) {
+        e.target.closest(".option").remove();
+      }
+
+      if (e.target.classList.contains("addAttendeeField")) {
+        const fieldIndex = e.target.dataset.fieldIndex;
+        const attendeeFieldsContainer = document.getElementById(`attendee-fields-${fieldIndex}`);
+        const attendeeFieldTemplate = `
+          <div class="attendee-field">
+            <label>Attendee Field Name</label>
+            <input type="text" name="fields[${fieldIndex}][attendeeFields][][fieldName]" required />
+
+            <label>Attendee Field Type</label>
+            <select name="fields[${fieldIndex}][attendeeFields][][fieldType]" required>
+              <option value="text">Text</option>
+              <option value="number">Number</option>
+              <option value="boolean">Boolean</option>
+            </select>
+
+            <label>Required</label>
+            <input type="checkbox" name="fields[${fieldIndex}][attendeeFields][][required]" />
+            <button type="button" class="deleteAttendeeField">Delete Attendee Field</button>
+          </div>
+        `;
+        attendeeFieldsContainer.insertAdjacentHTML("beforeend", attendeeFieldTemplate);
+      }
+
+      if (e.target.classList.contains("deleteAttendeeField")) {
+        e.target.closest(".attendee-field").remove();
+      }
+    });
+  </script>
+</body>
+</html>

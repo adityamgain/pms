@@ -1,71 +1,71 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Schema List</title>
-  <style>
-    table {
-      width: 100%;
-      border-collapse: collapse;
-    }
-    th, td {
-      border: 1px solid #ddd;
-      padding: 8px;
-      text-align: left;
-    }
-    th {
-      background-color: #f2f2f2;
-    }
-    button {
-      background-color: #4CAF50;
-      color: white;
-      border: none;
-      padding: 10px 15px;
-      cursor: pointer;
-      margin-right: 10px;
-    }
-    button:hover {
-      background-color: #45a049;
-    }
-    a {
-      text-decoration: none;
-      color: white;
-    }
-  </style>
-</head>
-<body>
-  <h1>Available Schemas</h1>
-  <table>
-    <thead>
+<h1>Schemas and Events for <%= programName || 'All Programs' %></h1>
+
+<!-- Schema List -->
+<h2>Available Schemas</h2>
+<table>
+  <thead>
+    <tr>
+      <th>Schema Name</th>
+      <th>Actions</th>
+    </tr>
+  </thead>
+  <tbody>
+    <% schemas.forEach(schema => { %>
       <tr>
-        <th>Schema Name</th>
-        <th>Actions</th>
+        <td><%= schema.name %></td>
+        <td>
+          <button>
+            <a href="/data/<%= schema._id %>">View Data</a>
+          </button>
+          <button>
+            <a href="/form/<%= schema._id %>">Open Form</a>
+          </button>
+          <form action="/delete/schema/<%= schema._id %>" method="POST" style="display:inline;">
+            <button type="submit">Delete Schema</button>
+          </form>
+        </td>
       </tr>
-    </thead>
-    <tbody>
-      <% schemas.forEach(schema => { %>
+    <% }) %>
+  </tbody>
+</table>
+
+<!-- Event List -->
+<h2>Events</h2>
+<table>
+  <thead>
+    <tr>
+      <th>Event Title</th>
+      <th>Date</th>
+      <th>Location</th>
+      <th>Status</th>
+      <th>Actions</th>
+    </tr>
+  </thead>
+  <tbody>
+    <% if (events.length > 0) { %>
+      <% events.forEach(event => { %>
         <tr>
-          <td><%= schema.name %></td>
+          <td><%= event.title %></td>
+          <td><%= event.date.toDateString() %></td>
+          <td><%= event.location %></td>
+          <td><%= event.status %></td>
           <td>
-            <!-- Button to view schema data -->
             <button>
-              <a href="/data/<%= schema._id %>">View Data</a>
+              <a href="/event/<%= event._id %>">View Details</a>
             </button>
-
-            <!-- Button to open form for schema data entry -->
             <button>
-              <a href="/form/<%= schema._id %>">Open Form</a>
+              <a href="/event/edit/<%= event._id %>">Edit</a>
             </button>
-
-        <form action="/delete/schema/<%= schema._id %>" method="POST" style="display:inline;">
-          <button type="submit">Delete Schema</button>
-        </form>
-        
+            <form action="/event/delete/<%= event._id %>" method="POST" style="display:inline;">
+              <button type="submit">Delete</button>
+            </form>
           </td>
         </tr>
       <% }) %>
-    </tbody>
-  </table>
-</body>
-</html>
+    <% } else { %>
+      <tr>
+        <td colspan="5">No events available</td>
+      </tr>
+    <% } %>
+  </tbody>
+</table>
