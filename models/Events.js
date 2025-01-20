@@ -38,7 +38,8 @@ const eventSchema = new mongoose.Schema({
   }],
   project_under: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: 'Program' // Assuming the Program model is named 'Program'
+    ref: 'Project', // Reference to the Project model
+    required: true,
   },
   createdAt: {
     type: Date,

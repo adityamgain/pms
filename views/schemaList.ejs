@@ -1,4 +1,4 @@
-<h1>Schemas and Events for <%= programName || 'All Programs' %></h1>
+ <h1>Schemas and Events for <%= programName || 'All Programs' %></h1>
 
 <!-- Schema List -->
 <h2>Available Schemas</h2>
@@ -14,14 +14,14 @@
       <tr>
         <td><%= schema.name %></td>
         <td>
-          <button>
+          <button aria-label="View data for <%= schema.name %>">
             <a href="/data/<%= schema._id %>">View Data</a>
           </button>
-          <button>
+          <button aria-label="Open form for <%= schema.name %>">
             <a href="/form/<%= schema._id %>">Open Form</a>
           </button>
           <form action="/delete/schema/<%= schema._id %>" method="POST" style="display:inline;">
-            <button type="submit">Delete Schema</button>
+            <button type="submit" aria-label="Delete <%= schema.name %>">Delete Schema</button>
           </form>
         </td>
       </tr>
@@ -29,7 +29,6 @@
   </tbody>
 </table>
 
-<!-- Event List -->
 <h2>Events</h2>
 <table>
   <thead>

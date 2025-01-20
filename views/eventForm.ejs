@@ -4,6 +4,32 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Create Event</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 20px;
+      line-height: 1.6;
+    }
+    label {
+      display: block;
+      margin: 10px 0 5px;
+    }
+    input, textarea, select, button {
+      width: 100%;
+      padding: 8px;
+      margin-bottom: 10px;
+      box-sizing: border-box;
+    }
+    .attendee {
+      margin-top: 20px;
+      padding: 10px;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+    }
+    .attendee h3 {
+      margin-top: 0;
+    }
+  </style>
 </head>
 <body>
 
@@ -14,19 +40,19 @@
     <input type="hidden" name="under_project" value="<%= projectName %>">
 
     <label for="title">Event Title:</label>
-    <input type="text" id="title" name="title" required>
+    <input type="text" id="title" name="title" placeholder="Enter event title" required>
 
     <label for="description">Description:</label>
-    <textarea id="description" name="description" required></textarea>
+    <textarea id="description" name="description" placeholder="Enter event description" required></textarea>
 
     <label for="date">Event Date:</label>
     <input type="date" id="date" name="date" required>
 
     <label for="location">Location:</label>
-    <input type="text" id="location" name="location" required>
+    <input type="text" id="location" name="location" placeholder="Enter event location" required>
 
     <label for="organizer">Organizer:</label>
-    <input type="text" id="organizer" name="organizer" required>
+    <input type="text" id="organizer" name="organizer" placeholder="Enter organizer name" required>
 
     <label for="status">Status:</label>
     <select name="status" id="status">
@@ -35,8 +61,8 @@
       <option value="completed">Completed</option>
     </select>
 
-    <label for="attendees">Attendees:</label>
-    <input type="number" id="attendees" name="attendeesCount" min="1" required>
+    <label for="attendees">Number of Attendees:</label>
+    <input type="number" id="attendees" name="attendeesCount" min="1" placeholder="Enter number of attendees" required>
     
     <div id="attendeeFields"></div>
 
@@ -56,20 +82,20 @@
         div.innerHTML = `
           <h3>Attendee ${i + 1}</h3>
           <label for="attendeeName${i}">Name:</label>
-          <input type="text" name="attendees[${i}][name]" required>
+          <input type="text" id="attendeeName${i}" name="attendees[${i}][name]" placeholder="Enter attendee name" required>
 
           <label for="attendeeGender${i}">Gender:</label>
-          <select name="attendees[${i}][gender]" required>
+          <select id="attendeeGender${i}" name="attendees[${i}][gender]" required>
             <option value="Male">Male</option>
             <option value="Female">Female</option>
             <option value="Other">Other</option>
           </select>
 
           <label for="attendeeContact${i}">Contact:</label>
-          <input type="text" name="attendees[${i}][contact]" required>
+          <input type="text" id="attendeeContact${i}" name="attendees[${i}][contact]" placeholder="Enter attendee contact" required>
 
           <label for="attendeeOtherInfo${i}">Other Info:</label>
-          <input type="text" name="attendees[${i}][otherInfo]">
+          <input type="text" id="attendeeOtherInfo${i}" name="attendees[${i}][otherInfo]" placeholder="Optional information">
         `;
         
         attendeeFieldsContainer.appendChild(div);

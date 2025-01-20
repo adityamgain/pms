@@ -6,12 +6,15 @@ const ejsMate = require('ejs-mate');
 const methodOverride = require('method-override');
 const session = require('express-session');
 const nepalGeoData = require('@nepalutils/nepal-geodata');
+const multer = require('multer');
+const { v4: uuidv4 } = require('uuid');
+
 
 const employeeRoutes = require('./routes/employeeRoutes');
 const SchemaDefinition = require('./models/schemaDefination');
 const Event = require('./models/Events');
 const Program = require('./models/Program');
-
+const EventWbenificiary = require('./models/EventWbenificiary');
 
 const app = express();
 
@@ -28,6 +31,7 @@ app.use(express.static('public'));
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 
+const upload = multer({ dest: 'uploads/' });
 
 // MongoDB connection
 mongoose.connect('mongodb://127.0.0.1:27017/project_management')
@@ -100,59 +104,6 @@ app.get('/climate', (req, res) => {
 
 app.get('/profile', (req, res) => {
   res.render('profile');
-});
-
-
-app.get('/schema/add-event/:projectName', async (req, res) => {
-  const projectName = req.params.projectName;
-
-  // Pass the project name and project ID to the form
-  res.render('eventForm',  { projectName });
-});
-
-// Handle form submission
-app.post('/schema/add-event', async (req, res) => {
-  try {
-    const { title, description, date, location, organizer, status, under_project, attendees } = req.body;
-
-    // Find the Program by name to get its ID
-    const program = await Program.findOne({ name: under_project });
-    if (!program) {
-      return res.status(400).send(`Program with name "${under_project}" not found.`);
-    }
-
-    // Create a new event linked to the Program ID
-    const event = new Event({
-      title,
-      description,
-      date,
-      location,
-      organizer,
-      status,
-      under_project: program._id, // Use the Program's ObjectId
-      attendees: attendees.map(att => ({
-        name: att.name,
-        gender: att.gender,
-        contact: att.contact,
-        otherInfo: att.otherInfo || '',
-      })),
-    });
-
-    // Save the event to the database
-    await event.save();
-
-    res.redirect(`/`); // Redirect to the desired page after saving
-  } catch (error) {
-    console.error('Error creating event:', error);
-    res.status(500).send('Error creating event');
-  }
-});
-
-
-// Example route for event listing (optional)
-app.get('/events', async (req, res) => {
-  const events = await Event.find();
-  res.render('events', { events });
 });
 
 
@@ -250,6 +201,114 @@ app.get('/schemas', async (req, res) => {
   }
 });
 
+// Route to render the form
+app.get('/eventb', (req, res) => {
+  res.render('eventEbineficiartForm'); // Make sure this matches your EJS filename
+});
+
+
+// Route to post the form
+app.post('/submit-event', upload.fields([{ name: 'photographs' }, { name: 'reports' }]), async (req, res) => {
+  try {
+      const { eventName, eventType, startDate, endDate, venue, nationalLevel, facilitators, beneficiaries } = req.body;
+      let cleanedBeneficiaries = Array.isArray(beneficiaries) 
+        ? beneficiaries
+        : JSON.parse(beneficiaries || '[]');
+      cleanedBeneficiaries = cleanedBeneficiaries.filter(beneficiary => beneficiary && beneficiary.name);
+      cleanedBeneficiaries.forEach(beneficiary => {
+        if (beneficiary.benefitsFromActivity === 'on') {
+            beneficiary.benefitsFromActivity = true;
+        } else if (beneficiary.benefitsFromActivity === 'off') {
+            beneficiary.benefitsFromActivity = false;
+        } else if (beneficiary.benefitsFromActivity === 'disabled') {
+            beneficiary.benefitsFromActivity = null; // or any value you consider for 'disabled'
+        }
+        if (beneficiary.disability === 'on') {
+            beneficiary.disability = true; // Consider the person as having a disability
+        } else if (beneficiary.disability === 'off') {
+            beneficiary.disability = false; // Consider the person as not having a disability
+        }
+        if (!beneficiary.uniqueId) {
+            beneficiary.uniqueId = uuidv4(); // Generate a unique ID if not present
+        }
+    });
+      console.log('Cleaned Beneficiaries:', cleanedBeneficiaries);
+      const eventWithBeneficiary = new EventWbenificiary({
+          eventName,
+          eventType,
+          startDate,
+          endDate,
+          venue, // Directly use venue if it's already an object
+          nationalLevel,
+          facilitators: facilitators ? facilitators.split(',') : [],
+          beneficiaries: cleanedBeneficiaries, // Use cleaned beneficiaries data
+          photographs: req.files['photographs']?.map(file => file.path),
+          reports: req.files['reports']?.map(file => file.path),
+      });
+      await eventWithBeneficiary.save();
+      res.status(201).send('Event created successfully');
+  } catch (error) {
+      console.error('Error saving event:', error.message);
+      res.status(500).send('Error saving event');
+  }
+});
+
+
+app.get('/schema/add-event/:projectName', async (req, res) => {
+  try {
+    const projectName = req.params.projectName;
+    const project = await Program.findOne({ name: projectName });
+    if (!project) {
+      return res.status(404).send(`Project with name "${projectName}" not found.`);
+    }
+    res.render('eventForm', { projectName, projectId: project._id });
+  } catch (error) {
+    console.error('Error fetching project:', error);
+    res.status(500).send('Error fetching project');
+  }
+});
+
+
+app.post('/schema/add-event', async (req, res) => {
+  try {
+    const { title, description, date, location, organizer, status, under_project, attendees } = req.body;
+    // Find the Project by name to get its ID
+    const project = await Program.findOne({ name: under_project }); // Assuming `Program` is your model for projects
+    if (!project) {
+      return res.status(400).send(`Project with name "${under_project}" not found.`);
+    }
+    // Create a new event linked to the Project ID
+    const event = new Event({
+      title,
+      description,
+      date,
+      location,
+      organizer,
+      status,
+      project_under: project._id, // Use the Project's ObjectId
+      attendees: attendees.map(att => ({
+        name: att.name,
+        gender: att.gender,
+        contact: att.contact,
+        otherInfo: att.otherInfo || '',
+      })),
+    });
+    // Save the event to the database
+    await event.save();
+    res.redirect('/'); // Redirect to the desired page after saving
+  } catch (error) {
+    console.error('Error creating event:', error);
+    res.status(500).send('Error creating event');
+  }
+});
+
+
+// Example route for event listing (optional)
+app.get('/events', async (req, res) => {
+  const events = await Event.find({});
+  res.render('events', { events });
+});
+
 // get event detail
 app.get('/event/:eventId', async (req, res) => {
   const { eventId } = req.params;
@@ -344,26 +403,30 @@ app.get('/schemas/:schemaUnderProject', async (req, res) => {
     const program = await Program.findOne({ name: schemaUnderProject });
 
     if (!program) {
-      return res.status(404).send('Program not found');
+      return res.status(404).render('error', { message: `Program '${schemaUnderProject}' not found` });
     }
 
     // Now, use the program's ObjectId for the query
     const schemas = await SchemaDefinition.find({ under_project: program._id });
-
+    console.log('Program ID:', program._id);
     // Fetch the events linked to this program
     const events = await Event.find({ under_project: program._id });
+    
 
-    // Render the schema list view with the program name and events
+    // Render the schema list view with the program name, program ID, schemas, and events
     res.render('schemaList', {
       schemas,
       events,
       programName: program.name, // Pass the program name to the view
+      programId: program._id,   // Pass the program ID to the view
     });
   } catch (error) {
     console.error('Error fetching schemas:', error);
-    res.status(500).send('Internal Server Error');
+    res.status(500).render('error', { message: 'Internal Server Error' });
   }
 });
+
+
 
 
 
