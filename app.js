@@ -11,6 +11,9 @@ const { v4: uuidv4 } = require('uuid');
 
 
 const employeeRoutes = require('./routes/employeeRoutes');
+const geoRoutes = require('./routes/geoRoutes');
+const schemaRoutes = require('./routes/schemaRoutes');
+
 const SchemaDefinition = require('./models/schemaDefination');
 const Event = require('./models/Events');
 const Program = require('./models/Program');
@@ -68,6 +71,8 @@ mongoose.connect('mongodb://127.0.0.1:27017/project_management')
 
 // Use employee routes
 app.use('/employee', employeeRoutes);
+app.use('/api', geoRoutes);
+app.use(schemaRoutes);
 
 // Define getDynamicModel function first
 function getDynamicModel(collectionName) {
@@ -107,88 +112,88 @@ app.get('/profile', (req, res) => {
 });
 
 
-// Endpoint to get provinces
-app.get('/api/provinces', async (req, res) => {
-  try {
-    const nepalData = await nepalGeoData('english'); // Fetch data in English
-    const provinces = Object.keys(nepalData).map((province) => ({
-      name: province, // Province name
-    }));
-    res.json(provinces); // Return the formatted provinces as JSON
-  } catch (error) {
-    res.status(500).send('Error fetching provinces');
-  }
-});
+// // Endpoint to get provinces
+// app.get('/api/provinces', async (req, res) => {
+//   try {
+//     const nepalData = await nepalGeoData('english'); // Fetch data in English
+//     const provinces = Object.keys(nepalData).map((province) => ({
+//       name: province, // Province name
+//     }));
+//     res.json(provinces); // Return the formatted provinces as JSON
+//   } catch (error) {
+//     res.status(500).send('Error fetching provinces');
+//   }
+// });
 
 
 
-// Endpoint to get districts for a specific province
-app.get('/api/districts/:provinceName', async (req, res) => {
-  try {
-    const provinceName = req.params.provinceName.trim(); // No need for `toLowerCase`
-    const nepalData = await nepalGeoData('english'); // Fetch data in English
+// // Endpoint to get districts for a specific province
+// app.get('/api/districts/:provinceName', async (req, res) => {
+//   try {
+//     const provinceName = req.params.provinceName.trim(); // No need for `toLowerCase`
+//     const nepalData = await nepalGeoData('english'); // Fetch data in English
 
-    // Find the province (case-insensitive match)
-    const provinceKey = Object.keys(nepalData).find(
-      (key) => key.toLowerCase() === provinceName.toLowerCase()
-    );
+//     // Find the province (case-insensitive match)
+//     const provinceKey = Object.keys(nepalData).find(
+//       (key) => key.toLowerCase() === provinceName.toLowerCase()
+//     );
 
-    if (!provinceKey) {
-      return res.status(400).json({ error: 'Invalid province name' });
-    }
+//     if (!provinceKey) {
+//       return res.status(400).json({ error: 'Invalid province name' });
+//     }
 
-    // Extract districts
-    const districts = Object.keys(nepalData[provinceKey]).map((district) => ({
-      name: district.trim(), // Clean names
-    }));
-    res.json(districts); // Return the districts as JSON
-  } catch (error) {
-    console.error('Error fetching districts:', error);
-    res.status(500).send('Error fetching districts');
-  }
-});
+//     // Extract districts
+//     const districts = Object.keys(nepalData[provinceKey]).map((district) => ({
+//       name: district.trim(), // Clean names
+//     }));
+//     res.json(districts); // Return the districts as JSON
+//   } catch (error) {
+//     console.error('Error fetching districts:', error);
+//     res.status(500).send('Error fetching districts');
+//   }
+// });
 
 
 
-app.get('/api/municipalities/:districtName', async (req, res) => {
-  try {
-    const districtName = req.params.districtName.trim(); // Normalize input
-    const nepalData = await nepalGeoData('english'); // Fetch Nepal geo data in English
-    let municipalities = null;
-    // Find the district (case-insensitive match)
-    for (const [provinceName, districts] of Object.entries(nepalData)) {
-      for (const district in districts) {
-        if (district.toLowerCase() === districtName.toLowerCase()) {
-          municipalities = districts[district];
-          break;
-        }
-      }
-      if (municipalities) break;
-    }
-    if (!municipalities) {
-      return res.status(404).json({ error: 'District not found' });
-    }
-    // Extract and format municipalities
-    const municipalityList = [];
-    for (const [type, names] of Object.entries(municipalities)) {
-      if (Array.isArray(names)) {
-        municipalityList.push(...names);
-      }
-    }
-    if (municipalityList.length === 0) {
-      return res.status(404).json({ error: 'No municipalities found' });
-    }
-    res.json(
-      municipalityList.map((name, index) => ({
-        id: index + 1,
-        name: name.trim(), // Clean names
-      }))
-    );
-  } catch (error) {
-    console.error('Error fetching municipality data:', error);
-    res.status(500).send('Error fetching municipality data');
-  }
-});
+// app.get('/api/municipalities/:districtName', async (req, res) => {
+//   try {
+//     const districtName = req.params.districtName.trim(); // Normalize input
+//     const nepalData = await nepalGeoData('english'); // Fetch Nepal geo data in English
+//     let municipalities = null;
+//     // Find the district (case-insensitive match)
+//     for (const [provinceName, districts] of Object.entries(nepalData)) {
+//       for (const district in districts) {
+//         if (district.toLowerCase() === districtName.toLowerCase()) {
+//           municipalities = districts[district];
+//           break;
+//         }
+//       }
+//       if (municipalities) break;
+//     }
+//     if (!municipalities) {
+//       return res.status(404).json({ error: 'District not found' });
+//     }
+//     // Extract and format municipalities
+//     const municipalityList = [];
+//     for (const [type, names] of Object.entries(municipalities)) {
+//       if (Array.isArray(names)) {
+//         municipalityList.push(...names);
+//       }
+//     }
+//     if (municipalityList.length === 0) {
+//       return res.status(404).json({ error: 'No municipalities found' });
+//     }
+//     res.json(
+//       municipalityList.map((name, index) => ({
+//         id: index + 1,
+//         name: name.trim(), // Clean names
+//       }))
+//     );
+//   } catch (error) {
+//     console.error('Error fetching municipality data:', error);
+//     res.status(500).send('Error fetching municipality data');
+//   }
+// });
 
 // Route to display the schema list for all schemas
 app.get('/schemas', async (req, res) => {
@@ -207,50 +212,111 @@ app.get('/eventb', (req, res) => {
 });
 
 
-// Route to post the form
 app.post('/submit-event', upload.fields([{ name: 'photographs' }, { name: 'reports' }]), async (req, res) => {
   try {
-      const { eventName, eventType, startDate, endDate, venue, nationalLevel, facilitators, beneficiaries } = req.body;
-      let cleanedBeneficiaries = Array.isArray(beneficiaries) 
+    const {
+      eventName,
+      eventType,
+      startDate,
+      endDate,
+      province,
+      district,
+      municipality,
+      nationalLevel,
+      facilitators,
+      beneficiaries,
+      longitude,
+      latitude,
+    } = req.body;
+
+    // Ensure longitude and latitude are provided
+    if (!longitude || !latitude) {
+      return res.status(400).send('Longitude and Latitude are required.');
+    }
+
+    // Parse and clean beneficiaries data
+    let cleanedBeneficiaries = [];
+    if (beneficiaries) {
+      cleanedBeneficiaries = Array.isArray(beneficiaries)
         ? beneficiaries
         : JSON.parse(beneficiaries || '[]');
-      cleanedBeneficiaries = cleanedBeneficiaries.filter(beneficiary => beneficiary && beneficiary.name);
-      cleanedBeneficiaries.forEach(beneficiary => {
-        if (beneficiary.benefitsFromActivity === 'on') {
-            beneficiary.benefitsFromActivity = true;
-        } else if (beneficiary.benefitsFromActivity === 'off') {
-            beneficiary.benefitsFromActivity = false;
-        } else if (beneficiary.benefitsFromActivity === 'disabled') {
-            beneficiary.benefitsFromActivity = null; // or any value you consider for 'disabled'
-        }
-        if (beneficiary.disability === 'on') {
-            beneficiary.disability = true; // Consider the person as having a disability
-        } else if (beneficiary.disability === 'off') {
-            beneficiary.disability = false; // Consider the person as not having a disability
-        }
-        if (!beneficiary.uniqueId) {
-            beneficiary.uniqueId = uuidv4(); // Generate a unique ID if not present
-        }
+    }
+
+    cleanedBeneficiaries = cleanedBeneficiaries.filter((b) => b && b.name); // Filter invalid entries
+
+    // Normalize and validate beneficiaries
+    cleanedBeneficiaries = cleanedBeneficiaries.map((beneficiary) => {
+      console.log(beneficiary)
+      if (!beneficiary.associatedOrganization || !beneficiary.associatedOrganization.name || !beneficiary.associatedOrganization.main) {
+        throw new Error(`Invalid associated organization for beneficiary "${beneficiary.name}". 'main' is required.`);
+      }
+
+      const associatedOrganization = beneficiary.associatedOrganization;
+
+      // Clean and normalize fields
+      associatedOrganization.name = associatedOrganization.name.trim();
+      associatedOrganization.main = associatedOrganization.main.trim();
+
+      // Normalize subType based on main type
+      if (associatedOrganization.main === 'Community') {
+        associatedOrganization.subType = ['CFUG', 'FG'].includes(associatedOrganization.subType) 
+            ? associatedOrganization.subType 
+            : null;
+    } else if (associatedOrganization.main === 'Government') {
+        associatedOrganization.subType = ['National', 'Provincial', 'Municipal'].includes(associatedOrganization.subType) 
+            ? associatedOrganization.subType 
+            : null;
+    } else {
+        associatedOrganization.subType = null;
+    }
+
+      beneficiary.benefitsFromActivity = beneficiary.benefitsFromActivity === 'on';
+      beneficiary.disability = beneficiary.disability === 'on';
+
+      // Assign unique ID if missing
+      if (!beneficiary.uniqueId) {
+        beneficiary.uniqueId = uuidv4();
+      }
+
+      return beneficiary;
     });
-      console.log('Cleaned Beneficiaries:', cleanedBeneficiaries);
-      const eventWithBeneficiary = new EventWbenificiary({
-          eventName,
-          eventType,
-          startDate,
-          endDate,
-          venue, // Directly use venue if it's already an object
-          nationalLevel,
-          facilitators: facilitators ? facilitators.split(',') : [],
-          beneficiaries: cleanedBeneficiaries, // Use cleaned beneficiaries data
-          photographs: req.files['photographs']?.map(file => file.path),
-          reports: req.files['reports']?.map(file => file.path),
-      });
-      await eventWithBeneficiary.save();
-      res.status(201).send('Event created successfully');
+
+    // Create the new event document
+    const eventWithBeneficiary = new EventWbenificiary({
+      eventName,
+      eventType,
+      startDate,
+      endDate,
+      venue: { province, district, municipality },
+      nationalLevel,
+      facilitators: facilitators ? facilitators.split(',').map((f) => f.trim()) : [],
+      beneficiaries: cleanedBeneficiaries,
+      photographs: req.files['photographs']?.map((file) => file.path) || [],
+      reports: req.files['reports']?.map((file) => file.path) || [],
+      location: {
+        type: 'Point',
+        coordinates: [parseFloat(longitude), parseFloat(latitude)],
+      },
+    });
+
+    // Save to database
+    await eventWithBeneficiary.save();
+    res.status(201).send('Event created successfully.');
   } catch (error) {
-      console.error('Error saving event:', error.message);
-      res.status(500).send('Error saving event');
+    console.error('Error saving event:', error.message);
+    if (!res.headersSent) {
+      res.status(500).send(error.message || 'Error saving event.');
+    }
   }
+});
+
+
+
+
+// Route to render the datas
+app.get('/vieweventb', async (req, res) => {
+  const datas = await EventWbenificiary.find({});
+  res.render('view_event_bineficery',{ datas }); // Make sure this matches your EJS filename
 });
 
 
@@ -395,180 +461,178 @@ app.post('/event/delete/:id', async (req, res) => {
 
 
 
-// Route to display the schema list under a specific program
-app.get('/schemas/:schemaUnderProject', async (req, res) => {
-  const { schemaUnderProject } = req.params;
-  try {
-    // First, find the program by name to get the ObjectId
-    const program = await Program.findOne({ name: schemaUnderProject });
+// // Route to display the schema list under a specific program
+// app.get('/schemas/:schemaUnderProject', async (req, res) => {
+//   const { schemaUnderProject } = req.params;
+//   try {
+//     // First, find the program by name to get the ObjectId
+//     const program = await Program.findOne({ name: schemaUnderProject });
 
-    if (!program) {
-      return res.status(404).render('error', { message: `Program '${schemaUnderProject}' not found` });
-    }
+//     if (!program) {
+//       return res.status(404).render('error', { message: `Program '${schemaUnderProject}' not found` });
+//     }
 
-    // Now, use the program's ObjectId for the query
-    const schemas = await SchemaDefinition.find({ under_project: program._id });
-    console.log('Program ID:', program._id);
-    // Fetch the events linked to this program
-    const events = await Event.find({ under_project: program._id });
+//     // Now, use the program's ObjectId for the query
+//     const schemas = await SchemaDefinition.find({ under_project: program._id });
+//     console.log('Program ID:', program._id);
+//     // Fetch the events linked to this program
+//     const events = await Event.find({ under_project: program._id });
     
 
-    // Render the schema list view with the program name, program ID, schemas, and events
-    res.render('schemaList', {
-      schemas,
-      events,
-      programName: program.name, // Pass the program name to the view
-      programId: program._id,   // Pass the program ID to the view
-    });
-  } catch (error) {
-    console.error('Error fetching schemas:', error);
-    res.status(500).render('error', { message: 'Internal Server Error' });
-  }
-});
+//     // Render the schema list view with the program name, program ID, schemas, and events
+//     res.render('schemaList', {
+//       schemas,
+//       events,
+//       programName: program.name, // Pass the program name to the view
+//       programId: program._id,   // Pass the program ID to the view
+//     });
+//   } catch (error) {
+//     console.error('Error fetching schemas:', error);
+//     res.status(500).render('error', { message: 'Internal Server Error' });
+//   }
+// });
 
 
 
 
 
-// Route to display the new project form
-app.get('/schema/:schemaUnderProject', (req, res) => {
-  const { schemaUnderProject } = req.params;
-  res.render('createSchema', { schemaUnderProject });
-});
+// // Route to display the new project form
+// app.get('/schema/:schemaUnderProject', (req, res) => {
+//   const { schemaUnderProject } = req.params;
+//   res.render('createSchema', { schemaUnderProject });
+// });
 
 
-app.post('/api/schema', async (req, res) => {
-  try {
-    const { name, fields, schemaUnderProject } = req.body;
+// app.post('/api/schema', async (req, res) => {
+//   try {
+//     const { name, fields, schemaUnderProject } = req.body;
 
-    if (!name || !schemaUnderProject || !fields || fields.length === 0) {
-      return res.status(400).send('Schema name, fields, and project are required.');
-    }
+//     if (!name || !schemaUnderProject || !fields || fields.length === 0) {
+//       return res.status(400).send('Schema name, fields, and project are required.');
+//     }
 
-    const fieldArray = Array.isArray(fields) ? fields : Object.values(fields);
+//     const fieldArray = Array.isArray(fields) ? fields : Object.values(fields);
     
-    const sanitizedFields = fieldArray.map((field, index) => {
-      // Sanitize options and attendeeFields, default empty if not provided
-      const options = Array.isArray(field.options) ? field.options : Object.values(field.options || []);
-      const attendeeFields = Array.isArray(field.attendeeFields)
-        ? field.attendeeFields
-        : Object.values(field.attendeeFields || []);
+//     const sanitizedFields = fieldArray.map((field, index) => {
+//       // Sanitize options and attendeeFields, default empty if not provided
+//       const options = Array.isArray(field.options) ? field.options : Object.values(field.options || []);
+//       const attendeeFields = Array.isArray(field.attendeeFields)
+//         ? field.attendeeFields
+//         : Object.values(field.attendeeFields || []);
       
-      // Field name and type validation
-      if (!field.fieldName || !field.fieldType) {
-        throw new Error(`Field name and field type are required for field at index ${index}`);
-      }
+//       // Field name and type validation
+//       if (!field.fieldName || !field.fieldType) {
+//         throw new Error(`Field name and field type are required for field at index ${index}`);
+//       }
 
-      // Sanitize options (trim empty values)
-      const sanitizedOptions = options.map((opt) => opt.trim()).filter(Boolean);
+//       // Sanitize options (trim empty values)
+//       const sanitizedOptions = options.map((opt) => opt.trim()).filter(Boolean);
 
-      // Sanitize attendee fields
-      const sanitizedAttendeeFields = attendeeFields.map((attendee) => ({
-        fieldName: attendee.fieldName?.trim(),
-        fieldType: attendee.fieldType?.trim(),
-      })).filter(attendee => attendee.fieldName && attendee.fieldType);
+//       // Sanitize attendee fields
+//       const sanitizedAttendeeFields = attendeeFields.map((attendee) => ({
+//         fieldName: attendee.fieldName?.trim(),
+//         fieldType: attendee.fieldType?.trim(),
+//       })).filter(attendee => attendee.fieldName && attendee.fieldType);
 
-      return {
-        fieldName: field.fieldName.trim(),
-        fieldType: field.fieldType.trim(),
-        required: field.required === 'on' || field.required === true, // Convert checkbox to boolean
-        options: sanitizedOptions,
-        attendeeFields: sanitizedAttendeeFields,
-      };
-    });
+//       return {
+//         fieldName: field.fieldName.trim(),
+//         fieldType: field.fieldType.trim(),
+//         required: field.required === 'on' || field.required === true, // Convert checkbox to boolean
+//         options: sanitizedOptions,
+//         attendeeFields: sanitizedAttendeeFields,
+//       };
+//     });
 
-    // Save the schema to the database
-    const newSchema = new SchemaDefinition({
-      name: name.trim(),
-      fields: sanitizedFields,
-      under_project: schemaUnderProject.trim(),
-    });
+//     // Save the schema to the database
+//     const newSchema = new SchemaDefinition({
+//       name: name.trim(),
+//       fields: sanitizedFields,
+//       under_project: schemaUnderProject.trim(),
+//     });
 
-    await newSchema.save();
-    res.status(201).send('Schema created successfully');
-  } catch (err) {
-    console.error(err);
-    res.status(500).send(`Error creating schema: ${err.message}`);
-  }
-});
-
-
+//     await newSchema.save();
+//     res.status(201).send('Schema created successfully');
+//   } catch (err) {
+//     console.error(err);
+//     res.status(500).send(`Error creating schema: ${err.message}`);
+//   }
+// });
 
 
-// Route to display the form based on schema(project)
-app.get('/form/:schemaId', async (req, res) => {
-  const { schemaId } = req.params;
-  const schema = await SchemaDefinition.findById(schemaId);
-  if (!schema) {
-    return res.status(404).send('Schema not found');
-  }
-  res.render('dynamicForm', { schema });
-});
+// // Route to display the form based on schema(project)
+// app.get('/form/:schemaId', async (req, res) => {
+//   const { schemaId } = req.params;
+//   const schema = await SchemaDefinition.findById(schemaId);
+//   if (!schema) {
+//     return res.status(404).send('Schema not found');
+//   }
+//   res.render('dynamicForm', { schema });
+// });
 
 
-// Handle form submission with dynamic schema
-app.post('/submit/:schemaId', async (req, res) => {
-  try {
-    const { schemaId } = req.params;
-    const schema = await SchemaDefinition.findById(schemaId);
-    if (!schema) {
-      return res.status(404).send('Schema not found');
-    }
-    const collectionName = `${schema.name.toLowerCase()}_data`;
-    const DynamicModel = mongoose.models[collectionName] || mongoose.model(collectionName, new mongoose.Schema({}, { strict: false }));
-    const submittedData = new DynamicModel(req.body);
-    await submittedData.save();
-    console.log(submittedData)
-    res.send('Form data saved successfully!');
-  } catch (err) {
-    console.error(err);
-    res.status(500).send('An error occurred while saving the data.');
-  }
-});
+// // Handle form submission with dynamic schema
+// app.post('/submit/:schemaId', async (req, res) => {
+//   try {
+//     const { schemaId } = req.params;
+//     const schema = await SchemaDefinition.findById(schemaId);
+//     if (!schema) {
+//       return res.status(404).send('Schema not found');
+//     }
+//     const collectionName = `${schema.name.toLowerCase()}_data`;
+//     const DynamicModel = mongoose.models[collectionName] || mongoose.model(collectionName, new mongoose.Schema({}, { strict: false }));
+//     const submittedData = new DynamicModel(req.body);
+//     await submittedData.save();
+//     console.log(submittedData)
+//     res.send('Form data saved successfully!');
+//   } catch (err) {
+//     console.error(err);
+//     res.status(500).send('An error occurred while saving the data.');
+//   }
+// });
 
 
-// Example usage: Access a dynamic model for a collection
-app.get('/data/:schemaId', async (req, res) => {
-  const { schemaId } = req.params;
-  // Retrieve the schema definition from the database
-  const schema = await SchemaDefinition.findById(schemaId);
-  if (!schema) {
-    return res.status(404).send('Schema not found');
-  }
-  // Create or get the dynamic model for the collection
-  const collectionName = `${schema.name.toLowerCase()}_data`;
-  const DynamicModel = getDynamicModel(collectionName);
-  // Fetch the data from the dynamic model
-  const data = await DynamicModel.find({});
-  res.render('viewData', { schema, data });
-});
+// // Example usage: Access a dynamic model for a collection
+// app.get('/data/:schemaId', async (req, res) => {
+//   const { schemaId } = req.params;
+//   // Retrieve the schema definition from the database
+//   const schema = await SchemaDefinition.findById(schemaId);
+//   if (!schema) {
+//     return res.status(404).send('Schema not found');
+//   }
+//   // Create or get the dynamic model for the collection
+//   const collectionName = `${schema.name.toLowerCase()}_data`;
+//   const DynamicModel = getDynamicModel(collectionName);
+//   // Fetch the data from the dynamic model
+//   const data = await DynamicModel.find({});
+//   res.render('viewData', { schema, data });
+// });
 
 
-app.post('/delete/schema/:schemaId', async (req, res) => {
-  const { schemaId } = req.params;
-  try {
-    const schema = await SchemaDefinition.findById(schemaId);
-    if (!schema) {
-      return res.status(404).send('Schema not found');
-    }
-    await SchemaDefinition.findByIdAndDelete(schemaId);
-    const collectionName = `${schema.name.toLowerCase()}_datas`;
-    const DynamicModel = getDynamicModel(collectionName);
-    await DynamicModel.deleteMany({}); // Delete all documents in the collection
-    const collections = await mongoose.connection.db.listCollections({ name: collectionName }).toArray();
-    if (collections.length === 0) {
-      console.log(`Collection ${collectionName} does not exist.`);
-    } else {
-      await mongoose.connection.db.dropCollection(collectionName);
-      console.log(`Collection ${collectionName} dropped successfully.`);
-    }
-    delete mongoose.models[collectionName];
-    res.redirect('/schemas');
-  } catch (error) {
-    console.error('Error deleting schema:', error);
-    res.status(500).send('Internal Server Error');
-  }
-});
+// app.post('/delete/schema/:schemaId', async (req, res) => {
+//   const { schemaId } = req.params;
+//   try {
+//     const schema = await SchemaDefinition.findById(schemaId);
+//     if (!schema) {
+//       return res.status(404).send('Schema not found');
+//     }
+//     await SchemaDefinition.findByIdAndDelete(schemaId);
+//     const collectionName = `${schema.name.toLowerCase()}_datas`;
+//     const DynamicModel = getDynamicModel(collectionName);
+//     await DynamicModel.deleteMany({}); // Delete all documents in the collection
+//     const collections = await mongoose.connection.db.listCollections({ name: collectionName }).toArray();
+//     if (collections.length === 0) {
+//       console.log(`Collection ${collectionName} does not exist.`);
+//     } else {
+//       await mongoose.connection.db.dropCollection(collectionName);
+//       console.log(`Collection ${collectionName} dropped successfully.`);
+//     }
+//     delete mongoose.models[collectionName];
+//     res.redirect('/schemas');
+//   } catch (error) {
+//     console.error('Error deleting schema:', error);
+//     res.status(500).send('Internal Server Error');
+//   }
+// });
 
 
 // Start the server

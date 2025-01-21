@@ -49,27 +49,30 @@
             <input type="date" id="endDate" name="endDate" required><br><br>
 
           <div>
-            <label for="province">Province</label>
-            <select id="province" 
-                    name="province" 
-                    class="provinceSelect">
-              <option value="">Select Province</option>
-            </select>
+                <select id="province" name="province" class="provinceSelect" required>
+                <option value="">Select Province</option>
+                </select>
 
-            <label for="district">District</label>
-            <select id="district" 
-                    name="district" 
-                    class="districtSelect" disabled>
-              <option value="">Select District</option>
-            </select>
+                <select id="district" name="district" class="districtSelect" required disabled>
+                <option value="">Select District</option>
+                </select>
 
-            <label for="municipality">Municipality</label>
-            <select id="municipality" 
-                    name="municipality" 
-                    class="municipalitySelect" disabled>
-              <option value="">Select Municipality</option>
-            </select>
+                <select id="municipality" name="municipality" class="municipalitySelect" required disabled>
+                <option value="">Select Municipality</option>
+                </select>
           </div>
+
+            <div>
+                <legend>Event Location</legend>
+                
+                <label for="latitude">Latitude:</label>
+                <input type="text" id="latitude" name="latitude" placeholder="Enter latitude" required><br><br>
+
+                <label for="longitude">Longitude:</label>
+                <input type="text" id="longitude" name="longitude" placeholder="Enter longitude" required><br><br>
+
+                <button type="button" onclick="fetchGeolocation()">Get Current Location</button>
+            </div>
 
             <label for="nationalLevel">National Level:</label>
             <select id="nationalLevel" name="nationalLevel" required>
@@ -108,228 +111,6 @@
         <button type="submit">Submit Event</button>
     </form>
 
-    <script>
-
-// Function to populate provinces on page load
-function populateProvinces(provinceSelect) {
-  fetch("/api/provinces")
-    .then((response) => {
-      if (!response.ok) throw new Error("Failed to fetch provinces");
-      return response.json();
-    })
-    .then((provinces) => {
-      provinceSelect.innerHTML = '<option value="">Select Province</option>';
-      provinces.forEach((province) => {
-        const option = document.createElement("option");
-        option.value = province.name; // Ensure this matches the backend's property
-        option.textContent = province.name;
-        provinceSelect.appendChild(option);
-      });
-      provinceSelect.disabled = false;
-    })
-    .catch((error) => {
-      console.error("Error loading provinces:", error);
-      provinceSelect.innerHTML = '<option value="">Error loading provinces</option>';
-    });
-}
-
-// Event listener for province change
-document.querySelector("#province").addEventListener("change", function (e) {
-  const provinceName = e.target.value.trim(); // Get selected province name
-  const districtSelect = document.querySelector("#district");
-  const municipalitySelect = document.querySelector("#municipality");
-
-  districtSelect.disabled = true;
-  municipalitySelect.disabled = true;
-  districtSelect.innerHTML = '<option value="">Loading...</option>';
-  municipalitySelect.innerHTML = '<option value="">Select Municipality</option>';
-
-  if (!provinceName) {
-    districtSelect.innerHTML = '<option value="">Select Province First</option>';
-    return;
-  }
-
-  // Fetch districts for the selected province
-  fetch(`/api/districts/${provinceName}`)
-    .then((response) => {
-      if (!response.ok) throw new Error("Failed to fetch districts");
-      return response.json();
-    })
-    .then((districts) => {
-      districtSelect.innerHTML = '<option value="">Select District</option>';
-      districts.forEach((district) => {
-        const option = document.createElement("option");
-        option.value = district.name; // Ensure this matches the backend's property
-        option.textContent = district.name;
-        districtSelect.appendChild(option);
-      });
-      districtSelect.disabled = false;
-    })
-    .catch((error) => {
-      console.error("Error loading districts:", error);
-      districtSelect.innerHTML = '<option value="">Error loading districts</option>';
-    });
-});
-
-// Event listener for district change
-document.querySelector("#district").addEventListener("change", function (e) {
-  const districtName = e.target.value.trim();
-  const municipalitySelect = document.querySelector("#municipality");
-
-  municipalitySelect.disabled = true;
-  municipalitySelect.innerHTML = '<option value="">Loading...</option>';
-
-  if (!districtName) {
-    municipalitySelect.innerHTML = '<option value="">Select District First</option>';
-    return;
-  }
-
-  // Fetch municipalities for the selected district
-  fetch(`/api/municipalities/${districtName}`)
-    .then((response) => {
-      if (!response.ok) throw new Error("Failed to fetch municipalities");
-      return response.json();
-    })
-    .then((municipalities) => {
-      municipalitySelect.innerHTML = '<option value="">Select Municipality</option>';
-      municipalities.forEach((municipality) => {
-        const option = document.createElement("option");
-        option.value = municipality.name; // Ensure this matches the backend's property
-        option.textContent = municipality.name;
-        municipalitySelect.appendChild(option);
-      });
-      municipalitySelect.disabled = false;
-    })
-    .catch((error) => {
-      console.error("Error loading municipalities:", error);
-      municipalitySelect.innerHTML = '<option value="">Error loading municipalities</option>';
-    });
-});
-
-// Initialize provinces on page load
-document.addEventListener("DOMContentLoaded", () => {
-  const provinceSelect = document.querySelector("#province");
-  populateProvinces(provinceSelect);
-});
-
-
-
-
-        let beneficiaryCount = 0;
-
-        function addBeneficiary() {
-            beneficiaryCount++;
-
-            const container = document.getElementById('beneficiariesContainer');
-            const div = document.createElement('div');
-            div.classList.add('beneficiary');
-            div.innerHTML = `
-                <h4>Beneficiary ${beneficiaryCount}</h4>
-                <label for="name${beneficiaryCount}">Name:</label>
-                <input type="text" id="name${beneficiaryCount}" name="beneficiaries[${beneficiaryCount}][name]" required>
-
-                <h5>Orginazation Associated:</h5>
-                <label for="orginazation$${beneficiaryCount}">Name:</label>
-                <input type="text" id="orginazation${beneficiaryCount}" name="beneficiaries[${beneficiaryCount}][orginazation]" required>
-
-                <label for="orginazationtype${beneficiaryCount}">Organization Type:</label>
-                <select id="orginazationtype${beneficiaryCount}" name="beneficiaries[${beneficiaryCount}][orginazationtype]" required onchange="showTypeSelection(${beneficiaryCount})">
-                    <option value="Market">Market</option>
-                    <option value="Community">Community</option>
-                    <option value="Government">Government</option>
-                    <option value="CSOs">CSOs</option>
-                </select>
-
-                <!-- Additional select box for Community type, initially hidden -->
-                <div id="communityTypeContainer${beneficiaryCount}" style="display: none;">
-                    <label for="communitytype${beneficiaryCount}">Community Type:</label>
-                    <select id="communitytype${beneficiaryCount}" name="beneficiaries[${beneficiaryCount}][communitytype]">
-                        <option value="CFUG">CFUG</option>
-                        <option value="FG">FG</option>
-                    </select>
-                </div>
-
-                <!-- Additional select box for Government type, initially hidden -->
-                <div id="governmentTypeContainer${beneficiaryCount}" style="display: none;">
-                    <label for="governmenttype${beneficiaryCount}">Government Type:</label>
-                    <select id="governmenttype${beneficiaryCount}" name="beneficiaries[${beneficiaryCount}][governmenttype]">
-                        <option value="National">National</option>
-                        <option value="Province">Province</option>
-                        <option value="Municipal">Municipal</option>
-                    </select>
-                </div>      <br>   
-
-                <label for="gender${beneficiaryCount}">Gender:</label>
-                <select id="gender${beneficiaryCount}" name="beneficiaries[${beneficiaryCount}][gender]" required>
-                    <option value="Male">Male</option>
-                    <option value="Female">Female</option>
-                    <option value="Other">Other</option>
-                </select>
-
-                <label for="age${beneficiaryCount}">Age:</label>
-                <select id="age${beneficiaryCount}" name="beneficiaries[${beneficiaryCount}][age]" required>
-                    <option value="Upto 25 years">Upto 25 years</option>
-                    <option value="25-40 years">25-40 years</option>
-                    <option value="40 above years">40 above years</option>
-                </select>
-
-
-                <label for="casteEthnicity${beneficiaryCount}">Caste/Ethnicity:</label>
-                <select id="casteEthnicity${beneficiaryCount}" name="beneficiaries[${beneficiaryCount}][casteEthnicity]" required>
-                    <option value="Dalit">Dalit</option>
-                    <option value="Janajati">Janajati</option>
-                    <option value="Brahman/Chhetri">Brahman/Chhetri</option>
-                    <option value="Tharu">Tharu</option>
-                    <option value="Madhesi">Madhesi</option>
-                    <option value="Others">Others</option>
-                </select><br>
-
-                <label for="disability${beneficiaryCount}">Disability:</label>
-                <input type="checkbox" id="disability${beneficiaryCount}" name="beneficiaries[${beneficiaryCount}][disability]">
-
-                <label for="povertyStatus${beneficiaryCount}">Poverty Status:</label>
-                <select id="povertyStatus${beneficiaryCount}" name="beneficiaries[${beneficiaryCount}][povertyStatus]" required>
-                    <option value="A">A</option>
-                    <option value="B">B</option>
-                    <option value="C">C</option>
-                    <option value="D">D</option>
-                </select><br>
-
-                <label for="benefitsFromActivity${beneficiaryCount}">Benefits from Activity:</label>
-                <input type="checkbox" id="benefitsFromActivity${beneficiaryCount}" name="beneficiaries[${beneficiaryCount}][benefitsFromActivity]">
-
-                <button type="button" onclick="removeBeneficiary(this)">Remove</button>
-            `;
-            container.appendChild(div);
-        }
-
-        function removeBeneficiary(button) {
-            button.parentElement.remove();
-        }
-
-
-    function showTypeSelection(beneficiaryCount) {
-        const orginazationtype = document.getElementById(`orginazationtype${beneficiaryCount}`).value;
-        const communityTypeContainer = document.getElementById(`communityTypeContainer${beneficiaryCount}`);
-        const governmentTypeContainer = document.getElementById(`governmentTypeContainer${beneficiaryCount}`);
-
-        // Show Community Type selection if 'Community' is selected
-        if (orginazationtype === "Community") {
-            communityTypeContainer.style.display = "block";
-            governmentTypeContainer.style.display = "none"; // Hide Government Type if Community is selected
-        } 
-        // Show Government Type selection if 'Government' is selected
-        else if (orginazationtype === "Government") {
-            governmentTypeContainer.style.display = "block";
-            communityTypeContainer.style.display = "none"; // Hide Community Type if Government is selected
-        } 
-        // Hide both if neither is selected
-        else {
-            communityTypeContainer.style.display = "none";
-            governmentTypeContainer.style.display = "none";
-        }
-    }
-
-    </script>
+<script src="/js/eventWbeneficiary.js"></script>
 </body>
 </html>

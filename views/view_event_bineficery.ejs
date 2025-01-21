@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Event List</title>
+    <link rel="stylesheet" href="/styles.css"> <!-- Add your CSS file link here -->
+    <style>
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+        }
+
+        table, th, td {
+            border: 1px solid #ddd;
+        }
+
+        th, td {
+            padding: 8px 12px;
+            text-align: left;
+        }
+
+        th {
+            background-color: #f4f4f4;
+        }
+
+        img {
+            max-width: 200px;
+            height: auto;
+        }
+
+        .container {
+            margin: 0 auto;
+            width: 90%;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h1>Event List</h1>
+
+        <% if (datas && datas.length > 0) { %>
+            <% datas.forEach(event => { %>
+                <h2><%= event.eventName %> - <%= event.eventType %></h2>
+                <p><strong>Start Date:</strong> <%= event.startDate.toISOString().slice(0, 10) %></p>
+                <p><strong>End Date:</strong> <%= event.endDate.toISOString().slice(0, 10) %></p>
+                
+                <p><strong>Venue:</strong> 
+                    <%= event.venue 
+                        ? event.venue.municipality + ', ' + event.venue.district + ', ' + event.venue.province 
+                        : 'N/A' 
+                    %>
+                </p>
+
+                <p><strong>National Level:</strong> <%= event.nationalLevel %></p>
+
+                <h3>Event Location</h3>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Municipality</th>
+                            <th>District</th>
+                            <th>Province</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><%= event.venue ? event.venue.municipality : 'N/A' %></td>
+                            <td><%= event.venue ? event.venue.district : 'N/A' %></td>
+                            <td><%= event.venue ? event.venue.province : 'N/A' %></td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <h3>Facilitators</h3>
+                <ul>
+                    <% event.facilitators.forEach(facilitator => { %>
+                        <li><%= facilitator %></li>
+                    <% }) %>
+                </ul>
+
+                <h3>Beneficiaries</h3>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>S.N.</th>
+                            <th>Full Name</th>
+                            <th>Organization</th>
+                            <th>Organization Type</th>
+                            <th>Gender</th>
+                            <th>Age Group</th>
+                            <th>Caste/Ethnicity</th>
+                            <th>Poverty Status</th>
+                            <th>Benefits from Activity</th>
+                            <th>Disability</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <% event.beneficiaries.forEach((beneficiary,index) => { %>
+                            <tr>
+                                <td><%= index + 1 %></td>
+                                <td><%= beneficiary.name %></td>
+                                <td><%= beneficiary.associatedOrganization.name %></td>
+                                <td><%= beneficiary.associatedOrganization.main %></td>
+                                <td><%= beneficiary.gender %></td>
+                                <td><%= beneficiary.age %></td>
+                                <td><%= beneficiary.casteEthnicity %></td>
+                                <td><%= beneficiary.povertyStatus %></td>
+                                <td><%= beneficiary.benefitsFromActivity ? 'Yes' : 'No' %></td>
+                                <td><%= beneficiary.disability ? 'Yes' : 'No' %></td>
+                            </tr>
+                        <% }) %>
+                    </tbody>
+                </table>
+
+                <% if (event.photographs && event.photographs.length > 0) { %>
+                    <h3>Photographs</h3>
+                    <ul>
+                        <% event.photographs.forEach(photo => { %>
+                            <li><img src="<%= photo %>" alt="Photograph"></li>
+                        <% }) %>
+                    </ul>
+                <% } %>
+
+                <% if (event.reports && event.reports.length > 0) { %>
+                    <h3>Reports</h3>
+                    <ul>
+                        <% event.reports.forEach(report => { %>
+                            <li><a href="<%= report %>" target="_blank">Download Report</a></li>
+                        <% }) %>
+                    </ul>
+                <% } %>
+                <hr>
+            <% }) %>
+        <% } else { %>
+            <p>No events found.</p>
+        <% } %>
+    </div>
+
+</body>
+</html>

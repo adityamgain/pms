@@ -14,12 +14,21 @@ const BeneficiarySchema = new mongoose.Schema({
     age: { type: String, enum: ['Upto 25 years', '25-40 years', '40 above years'], required: true },
     casteEthnicity: { type: String, enum: ['Dalit', 'Janajati', 'Brahman/Chhetri', 'Tharu', 'Madhesi', 'Others'] },
     associatedOrganization: {
-        name: { type: String, required: true },
-        type: {
-          main: { type: String, enum: ['Community', 'Market', 'Government', 'CSO'], required: true },
-          subType: { type: [String], default: [] }, // Example: ['Supplier', 'Processor']
+        name: { 
+            type: String, 
+            required: true 
         },
-    }, // <- Correctly closing this block
+        main: { 
+            type: String, 
+            enum: ['Community', 'Market', 'Government', 'CSO'], 
+            required: true 
+        },
+        subType: { 
+            type: String, 
+            required: false, 
+            default: null
+        }
+    },
     disability: { type: Boolean, default: false },
     povertyStatus: { type: String, enum: ['A', 'B', 'C', 'D'], required: true },
     benefitsFromActivity: { type: Boolean, default: false }
@@ -35,12 +44,37 @@ const EventWbenificiarySchema = new mongoose.Schema({
         required: true 
     },
     startDate: { type: Date, required: true },
-    endDate: { type: Date, required: true },
-    venue: { 
-        municipality: String,
-        district: String,
-        province: String,
-        nationalLevel: Boolean 
+    endDate: { 
+        type: Date, 
+        required: true,
+        validate: {
+            validator: function (value) {
+                return this.startDate <= value;
+            },
+            message: 'End date must be greater than or equal to start date.'
+        }
+    },
+    location: {
+        type: {
+          type: String,
+          enum: ['Point'], // Restricts the type to "Point"
+          required: true,
+        },
+        coordinates: {
+          type: [Number], // Array of numbers [longitude, latitude]
+          required: true,
+          validate: {
+            validator: function (value) {
+              return value.length === 2; // Ensure it contains exactly [longitude, latitude]
+            },
+            message: 'Location coordinates must include exactly [longitude, latitude].',
+          },
+        },
+      },      
+    venue: {
+        municipality: { type: String, required: true },
+        district: { type: String, required: true },
+        province: { type: String, required: true },
     },
     nationalLevel: { 
         type: String, 
