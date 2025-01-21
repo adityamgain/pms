@@ -3,7 +3,18 @@ const SchemaDefinition = require('../models/schemaDefination'); // Assuming your
 const Program = require('../models/Program');
 const Event = require('../models/Events');
 
+
 const SchemaController = {
+  async getSchemaAllList(Req,res){
+    try {
+        const schemas = await SchemaDefinition.find({});
+        res.render('schemaList', { schemas, programName: null, events: [] }); // Pass empty events array
+      } catch (error) {
+        console.error('Error fetching schemas:', error);
+        res.status(500).send('Internal Server Error');
+      }
+    },
+
   async getSchemaList(req, res) {
     const { schemaUnderProject } = req.params;
     try {

@@ -13,6 +13,7 @@ const { v4: uuidv4 } = require('uuid');
 const employeeRoutes = require('./routes/employeeRoutes');
 const geoRoutes = require('./routes/geoRoutes');
 const schemaRoutes = require('./routes/schemaRoutes');
+const eventRoutes = require('./routes/eventRoutes');
 
 const SchemaDefinition = require('./models/schemaDefination');
 const Event = require('./models/Events');
@@ -72,6 +73,7 @@ mongoose.connect('mongodb://127.0.0.1:27017/project_management')
 // Use employee routes
 app.use('/employee', employeeRoutes);
 app.use('/api', geoRoutes);
+app.use('/', eventRoutes); 
 app.use(schemaRoutes);
 
 // Define getDynamicModel function first
@@ -195,129 +197,129 @@ app.get('/profile', (req, res) => {
 //   }
 // });
 
-// Route to display the schema list for all schemas
-app.get('/schemas', async (req, res) => {
-  try {
-    const schemas = await SchemaDefinition.find({});
-    res.render('schemaList', { schemas, programName: null, events: [] }); // Pass empty events array
-  } catch (error) {
-    console.error('Error fetching schemas:', error);
-    res.status(500).send('Internal Server Error');
-  }
-});
+// // Route to display the schema list for all schemas
+// app.get('/schemas', async (req, res) => {
+//   try {
+//     const schemas = await SchemaDefinition.find({});
+//     res.render('schemaList', { schemas, programName: null, events: [] }); // Pass empty events array
+//   } catch (error) {
+//     console.error('Error fetching schemas:', error);
+//     res.status(500).send('Internal Server Error');
+//   }
+// });
 
 // Route to render the form
-app.get('/eventb', (req, res) => {
-  res.render('eventEbineficiartForm'); // Make sure this matches your EJS filename
-});
+// app.get('/eventb', (req, res) => {
+//   res.render('eventEbineficiartForm'); // Make sure this matches your EJS filename
+// });
 
 
-app.post('/submit-event', upload.fields([{ name: 'photographs' }, { name: 'reports' }]), async (req, res) => {
-  try {
-    const {
-      eventName,
-      eventType,
-      startDate,
-      endDate,
-      province,
-      district,
-      municipality,
-      nationalLevel,
-      facilitators,
-      beneficiaries,
-      longitude,
-      latitude,
-    } = req.body;
+// app.post('/submit-event', upload.fields([{ name: 'photographs' }, { name: 'reports' }]), async (req, res) => {
+//   try {
+//     const {
+//       eventName,
+//       eventType,
+//       startDate,
+//       endDate,
+//       province,
+//       district,
+//       municipality,
+//       nationalLevel,
+//       facilitators,
+//       beneficiaries,
+//       longitude,
+//       latitude,
+//     } = req.body;
 
-    // Ensure longitude and latitude are provided
-    if (!longitude || !latitude) {
-      return res.status(400).send('Longitude and Latitude are required.');
-    }
+//     // Ensure longitude and latitude are provided
+//     if (!longitude || !latitude) {
+//       return res.status(400).send('Longitude and Latitude are required.');
+//     }
 
-    // Parse and clean beneficiaries data
-    let cleanedBeneficiaries = [];
-    if (beneficiaries) {
-      cleanedBeneficiaries = Array.isArray(beneficiaries)
-        ? beneficiaries
-        : JSON.parse(beneficiaries || '[]');
-    }
+//     // Parse and clean beneficiaries data
+//     let cleanedBeneficiaries = [];
+//     if (beneficiaries) {
+//       cleanedBeneficiaries = Array.isArray(beneficiaries)
+//         ? beneficiaries
+//         : JSON.parse(beneficiaries || '[]');
+//     }
 
-    cleanedBeneficiaries = cleanedBeneficiaries.filter((b) => b && b.name); // Filter invalid entries
+//     cleanedBeneficiaries = cleanedBeneficiaries.filter((b) => b && b.name); // Filter invalid entries
 
-    // Normalize and validate beneficiaries
-    cleanedBeneficiaries = cleanedBeneficiaries.map((beneficiary) => {
-      console.log(beneficiary)
-      if (!beneficiary.associatedOrganization || !beneficiary.associatedOrganization.name || !beneficiary.associatedOrganization.main) {
-        throw new Error(`Invalid associated organization for beneficiary "${beneficiary.name}". 'main' is required.`);
-      }
+//     // Normalize and validate beneficiaries
+//     cleanedBeneficiaries = cleanedBeneficiaries.map((beneficiary) => {
+//       console.log(beneficiary)
+//       if (!beneficiary.associatedOrganization || !beneficiary.associatedOrganization.name || !beneficiary.associatedOrganization.main) {
+//         throw new Error(`Invalid associated organization for beneficiary "${beneficiary.name}". 'main' is required.`);
+//       }
 
-      const associatedOrganization = beneficiary.associatedOrganization;
+//       const associatedOrganization = beneficiary.associatedOrganization;
 
-      // Clean and normalize fields
-      associatedOrganization.name = associatedOrganization.name.trim();
-      associatedOrganization.main = associatedOrganization.main.trim();
+//       // Clean and normalize fields
+//       associatedOrganization.name = associatedOrganization.name.trim();
+//       associatedOrganization.main = associatedOrganization.main.trim();
 
-      // Normalize subType based on main type
-      if (associatedOrganization.main === 'Community') {
-        associatedOrganization.subType = ['CFUG', 'FG'].includes(associatedOrganization.subType) 
-            ? associatedOrganization.subType 
-            : null;
-    } else if (associatedOrganization.main === 'Government') {
-        associatedOrganization.subType = ['National', 'Provincial', 'Municipal'].includes(associatedOrganization.subType) 
-            ? associatedOrganization.subType 
-            : null;
-    } else {
-        associatedOrganization.subType = null;
-    }
+//       // Normalize subType based on main type
+//       if (associatedOrganization.main === 'Community') {
+//         associatedOrganization.subType = ['CFUG', 'FG'].includes(associatedOrganization.subType) 
+//             ? associatedOrganization.subType 
+//             : null;
+//     } else if (associatedOrganization.main === 'Government') {
+//         associatedOrganization.subType = ['National', 'Provincial', 'Municipal'].includes(associatedOrganization.subType) 
+//             ? associatedOrganization.subType 
+//             : null;
+//     } else {
+//         associatedOrganization.subType = null;
+//     }
 
-      beneficiary.benefitsFromActivity = beneficiary.benefitsFromActivity === 'on';
-      beneficiary.disability = beneficiary.disability === 'on';
+//       beneficiary.benefitsFromActivity = beneficiary.benefitsFromActivity === 'on';
+//       beneficiary.disability = beneficiary.disability === 'on';
 
-      // Assign unique ID if missing
-      if (!beneficiary.uniqueId) {
-        beneficiary.uniqueId = uuidv4();
-      }
+//       // Assign unique ID if missing
+//       if (!beneficiary.uniqueId) {
+//         beneficiary.uniqueId = uuidv4();
+//       }
 
-      return beneficiary;
-    });
+//       return beneficiary;
+//     });
 
-    // Create the new event document
-    const eventWithBeneficiary = new EventWbenificiary({
-      eventName,
-      eventType,
-      startDate,
-      endDate,
-      venue: { province, district, municipality },
-      nationalLevel,
-      facilitators: facilitators ? facilitators.split(',').map((f) => f.trim()) : [],
-      beneficiaries: cleanedBeneficiaries,
-      photographs: req.files['photographs']?.map((file) => file.path) || [],
-      reports: req.files['reports']?.map((file) => file.path) || [],
-      location: {
-        type: 'Point',
-        coordinates: [parseFloat(longitude), parseFloat(latitude)],
-      },
-    });
+//     // Create the new event document
+//     const eventWithBeneficiary = new EventWbenificiary({
+//       eventName,
+//       eventType,
+//       startDate,
+//       endDate,
+//       venue: { province, district, municipality },
+//       nationalLevel,
+//       facilitators: facilitators ? facilitators.split(',').map((f) => f.trim()) : [],
+//       beneficiaries: cleanedBeneficiaries,
+//       photographs: req.files['photographs']?.map((file) => file.path) || [],
+//       reports: req.files['reports']?.map((file) => file.path) || [],
+//       location: {
+//         type: 'Point',
+//         coordinates: [parseFloat(longitude), parseFloat(latitude)],
+//       },
+//     });
 
-    // Save to database
-    await eventWithBeneficiary.save();
-    res.status(201).send('Event created successfully.');
-  } catch (error) {
-    console.error('Error saving event:', error.message);
-    if (!res.headersSent) {
-      res.status(500).send(error.message || 'Error saving event.');
-    }
-  }
-});
-
-
+//     // Save to database
+//     await eventWithBeneficiary.save();
+//     res.status(201).send('Event created successfully.');
+//   } catch (error) {
+//     console.error('Error saving event:', error.message);
+//     if (!res.headersSent) {
+//       res.status(500).send(error.message || 'Error saving event.');
+//     }
+//   }
+// });
 
 
-// Route to render the datas
-app.get('/vieweventb', async (req, res) => {
-  const datas = await EventWbenificiary.find({});
-  res.render('view_event_bineficery',{ datas }); // Make sure this matches your EJS filename
-});
+
+
+// // Route to render the datas
+// app.get('/vieweventb', async (req, res) => {
+//   const datas = await EventWbenificiary.find({});
+//   res.render('view_event_bineficery',{ datas }); // Make sure this matches your EJS filename
+// });
 
 
 app.get('/schema/add-event/:projectName', async (req, res) => {

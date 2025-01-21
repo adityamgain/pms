@@ -4,6 +4,9 @@ const router = express.Router();
 const SchemaController = require('../controllers/schemaController');
 
 // Route to display the schema list under a specific program
+router.get('/schemas', SchemaController.getSchemaAllList);
+
+// Route to display the schema list under a specific program
 router.get('/schemas/:schemaUnderProject', SchemaController.getSchemaList);
 
 // Route to display the new project form
