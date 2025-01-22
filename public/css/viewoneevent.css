@@ -1,0 +1,268 @@
+/* Basic Styles */
+body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+    background-color: #f4f7fc;
+}
+
+.container {
+    margin: 20px auto;
+    max-width: 1200px;
+    padding: 20px;
+    background-color: #fff;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    border-radius: 8px;
+}
+
+h1 {
+    text-align: center;
+    font-size: 36px;
+    color: #333;
+}
+
+h2 {
+    font-size: 28px;
+    color: #333;
+}
+
+h3 {
+    font-size: 22px;
+    color: #333;
+    margin-bottom: 15px;
+    font-weight: 600;
+}
+
+.event-details {
+    margin-top: 20px;
+    font-size: 16px;
+    color: #555;
+}
+
+.event-details p {
+    margin: 8px 0;
+}
+
+.facilitators ul {
+    margin: 10px 0;
+    padding-left: 20px;
+}
+
+.facilitators li {
+    font-size: 16px;
+    color: #555;
+}
+
+/* Photographs Section */
+.photographs {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 20px;
+}
+
+.photographs img {
+    max-width: 200px;
+    height: 180px;
+    border-radius: 8px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    cursor: pointer;
+    transition: transform 0.2s ease-in-out;
+}
+
+.photographs img:hover {
+    transform: scale(1.05);
+}
+
+/* Lightbox Styles */
+#lightbox {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.8);
+    display: none;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+}
+
+#lightbox img {
+    max-width: 90%;
+    max-height: 90%;
+    border-radius: 8px;
+}
+
+#lightbox .arrow {
+    position: absolute;
+    top: 50%;
+    color: white;
+    font-size: 30px;
+    cursor: pointer;
+    z-index: 1001;
+    transform: translateY(-50%);
+}
+
+#lightbox .arrow-left {
+    left: 20px;
+}
+
+#lightbox .arrow-right {
+    right: 20px;
+}
+
+#close-lightbox {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    font-size: 30px;
+    color: white;
+    cursor: pointer;
+    z-index: 1001; /* Make sure it's above the image */
+}
+.event-reports a {
+    color: #007bff;
+    text-decoration: none;
+    font-size: 16px;
+}
+
+.event-reports a:hover {
+    text-decoration: underline;
+}
+
+hr {
+    border: 1px solid #ddd;
+}
+
+/* Beneficiary and Event Location Table Styles */
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 20px;
+}
+
+th, td {
+    padding: 10px;
+    text-align: left;
+    border: 1px solid #ddd;
+}
+
+th {
+    background-color: #f2f2f2;
+    font-weight: bold;
+}
+
+/* Specific Styles for Beneficiaries Table */
+.beneficiary-table {
+    margin-top: 20px;
+    border-collapse: collapse;
+}
+
+.beneficiary-table th, .beneficiary-table td {
+    padding: 12px;
+    text-align: left;
+    border: 1px solid #ddd;
+}
+
+.beneficiary-table th {
+    background-color: #f2f2f2;
+    font-weight: bold;
+}
+
+.beneficiary-table tr:nth-child(even) {
+    background-color: #f9f9f9;
+}
+
+.beneficiary-table tr:hover {
+    background-color: #f1f1f1;
+}
+
+/* Summary Table Styles */
+.summary-table {
+    margin-top: 20px;
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.summary-table th, .summary-table td {
+    padding: 10px;
+    text-align: left;
+    border: 1px solid #ddd;
+}
+
+.summary-table th {
+    background-color: #f2f2f2;
+    font-weight: bold;
+}
+
+.summary-table tr:nth-child(even) {
+    background-color: #f9f9f9;
+}
+
+.summary-table tr:hover {
+    background-color: #f1f1f1;
+}
+
+
+/* Summary Table Styles */
+.summary-table {
+margin-top: 20px;
+width: 100%;
+border-collapse: collapse;
+max-height: 500px;  /* Set max height for scrollable area */
+overflow: auto;     /* Enable scrolling */
+display: block;     /* Makes table scrollable */
+}
+
+/* If necessary, enable horizontal scroll */
+.summary-table-wrapper {
+width: 100%;
+overflow-x: auto;
+}
+
+.summary-table th, .summary-table td {
+padding: 10px;
+text-align: left;
+border: 1px solid #ddd;
+}
+
+.summary-table th {
+background-color: #f2f2f2;
+font-weight: bold;
+}
+
+.summary-table tr:nth-child(even) {
+background-color: #f9f9f9;
+}
+
+.summary-table tr:hover {
+background-color: #f1f1f1;
+}
+
+/* Map Styles */
+#map {
+    height: 400px; /* Adjust the height as needed */
+    margin-top: 20px;
+}
+
+
+/* Responsive Table Styles */
+@media (max-width: 768px) {
+    table, .container {
+        width: 100%;
+        padding: 10px;
+    }
+
+    th, td {
+        font-size: 14px;
+    }
+
+    h1 {
+        font-size: 28px;
+    }
+
+    h2, h3 {
+        font-size: 20px;
+    }
+}
+

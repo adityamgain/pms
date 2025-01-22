@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Event Details</title>
+    <link rel="stylesheet" href="/css/viewoneevent.css">
+        <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.table2excel/1.1.0/jquery.table2excel.min.js"></script>
+ 
+</head>
+<body>
+
+    <div class="container">
+        <h1><%= event.eventName %> - <%= event.eventType %></h1>
+
+        <!-- Event Details Section -->
+        <div class="event-details">
+            <p><strong>Start Date:</strong> <%= event.startDate.toISOString().slice(0, 10) %></p>
+            <p><strong>End Date:</strong> <%= event.endDate.toISOString().slice(0, 10) %></p>
+            <p><strong>Venue:</strong> 
+                <%= event.venue 
+                    ? event.venue.municipality + ', ' + event.venue.district + ', ' + event.venue.province 
+                    : 'N/A' 
+                %>
+            </p>
+        </div>
+
+        <!-- Facilitators Section -->
+        <div class="facilitators">
+            <h3>Facilitators</h3>
+            <ul>
+                <% event.facilitators.forEach(facilitator => { %>
+                    <li><%= facilitator %></li>
+                <% }) %>
+            </ul>
+        </div>
+
+
+<h3>Beneficiary Summary</h3>
+<div class="summary-table-wrapper">
+    <table class="summary-table">
+        <thead>
+            <tr>
+                <th>Total Attendees</th>
+                <th>Total Male</th>
+                <th>Total Female</th>
+                <th>Total Organizations</th>
+                <th>Upto 25 Years</th>
+                <th>25-40 Years</th>
+                <th>40 above</th>
+                <th>Total Benefitted</th>
+                <th>Total Disability</th>
+                <th>Total Dalit</th>
+                <th>Total Tharu</th>
+                <th>Total Janajati</th>
+                <th>Total BrahmanChhetri</th>
+                <th>Total Madhesi</th>
+                <th>Total OthersCaste</th>
+                <th>Total Poverty A</th>
+                <th>Total Poverty B</th>
+                <th>Total Poverty C</th>
+                <th>Total Poverty D</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td><%= overview.totalAttendees %></td>
+                <td><%= overview.totalMale %></td>
+                <td><%= overview.totalFemale %></td>
+                <td><%= overview.totalOrganizations %></td>
+                <td><%= overview.totalUpto25 %></td>
+                <td><%= overview.total25To40 %></td>
+                <td><%= overview.totalabove40 %></td>
+                <td><%= overview.totalBenefitted %></td>
+                <td><%= overview.totalDisability %></td>
+                <td><%= overview.totalDalit %></td>
+                <td><%= overview.totalTharu %></td>
+                <td><%= overview.totalJanajati %></td>
+                <td><%= overview.totalBrahmanChhetri %></td>
+                <td><%= overview.totalMadhesi %></td>
+                <td><%= overview.totalOthersCaste %></td>
+                <td><%= overview.totalPovertyA %></td>
+                <td><%= overview.totalPovertyB %></td>
+                <td><%= overview.totalPovertyC %></td>
+                <td><%= overview.totalPovertyD %></td>
+            </tr>
+        </tbody>
+    </table>
+</div>
+
+
+        <!-- Beneficiaries Table -->
+        <h3>Beneficiaries</h3>
+        <table class="beneficiary-table">
+            <thead>
+                <tr>
+                    <th>S.N.</th>
+                    <th>Full Name</th>
+                    <th>Organization</th>
+                    <th>Organization Type</th>
+                    <th>Gender</th>
+                    <th>Age Group</th>
+                    <th>Caste/Ethnicity</th>
+                    <th>Poverty Status</th>
+                    <th>Benefits from Activity</th>
+                    <th>Disability</th>
+                </tr>
+            </thead>
+            <tbody>
+                <% event.beneficiaries.forEach((beneficiary, index) => { %>
+                    <tr>
+                        <td><%= index + 1 %></td>
+                        <td><%= beneficiary.name %></td>
+                        <td><%= beneficiary.associatedOrganization.name %></td>
+                        <td><%= beneficiary.associatedOrganization.main %></td>
+                        <td><%= beneficiary.gender %></td>
+                        <td><%= beneficiary.age %></td>
+                        <td><%= beneficiary.casteEthnicity %></td>
+                        <td><%= beneficiary.povertyStatus %></td>
+                        <td><%= beneficiary.benefitsFromActivity ? 'Yes' : 'No' %></td>
+                        <td><%= beneficiary.disability ? 'Yes' : 'No' %></td>
+                    </tr>
+                <% }) %>
+            </tbody>
+        </table>
+                 <!-- Export Button -->
+<button id="export-btn">Export to Excel</button>
+
+
+
+<!-- Map Section -->
+<div id="map" style="height: 380px; width: 100%;"></div>
+
+        <a href="/events/<%= event._id %>/edit">Edit</a>
+
+<!-- Photographs Section -->
+<% if (event.photographs && event.photographs.length > 0) { %>
+    <div class="photographs">
+        <h3>Photographs</h3>
+        <% event.photographs.forEach(photo => { %>
+            <img src="/<%= photo %>" alt="Photograph" onclick="openLightbox('<%= photo %>')">
+        <% }) %>
+    </div>
+<% } %>
+
+<!-- Reports Section -->
+<% if (event.reports && event.reports.length > 0) { %>
+    <div class="event-reports">
+        <h3>Reports</h3>
+        <ul>
+            <% event.reports.forEach(report => { %>
+                <li><a href="/<%= report %>" target="_blank">View Report</a></li>
+            <% }) %>
+        </ul>
+    </div>
+<% } %>
+
+    </div><br>
+    <!-- Lightbox Section -->
+    <div id="lightbox">
+        <span id="close-lightbox">&times;</span>
+        <span class="arrow arrow-left" onclick="changeImage(-1)">&#10094;</span>
+        <span class="arrow arrow-right" onclick="changeImage(1)">&#10095;</span>
+        <img id="lightbox-img" src="" alt="Full Screen Image">
+    </div>
+
+
+
+        <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
+        <script>
+        
+            // Initialize the map with coordinates from event data
+            var eventLocation = <%= JSON.stringify(event.location.coordinates) %>;
+
+            var map = L.map('map').setView([eventLocation[1], eventLocation[0]], 13); // Lat, Lng
+
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+            }).addTo(map);
+
+            L.marker([eventLocation[1], eventLocation[0]]).addTo(map)
+                .bindPopup("<b>Event Location</b><br>" + event.venue.municipality + ", " + event.venue.district)
+                .openPopup();
+
+              // Open the lightbox and show the image
+            function openLightbox(image) {
+                console.log('Lightbox opened with image: ' + image); // Check if this logs to the console
+                const lightbox = document.getElementById('lightbox');
+                const lightboxImg = document.getElementById('lightbox-img');
+
+                lightboxImg.src = '/' + image;
+
+                document.querySelector('.container').style.display = 'none';
+                lightbox.style.display = 'flex';
+            }
+
+            // Close the lightbox and show the event details again
+            document.getElementById('close-lightbox').addEventListener('click', function () {
+                const lightbox = document.getElementById('lightbox');
+                
+                // Hide the lightbox and show the event details
+                lightbox.style.display = 'none';
+                document.querySelector('.container').style.display = 'block';
+            });
+
+    
+
+
+        </script>
+</body>
+</html>

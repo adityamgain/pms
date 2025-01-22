@@ -151,7 +151,7 @@ function addBeneficiary() {
             <option value="Market">Market</option>
             <option value="Community">Community</option>
             <option value="Government">Government</option>
-            <option value="CSOs">CSOs</option>
+            <option value="CSO">CSOs</option>
         </select>
 
         <div id="communityTypeContainer${beneficiaryCount}" style="display: none;">

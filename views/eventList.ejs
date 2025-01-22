@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Event List</title>
+    <link rel="stylesheet" href="/styles.css">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f4f7fc;
+        }
+
+        .container {
+            margin: 20px auto;
+            max-width: 1200px;
+            padding: 20px;
+            background-color: #fff;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            border-radius: 8px;
+        }
+
+        h1 {
+            text-align: center;
+            font-size: 36px;
+            color: #333;
+        }
+
+        h2 {
+            font-size: 28px;
+            color: #333;
+            border-bottom: 2px solid #ddd;
+            padding-bottom: 8px;
+        }
+
+        h3 {
+            font-size: 22px;
+            color: #333;
+            margin-bottom: 15px;
+            font-weight: 600;
+        }
+
+        .event-container {
+            margin-bottom: 30px;
+        }
+
+        /* Table styling */
+        .event-overview table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+        }
+
+        .event-overview th, .event-overview td {
+            padding: 10px;
+            text-align: left;
+            border: 1px solid #ddd;
+        }
+
+        .event-overview th {
+            background-color: #f2f2f2;
+            font-weight: bold;
+        }
+
+        .event-details {
+            margin-top: 20px;
+            font-size: 16px;
+            color: #555;
+        }
+
+        .event-details p {
+            margin: 8px 0;
+        }
+
+        .facilitators ul {
+            margin: 10px 0;
+            padding-left: 20px;
+        }
+
+        .facilitators li {
+            font-size: 16px;
+            color: #555;
+        }
+
+        .photographs ul {
+            display: flex;
+            gap: 15px;
+            margin: 15px 0;
+        }
+
+        .photographs img {
+            max-width: 300px;
+            height: auto;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .event-reports ul {
+            margin: 10px 0;
+        }
+
+        .event-reports a {
+            color: #007bff;
+            text-decoration: none;
+            font-size: 16px;
+        }
+
+        .event-reports a:hover {
+            text-decoration: underline;
+        }
+
+        hr {
+            border: 1px solid #ddd;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h1>Event List</h1>
+
+        <% if (datas && datas.length > 0) { %>
+            <% datas.forEach((event, index) => { %>
+                <div class="event-container">
+                    <h2><%= event.eventName %> - <%= event.eventType %></h2>
+                    <!-- Event Details Section -->
+                    <div class="event-details">
+                    <p><strong><%= overview.find(o => o.eventId.toString() === event._id.toString()).totalAttendees %> Number of Attendees</strong> 
+        
+                    </p>
+                        <p><strong>Venue:</strong> 
+                            <%= event.venue 
+                                ? event.venue.municipality + ', ' + event.venue.district + ', ' + event.venue.province 
+                                : 'N/A' 
+                            %>
+                        </p>
+                    </div>
+
+                    <!-- Facilitators Section -->
+                    <div class="facilitators">
+                        <h3>Facilitators</h3>
+                        <ul>
+                            <% event.facilitators.forEach(facilitator => { %>
+                                <li><%= facilitator %></li>
+                            <% }) %>
+                        </ul>
+                    </div>
+                </div> 
+                <hr>
+                <a href="/viewevent/<%= event._id %>" class="button">View Event</a>
+            <% }) %>
+        <% } else { %>
+            <p>No events found.</p>
+        <% } %>
+    </div>
+
+</body>
+</html>

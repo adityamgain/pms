@@ -78,7 +78,7 @@ const EventWbenificiarySchema = new mongoose.Schema({
     },
     nationalLevel: { 
         type: String, 
-        enum: ['National', 'Province', 'District', 'Municipality'], 
+        enum: ['National', 'Provience', 'District', 'Municipality'], 
         required: true 
     }, 
     facilitators: [{ type: String }], // List of facilitators
