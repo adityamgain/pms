@@ -1,0 +1,441 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Edit Event</title>
+    <style>
+        /* Base styles */
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f4f4f9;
+            color: #333;
+            margin: 0;
+            padding: 0;
+            line-height: 1.6;
+        }
+
+        h1 {
+            text-align: center;
+            margin-bottom: 20px;
+            font-size: 2rem;
+            color: #4CAF50;
+        }
+
+        form {
+            max-width: 600px;
+            margin: 20px auto;
+            background: #fff;
+            padding: 20px 30px;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        fieldset {
+            border: none;
+            margin-bottom: 20px;
+            padding: 0;
+        }
+
+        legend {
+            font-size: 1.2rem;
+            margin-bottom: 10px;
+            font-weight: bold;
+            color: #333;
+        }
+
+        label {
+            display: block;
+            font-weight: 500;
+            margin-bottom: 8px;
+            color: #555;
+        }
+
+        input, select, textarea, button {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 15px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 1rem;
+            box-sizing: border-box;
+            transition: border-color 0.3s ease;
+        }
+
+        input:focus, select:focus, textarea:focus {
+            border-color: #4CAF50;
+            outline: none;
+        }
+
+        button {
+            width: auto;
+            padding: 10px 20px;
+            cursor: pointer;
+            background-color: #4CAF50;
+            color: #fff;
+            border: none;
+            border-radius: 5px;
+            font-size: 1rem;
+            font-weight: bold;
+            transition: background-color 0.3s ease;
+        }
+
+        button:hover {
+            background-color: #45a049;
+        }
+
+        .beneficiary {
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            padding: 10px;
+            background-color: #f9f9f9;
+            margin-bottom: 10px;
+        }
+
+        .beneficiary label {
+            font-size: 0.9rem;
+            color: #666;
+        }
+
+        .beneficiary button {
+            background-color: #ff6b6b;
+            color: white;
+            font-size: 0.9rem;
+            padding: 5px 10px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        .beneficiary button:hover {
+            background-color: #e55e5e;
+        }
+
+        /* Additional styling for spacing and layout */
+        .form-section {
+            margin-bottom: 20px;
+        }
+
+        .form-actions {
+            text-align: right;
+        }
+
+        .form-actions button {
+            margin-left: 10px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Edit Event</h1>
+    <form id="eventForm" action="/events/<%= event._id %>/edit" method="POST" enctype="multipart/form-data">
+
+        <!-- Event Details -->
+        <fieldset>
+            <legend>Event Details</legend>
+            <label for="eventName">Event Name:</label>
+            <input type="text" id="eventName" name="eventName" value="<%= event.eventName || '' %>" required>
+
+            <label for="eventType">Event Type:</label>
+            <select id="eventType" name="eventType" required>
+                <option value="Workshop" <%= event.eventType === 'Workshop' ? 'selected' : '' %>>Workshop</option>
+                <option value="Meeting" <%= event.eventType === 'Meeting' ? 'selected' : '' %>>Meeting</option>
+                <option value="Training" <%= event.eventType === 'Training' ? 'selected' : '' %>>Training</option>
+                <option value="Dialogues" <%= event.eventType === 'Dialogues' ? 'selected' : '' %>>Dialogues</option>
+                <option value="Facilities" <%= event.eventType === 'Facilities' ? 'selected' : '' %>>Facilities</option>
+                <option value="Inputs" <%= event.eventType === 'Inputs' ? 'selected' : '' %>>Inputs</option>
+                <option value="Infrastructures" <%= event.eventType === 'Infrastructures' ? 'selected' : '' %>>Infrastructures</option>
+            </select>
+
+            <label for="startDate">Start Date:</label>
+            <input type="date" id="startDate" name="startDate" value="<%= event.startDate || '' %>" required>
+
+            <label for="endDate">End Date:</label>
+            <input type="date" id="endDate" name="endDate" value="<%= event.endDate || '' %>" required>
+        </fieldset>
+
+        <!-- Location Details -->
+        <fieldset>
+            <legend>Location Details</legend>
+
+            <label for="province">Province:</label>
+            <select id="province" name="province" class="provinceSelect" required>
+                <option value="">Select Province</option>
+            </select>
+
+            <label for="district">District:</label>
+            <select id="district" name="district" class="districtSelect" required disabled>
+                <option value="">Select District</option>
+            </select>
+
+            <label for="municipality">Municipality:</label>
+            <select id="municipality" name="municipality" class="municipalitySelect" required disabled>
+                <option value="">Select Municipality</option>
+            </select>
+
+        <label for="latitude">Latitude:</label>
+        <input type="text" id="latitude" name="latitude" value="<%= event.location.coordinates[1] %>" required>
+
+        <label for="longitude">Longitude:</label>
+        <input type="text" id="longitude" name="longitude" value="<%= event.location.coordinates[0] %>" required>
+
+            <button type="button" id="fetchLocationButton" onclick="fetchGeolocation()">Get Current Location</button>
+        </fieldset>
+
+
+        <!-- National Level -->
+        <fieldset>
+            <legend>National Level</legend>
+            <label for="nationalLevel">National Level:</label>
+            <select id="nationalLevel" name="nationalLevel" required>
+                <option value="National" <%= event.nationalLevel === 'National' ? 'selected' : '' %>>National</option>
+                <option value="Province" <%= event.nationalLevel === 'Province' ? 'selected' : '' %>>Province</option>
+                <option value="District" <%= event.nationalLevel === 'District' ? 'selected' : '' %>>District</option>
+                <option value="Municipality" <%= event.nationalLevel === 'Municipality' ? 'selected' : '' %>>Municipality</option>
+            </select>
+        </fieldset>
+
+        <!-- Facilitators -->
+        <fieldset>
+            <legend>Facilitators</legend>
+            <label for="facilitators">Facilitators (comma-separated):</label>
+            <input type="text" id="facilitators" name="facilitators" value="<%= event.facilitators.join(', ') || '' %>">
+        </fieldset>
+
+        <!-- Beneficiaries -->
+        <fieldset>
+            <legend>Beneficiaries</legend>
+            <div id="beneficiariesContainer"></div>
+            <button type="button" onclick="addBeneficiary()">Add Beneficiary</button>
+        </fieldset>
+
+        <!-- File Uploads -->
+        <fieldset>
+            <legend>File Uploads</legend>
+            <label for="photographs">Upload Photographs:</label>
+            <input type="file" id="photographs" name="photographs" multiple>
+
+            <label for="reports">Upload Reports:</label>
+            <input type="file" id="reports" name="reports" multiple>
+        </fieldset>
+
+        <!-- Submit -->
+        <button type="submit">Update Event</button>
+    </form>
+
+<script>
+
+
+// Function to populate provinces on page load
+function populateProvinces() {
+    const provinceSelect = document.querySelector("#province");
+    fetch("/api/provinces")
+        .then((response) => {
+            if (!response.ok) throw new Error("Failed to fetch provinces");
+            return response.json();
+        })
+        .then((provinces) => {
+            provinceSelect.innerHTML = '<option value="">Select Province</option>';
+            provinces.forEach((province) => {
+                const option = document.createElement("option");
+                option.value = province.name; // Ensure this matches the API response
+                option.textContent = province.name;
+                provinceSelect.appendChild(option);
+            });
+            provinceSelect.disabled = false;
+        })
+        .catch((error) => {
+            console.error("Error loading provinces:", error);
+            provinceSelect.innerHTML = '<option value="">Error loading provinces</option>';
+        });
+}
+
+// Event listener for province change
+document.querySelector("#province").addEventListener("change", function (e) {
+    const provinceName = e.target.value.trim();
+    const districtSelect = document.querySelector("#district");
+    const municipalitySelect = document.querySelector("#municipality");
+
+    districtSelect.disabled = true;
+    municipalitySelect.disabled = true;
+    districtSelect.innerHTML = '<option value="">Loading...</option>';
+    municipalitySelect.innerHTML = '<option value="">Select Municipality</option>';
+
+    if (!provinceName) {
+        districtSelect.innerHTML = '<option value="">Select Province First</option>';
+        return;
+    }
+
+    fetch(`/api/districts/${provinceName}`)
+        .then((response) => {
+            if (!response.ok) throw new Error("Failed to fetch districts");
+            return response.json();
+        })
+        .then((districts) => {
+            districtSelect.innerHTML = '<option value="">Select District</option>';
+            districts.forEach((district) => {
+                const option = document.createElement("option");
+                option.value = district.name; // Ensure this matches the API response
+                option.textContent = district.name;
+                districtSelect.appendChild(option);
+            });
+            districtSelect.disabled = false;
+        })
+        .catch((error) => {
+            console.error("Error loading districts:", error);
+            districtSelect.innerHTML = '<option value="">Error loading districts</option>';
+        });
+});
+
+// Event listener for district change
+document.querySelector("#district").addEventListener("change", function (e) {
+    const districtName = e.target.value.trim();
+    const municipalitySelect = document.querySelector("#municipality");
+
+    municipalitySelect.disabled = true;
+    municipalitySelect.innerHTML = '<option value="">Loading...</option>';
+
+    if (!districtName) {
+        municipalitySelect.innerHTML = '<option value="">Select District First</option>';
+        return;
+    }
+
+    fetch(`/api/municipalities/${districtName}`)
+        .then((response) => {
+            if (!response.ok) throw new Error("Failed to fetch municipalities");
+            return response.json();
+        })
+        .then((municipalities) => {
+            municipalitySelect.innerHTML = '<option value="">Select Municipality</option>';
+            municipalities.forEach((municipality) => {
+                const option = document.createElement("option");
+                option.value = municipality.name; // Ensure this matches the API response
+                option.textContent = municipality.name;
+                municipalitySelect.appendChild(option);
+            });
+            municipalitySelect.disabled = false;
+        })
+        .catch((error) => {
+            console.error("Error loading municipalities:", error);
+            municipalitySelect.innerHTML = '<option value="">Error loading municipalities</option>';
+        });
+});
+
+// Initialize provinces on page load
+document.addEventListener("DOMContentLoaded", populateProvinces);
+
+
+ // Function to get current geolocation
+function fetchGeolocation() {
+  if (navigator.geolocation) {
+    navigator.geolocation.getCurrentPosition(function(position) {
+      const latitude = position.coords.latitude;
+      const longitude = position.coords.longitude;
+
+      // Ensure that the latitude and longitude are numbers
+      if (!isNaN(latitude) && !isNaN(longitude)) {
+        document.getElementById("latitude").value = latitude;
+        document.getElementById("longitude").value = longitude;
+      } else {
+        alert("Unable to retrieve valid coordinates.");
+      }
+    }, function(error) {
+      alert("Unable to retrieve location.");
+    });
+  } else {
+    alert("Geolocation is not supported by this browser.");
+  }
+}
+
+    // Populate beneficiaries dynamically from server data
+    const existingBeneficiaries = <%- JSON.stringify(event.beneficiaries || []) %>;
+
+    window.onload = function () {
+        existingBeneficiaries.forEach((beneficiary, index) => {
+            addBeneficiary({
+                uniqueId: beneficiary.uniqueId || '',
+                name: beneficiary.name || '',
+                gender: beneficiary.gender || '',
+                age: beneficiary.age || '',
+                casteEthnicity: beneficiary.casteEthnicity || '',
+                associatedOrganization: beneficiary.associatedOrganization || {},
+                disability: beneficiary.disability || false,
+                povertyStatus: beneficiary.povertyStatus || '',
+                benefitsFromActivity: beneficiary.benefitsFromActivity || false
+            });
+        });
+    };
+
+    function addBeneficiary(data = {}) {
+        const container = document.getElementById('beneficiariesContainer');
+        const index = container.children.length;
+
+        const beneficiaryHTML = `
+            <div class="beneficiary">
+                <label for="beneficiaryName${index}">Beneficiary Name:</label>
+                <input type="text" id="beneficiaryName${index}" name="beneficiaries[${index}][name]" value="${data.name || ''}" required>
+
+                <label for="gender${index}">Gender:</label>
+                <select id="gender${index}" name="beneficiaries[${index}][gender]" required>
+                    <option value="Male" ${data.gender === 'Male' ? 'selected' : ''}>Male</option>
+                    <option value="Female" ${data.gender === 'Female' ? 'selected' : ''}>Female</option>
+                    <option value="Other" ${data.gender === 'Other' ? 'selected' : ''}>Other</option>
+                </select>
+
+                <label for="age${index}">Age:</label>
+                <select id="age${index}" name="beneficiaries[${index}][age]" required>
+                    <option value="Upto 25 years" ${data.age === 'Upto 25 years' ? 'selected' : ''}>Upto 25 years</option>
+                    <option value="25-40 years" ${data.age === '25-40 years' ? 'selected' : ''}>25-40 years</option>
+                    <option value="40 above years" ${data.age === '40 above years' ? 'selected' : ''}>40 above years</option>
+                </select>
+
+                <label for="casteEthnicity${index}">Caste/Ethnicity:</label>
+                <select id="casteEthnicity${index}" name="beneficiaries[${index}][casteEthnicity]">
+                    <option value="Dalit" ${data.casteEthnicity === 'Dalit' ? 'selected' : ''}>Dalit</option>
+                    <option value="Janajati" ${data.casteEthnicity === 'Janajati' ? 'selected' : ''}>Janajati</option>
+                    <option value="Brahman/Chhetri" ${data.casteEthnicity === 'Brahman/Chhetri' ? 'selected' : ''}>Brahman/Chhetri</option>
+                    <option value="Tharu" ${data.casteEthnicity === 'Tharu' ? 'selected' : ''}>Tharu</option>
+                    <option value="Madhesi" ${data.casteEthnicity === 'Madhesi' ? 'selected' : ''}>Madhesi</option>
+                    <option value="Others" ${data.casteEthnicity === 'Others' ? 'selected' : ''}>Others</option>
+                </select>
+
+                <label for="orgName${index}">Associated Organization Name:</label>
+                <input type="text" id="orgName${index}" name="beneficiaries[${index}][associatedOrganization][name]" value="${data.associatedOrganization.name || ''}" required>
+
+                <label for="mainOrg${index}">Main Organization Type:</label>
+                <select id="mainOrg${index}" name="beneficiaries[${index}][associatedOrganization][main]" required>
+                    <option value="Community" ${data.associatedOrganization.main === 'Community' ? 'selected' : ''}>Community</option>
+                    <option value="Market" ${data.associatedOrganization.main === 'Market' ? 'selected' : ''}>Market</option>
+                    <option value="Government" ${data.associatedOrganization.main === 'Government' ? 'selected' : ''}>Government</option>
+                    <option value="CSO" ${data.associatedOrganization.main === 'CSO' ? 'selected' : ''}>CSO</option>
+                </select>
+
+                <label for="disability${index}">Disability:</label>
+                <input type="checkbox" id="disability${index}" name="beneficiaries[${index}][disability]" ${data.disability ? 'checked' : ''}>
+
+                <label for="povertyStatus${index}">Poverty Status:</label>
+                <select id="povertyStatus${index}" name="beneficiaries[${index}][povertyStatus]" required>
+                    <option value="A" ${data.povertyStatus === 'A' ? 'selected' : ''}>A</option>
+                    <option value="B" ${data.povertyStatus === 'B' ? 'selected' : ''}>B</option>
+                    <option value="C" ${data.povertyStatus === 'C' ? 'selected' : ''}>C</option>
+                    <option value="D" ${data.povertyStatus === 'D' ? 'selected' : ''}>D</option>
+                </select>
+
+                <label for="benefits${index}">Benefits from Activity:</label>
+                <input type="checkbox" id="benefits${index}" name="beneficiaries[${index}][benefitsFromActivity]" ${data.benefitsFromActivity ? 'checked' : ''}>
+
+                <button type="button" onclick="removeBeneficiary(${index})">Remove Beneficiary</button>
+            </div>
+        `;
+        
+        container.innerHTML += beneficiaryHTML;
+    }
+
+    function removeBeneficiary(index) {
+        const container = document.getElementById('beneficiariesContainer');
+        container.children[index].remove();
+    }
+
+    </script>
+</body>
+</html>

@@ -13,7 +13,10 @@ router.post('/submit-event', upload.fields([{ name: 'photographs' }, { name: 're
 router.get('/events/:id/edit', eventController.showEditForm);
 
 // Route to handle the update of a specific event
-router.post('/events/:id/edit', eventController.updateEvent);
+router.post('/events/:id/edit', upload.fields([{ name: 'photographs' }, { name: 'reports' }]), eventController.updateEvent);
+
+// Delete event
+router.get('/events/delete/:id', eventController.deleteEvent);
 
 // Route to handle the deletion of a specific event
 // router.post('/events/:id/delete', eventController.deleteEvent);

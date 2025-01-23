@@ -5,19 +5,130 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Event Data Form</title>
     <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f9f9f9;
+            margin: 0;
+            padding: 0;
+            line-height: 1.6;
+            color: #333;
+        }
+
+        h1 {
+            text-align: center;
+            margin-top: 20px;
+            color: #444;
+        }
+
+        form {
+            max-width: 800px;
+            margin: 20px auto;
+            background: #ffffff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        fieldset {
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 20px;
+        }
+
+        legend {
+            font-weight: bold;
+            padding: 0 10px;
+            color: #007bff;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+
+        input[type="text"],
+        input[type="date"],
+        select,
+        textarea {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 15px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            font-size: 1rem;
+        }
+
+        input[type="file"] {
+            display: block;
+            margin-bottom: 15px;
+        }
+
+        button {
+            display: inline-block;
+            padding: 10px 20px;
+            background-color: #007bff;
+            color: #ffffff;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        button:hover {
+            background-color: #0056b3;
+        }
+
+        button[type="button"] {
+            margin-top: 10px;
+        }
+
         .beneficiary {
-            margin-bottom: 10px;
+            margin-bottom: 15px;
             padding: 10px;
             border: 1px solid #ccc;
             border-radius: 5px;
+            background: #f8f9fa;
         }
+
         .beneficiary input {
-            display: block;
             margin-bottom: 5px;
-            width: 100%;
+            padding: 8px;
+            width: calc(100% - 20px);
+            border: 1px solid #ddd;
+            border-radius: 4px;
         }
+
         .beneficiary button {
-            margin-top: 5px;
+            background-color: #dc3545;
+            color: #fff;
+        }
+
+        .provinceSelect,
+        .districtSelect,
+        .municipalitySelect {
+            margin-bottom: 15px;
+            padding: 10px;
+            width: calc(33% - 10px);
+            margin-right: 5px;
+            font-size: 1rem;
+        }
+
+        .provinceSelect:last-child,
+        .districtSelect:last-child,
+        .municipalitySelect:last-child {
+            margin-right: 0;
+        }
+
+        .location-container {
+            display: flex;
+            justify-content: space-between;
+            gap: 10px;
+        }
+
+        .location-container input {
+            width: calc(50% - 5px);
         }
     </style>
 </head>

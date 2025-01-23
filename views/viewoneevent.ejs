@@ -12,7 +12,6 @@
  
 </head>
 <body>
-
     <div class="container">
         <h1><%= event.eventName %> - <%= event.eventType %></h1>
 
@@ -56,7 +55,7 @@
                 <th>Total Dalit</th>
                 <th>Total Tharu</th>
                 <th>Total Janajati</th>
-                <th>Total BrahmanChhetri</th>
+                <th>Total Brahman/Chhetri</th>
                 <th>Total Madhesi</th>
                 <th>Total OthersCaste</th>
                 <th>Total Poverty A</th>
@@ -134,7 +133,8 @@
 <!-- Map Section -->
 <div id="map" style="height: 380px; width: 100%;"></div>
 
-        <a href="/events/<%= event._id %>/edit">Edit</a>
+    <a href="/events/<%= event._id %>/edit">Edit</a>
+    <a href="/events/delete/<%= event._id %>">Delete</a>
 
 <!-- Photographs Section -->
 <% if (event.photographs && event.photographs.length > 0) { %>
@@ -171,7 +171,7 @@
 
         <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
         <script>
-        
+
             // Initialize the map with coordinates from event data
             var eventLocation = <%= JSON.stringify(event.location.coordinates) %>;
 
@@ -200,13 +200,10 @@
             // Close the lightbox and show the event details again
             document.getElementById('close-lightbox').addEventListener('click', function () {
                 const lightbox = document.getElementById('lightbox');
-                
                 // Hide the lightbox and show the event details
                 lightbox.style.display = 'none';
                 document.querySelector('.container').style.display = 'block';
             });
-
-    
 
 
         </script>
