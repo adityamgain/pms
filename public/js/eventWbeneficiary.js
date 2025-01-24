@@ -204,7 +204,7 @@ function addBeneficiary() {
             <option value="D">D</option>
         </select><br>
         <label for="benefitsFromActivity${beneficiaryCount}">Benefits from Activity:</label>
-        <input type="checkbox" id="benefitsFromActivity${beneficiaryCount}" name="beneficiaries[${beneficiaryCount}][benefitsFromActivity]">
+        <input type="checkbox" id="benefitsFromActivity${beneficiaryCount}" name="beneficiaries[${beneficiaryCount}][benefitsFromActivity]"><br>
 
         <button type="button" onclick="removeBeneficiary(this)">Remove</button>
     `;

@@ -2,6 +2,7 @@ const EventWbenificiary = require('../models/EventWbenificiary');
 const { v4: uuidv4 } = require('uuid');
 const fs = require('fs').promises;
 const Joi = require('joi');
+const XLSX = require('xlsx');
 
 // Controller to render the event form
 exports.renderEventForm = (req, res) => {
@@ -204,6 +205,7 @@ exports.viewAllEventData = async (req,res) => {
     }
 }
 
+
 exports.viewOneEventData = async (req, res) => {
     try {
         // Find the event by its unique ID
@@ -260,6 +262,62 @@ exports.viewOneEventData = async (req, res) => {
             totalPovertyD
         };
 
+        // Check if the request is for exporting to Excel
+        if (req.query.export === 'excel') {
+            // Create a new workbook
+            const workbook = XLSX.utils.book_new();
+
+            // Create a worksheet for the beneficiary summary
+            const summarySheetData = [
+                ['Total Attendees', overview.totalAttendees],
+                ['Total Male', overview.totalMale],
+                ['Total Female', overview.totalFemale],
+                ['Total Organizations', overview.totalOrganizations],
+                ['Upto 25 Years', overview.totalUpto25],
+                ['25-40 Years', overview.total25To40],
+                ['40 Above Years', overview.totalabove40],
+                ['Total Benefitted', overview.totalBenefitted],
+                ['Total Disability', overview.totalDisability],
+                ['Total Dalit', overview.totalDalit],
+                ['Total Tharu', overview.totalTharu],
+                ['Total Janajati', overview.totalJanajati],
+                ['Total Brahman/Chhetri', overview.totalBrahmanChhetri],
+                ['Total Madhesi', overview.totalMadhesi],
+                ['Total Others Caste', overview.totalOthersCaste],
+                ['Total Poverty A', overview.totalPovertyA],
+                ['Total Poverty B', overview.totalPovertyB],
+                ['Total Poverty C', overview.totalPovertyC],
+                ['Total Poverty D', overview.totalPovertyD]
+            ];
+            const summarySheet = XLSX.utils.aoa_to_sheet(summarySheetData);
+            XLSX.utils.book_append_sheet(workbook, summarySheet, 'Summary');
+
+            // Create a worksheet for the beneficiaries
+            const beneficiariesSheetData = event.beneficiaries.map((beneficiary, index) => [
+                index + 1,
+                beneficiary.name,
+                beneficiary.associatedOrganization.name,
+                beneficiary.associatedOrganization.main,
+                beneficiary.gender,
+                beneficiary.age,
+                beneficiary.casteEthnicity,
+                beneficiary.povertyStatus,
+                beneficiary.benefitsFromActivity ? 'Yes' : 'No',
+                beneficiary.disability ? 'Yes' : 'No'
+            ]);
+            const beneficiariesSheet = XLSX.utils.aoa_to_sheet([
+                ['S.N.', 'Full Name', 'Organization', 'Organization Type', 'Gender', 'Age Group', 'Caste/Ethnicity', 'Poverty Status', 'Benefits from Activity', 'Disability'],
+                ...beneficiariesSheetData
+            ]);
+            XLSX.utils.book_append_sheet(workbook, beneficiariesSheet, 'Beneficiaries');
+
+            // Generate the Excel file and send it as a response
+            const buffer = XLSX.write(workbook, { type: 'buffer', bookType: 'xlsx' });
+            res.setHeader('Content-Disposition', 'attachment; filename="event_data.xlsx"');
+            res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+            return res.send(buffer);
+        }
+
         // Pass both the event data and overview to the view
         res.render('viewoneevent', { event, overview });
     } catch (error) {
@@ -267,8 +325,6 @@ exports.viewOneEventData = async (req, res) => {
         res.status(500).send('Server Error');
     }
 };
-
-
 
 // Controller to fetch event data
 exports.viewEventData = async (req, res) => {

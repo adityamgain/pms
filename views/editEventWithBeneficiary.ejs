@@ -6,124 +6,182 @@
     <title>Edit Event</title>
     <style>
         /* Base styles */
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: #f4f4f9;
-            color: #333;
-            margin: 0;
-            padding: 0;
-            line-height: 1.6;
-        }
+/* Base styles */
+body {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+    background-color: #f8f9fa;
+    color: #333;
+    margin: 0;
+    padding: 0;
+    line-height: 1.6;
+}
 
-        h1 {
-            text-align: center;
-            margin-bottom: 20px;
-            font-size: 2rem;
-            color: #4CAF50;
-        }
+h1 {
+    text-align: center;
+    margin: 2rem 0;
+    font-size: 2.5rem;
+    color: #2c3e50;
+    font-weight: 700;
+}
 
-        form {
-            max-width: 600px;
-            margin: 20px auto;
-            background: #fff;
-            padding: 20px 30px;
-            border-radius: 10px;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-        }
+form {
+    max-width: 700px;
+    margin: 2rem auto;
+    background: #fff;
+    padding: 2rem;
+    border-radius: 12px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+}
 
-        fieldset {
-            border: none;
-            margin-bottom: 20px;
-            padding: 0;
-        }
+fieldset {
+    border: none;
+    margin-bottom: 1.5rem;
+    padding: 0;
+}
 
-        legend {
-            font-size: 1.2rem;
-            margin-bottom: 10px;
-            font-weight: bold;
-            color: #333;
-        }
+legend {
+    font-size: 1.4rem;
+    margin-bottom: 1rem;
+    font-weight: 600;
+    color: #2c3e50;
+    padding-bottom: 0.5rem;
+    border-bottom: 2px solid #4CAF50;
+}
 
-        label {
-            display: block;
-            font-weight: 500;
-            margin-bottom: 8px;
-            color: #555;
-        }
+label {
+    display: block;
+    font-weight: 500;
+    margin-bottom: 0.5rem;
+    color: #555;
+    font-size: 0.95rem;
+}
 
-        input, select, textarea, button {
-            width: 100%;
-            padding: 10px;
-            margin-bottom: 15px;
-            border: 1px solid #ddd;
-            border-radius: 5px;
-            font-size: 1rem;
-            box-sizing: border-box;
-            transition: border-color 0.3s ease;
-        }
+input, select, textarea, button {
+    width: 100%;
+    padding: 0.75rem;
+    margin-bottom: 1rem;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    font-size: 1rem;
+    box-sizing: border-box;
+    transition: border-color 0.3s ease, box-shadow 0.3s ease;
+}
 
-        input:focus, select:focus, textarea:focus {
-            border-color: #4CAF50;
-            outline: none;
-        }
+input:focus, select:focus, textarea:focus {
+    border-color: #4CAF50;
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(76, 175, 80, 0.1);
+}
 
-        button {
-            width: auto;
-            padding: 10px 20px;
-            cursor: pointer;
-            background-color: #4CAF50;
-            color: #fff;
-            border: none;
-            border-radius: 5px;
-            font-size: 1rem;
-            font-weight: bold;
-            transition: background-color 0.3s ease;
-        }
+button {
+    width: auto;
+    padding: 0.75rem 1.5rem;
+    cursor: pointer;
+    background-color: #4CAF50;
+    color: #fff;
+    border: none;
+    border-radius: 8px;
+    font-size: 1rem;
+    font-weight: 600;
+    transition: background-color 0.3s ease, transform 0.2s ease;
+}
 
-        button:hover {
-            background-color: #45a049;
-        }
+button:hover {
+    background-color: #45a049;
+    transform: translateY(-1px);
+}
 
-        .beneficiary {
-            border: 1px solid #ddd;
-            border-radius: 5px;
-            padding: 10px;
-            background-color: #f9f9f9;
-            margin-bottom: 10px;
-        }
+button:active {
+    transform: translateY(0);
+}
 
-        .beneficiary label {
-            font-size: 0.9rem;
-            color: #666;
-        }
+.beneficiary {
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    padding: 1rem;
+    background-color: #fafafa;
+    margin-bottom: 1rem;
+    transition: box-shadow 0.3s ease;
+}
 
-        .beneficiary button {
-            background-color: #ff6b6b;
-            color: white;
-            font-size: 0.9rem;
-            padding: 5px 10px;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-            transition: background-color 0.3s ease;
-        }
+.beneficiary:hover {
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
 
-        .beneficiary button:hover {
-            background-color: #e55e5e;
-        }
+.beneficiary label {
+    font-size: 0.9rem;
+    color: #666;
+}
 
-        /* Additional styling for spacing and layout */
-        .form-section {
-            margin-bottom: 20px;
-        }
+.beneficiary button {
+    background-color: #ff6b6b;
+    color: white;
+    font-size: 0.9rem;
+    padding: 0.5rem 1rem;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: background-color 0.3s ease, transform 0.2s ease;
+}
 
-        .form-actions {
-            text-align: right;
-        }
+.beneficiary button:hover {
+    background-color: #e55e5e;
+    transform: translateY(-1px);
+}
 
-        .form-actions button {
-            margin-left: 10px;
-        }
+.beneficiary button:active {
+    transform: translateY(0);
+}
+
+/* Additional styling for spacing and layout */
+.form-section {
+    margin-bottom: 1.5rem;
+}
+
+.form-actions {
+    text-align: right;
+    margin-top: 1.5rem;
+}
+
+.form-actions button {
+    margin-left: 0.5rem;
+}
+
+/* Animations */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+form {
+    animation: fadeIn 0.5s ease-in-out;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    form {
+        padding: 1rem;
+    }
+
+    h1 {
+        font-size: 2rem;
+    }
+
+    button {
+        width: 100%;
+        margin-bottom: 0.5rem;
+    }
+
+    .form-actions {
+        text-align: center;
+    }
+}
     </style>
 </head>
 <body>
@@ -437,5 +495,7 @@ function fetchGeolocation() {
     }
 
     </script>
+    <script src="/js/eventWbeneficiary.js"></script></body>
+
 </body>
 </html>
