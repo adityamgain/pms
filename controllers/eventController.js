@@ -1,71 +1,98 @@
 const EventWbenificiary = require('../models/EventWbenificiary');
+const Project = require('../models/Project');
 const { v4: uuidv4 } = require('uuid');
+const mongoose = require('mongoose');
 const fs = require('fs').promises;
 const Joi = require('joi');
 const XLSX = require('xlsx');
 
 // Controller to render the event form
 exports.renderEventForm = (req, res) => {
-  res.render('eventEbineficiartForm'); // Ensure this matches the correct EJS template
+  const projectId = req.params.projectId;
+  res.render('eventEbineficiartForm', { projectId }); // Ensure this matches the correct EJS template
 };
 
-// Controller to handle form submission for event
 exports.submitEvent = async (req, res) => {
   try {
-    const {eventName,eventType,startDate,endDate,province,district,municipality,nationalLevel,facilitators,beneficiaries,longitude,latitude,} = req.body;
+    const {
+      eventName,
+      eventType,
+      startDate,
+      endDate,
+      province,
+      district,
+      municipality,
+      nationalLevel,
+      facilitators,
+      beneficiaries,
+      longitude,
+      latitude,
+    } = req.body;
 
-    // Ensure longitude and latitude are provided
-    if (!longitude || !latitude) {
-      return res.status(400).send('Longitude and Latitude are required.');
+    const { projectId } = req.params; // Correct destructuring
+    console.log('Project ID:', projectId);
+
+    // Validate projectId
+    if (!mongoose.Types.ObjectId.isValid(projectId)) {
+      return res.status(400).send('Invalid or missing project ID.');
     }
 
-    // Parse and clean beneficiaries data
+    // Ensure longitude and latitude are provided and valid
+    if (!longitude || !latitude || isNaN(longitude) || isNaN(latitude)) {
+      return res.status(400).send('Valid longitude and latitude are required.');
+    }
+
+    // Parse and clean beneficiaries
     let cleanedBeneficiaries = [];
     if (beneficiaries) {
-      cleanedBeneficiaries = Array.isArray(beneficiaries)
-        ? beneficiaries
-        : JSON.parse(beneficiaries || '[]');
+      try {
+        cleanedBeneficiaries = Array.isArray(beneficiaries)
+          ? beneficiaries
+          : JSON.parse(beneficiaries);
+      } catch (err) {
+        return res.status(400).send('Invalid beneficiaries data format.');
+      }
     }
 
-    cleanedBeneficiaries = cleanedBeneficiaries.filter((b) => b && b.name); // Filter invalid entries
+    cleanedBeneficiaries = cleanedBeneficiaries
+      .filter((b) => b && b.name) // Filter out invalid entries
+      .map((beneficiary) => {
+        if (!beneficiary.associatedOrganization?.name || !beneficiary.associatedOrganization.main) {
+          throw new Error(`Invalid associated organization for beneficiary "${beneficiary.name}".`);
+        }
 
-    // Normalize and validate beneficiaries
-    cleanedBeneficiaries = cleanedBeneficiaries.map((beneficiary) => {
-      if (!beneficiary.associatedOrganization || !beneficiary.associatedOrganization.name || !beneficiary.associatedOrganization.main) {
-        throw new Error(`Invalid associated organization for beneficiary "${beneficiary.name}". 'main' is required.`);
-      }
+        const associatedOrganization = beneficiary.associatedOrganization;
 
-      const associatedOrganization = beneficiary.associatedOrganization;
+        // Normalize fields
+        associatedOrganization.name = associatedOrganization.name.trim();
+        associatedOrganization.main = associatedOrganization.main.trim();
 
-      // Clean and normalize fields
-      associatedOrganization.name = associatedOrganization.name.trim();
-      associatedOrganization.main = associatedOrganization.main.trim();
-
-      // Normalize subType based on main type
-      if (associatedOrganization.main === 'Community') {
-        associatedOrganization.subType = ['CFUG', 'FG'].includes(associatedOrganization.subType) 
-            ? associatedOrganization.subType 
+        // Set subType based on main type
+        if (associatedOrganization.main === 'Community') {
+          associatedOrganization.subType = ['CFUG', 'FG'].includes(associatedOrganization.subType)
+            ? associatedOrganization.subType
             : null;
-      } else if (associatedOrganization.main === 'Government') {
-        associatedOrganization.subType = ['National', 'Provincial', 'Municipal'].includes(associatedOrganization.subType) 
-            ? associatedOrganization.subType 
+        } else if (associatedOrganization.main === 'Government') {
+          associatedOrganization.subType = ['National', 'Provincial', 'Municipal'].includes(associatedOrganization.subType)
+            ? associatedOrganization.subType
             : null;
-      } else {
-        associatedOrganization.subType = null;
-      }
+        } else {
+          associatedOrganization.subType = null;
+        }
 
-      beneficiary.benefitsFromActivity = beneficiary.benefitsFromActivity === 'on';
-      beneficiary.disability = beneficiary.disability === 'on';
+        // Convert checkboxes to boolean
+        beneficiary.benefitsFromActivity = beneficiary.benefitsFromActivity === 'on';
+        beneficiary.disability = beneficiary.disability === 'on';
 
-      // Assign unique ID if missing
-      if (!beneficiary.uniqueId) {
-        beneficiary.uniqueId = uuidv4();
-      }
+        // Generate uniqueId if not present
+        if (!beneficiary.uniqueId) {
+          beneficiary.uniqueId = uuidv4();
+        }
 
-      return beneficiary;
-    });
+        return beneficiary;
+      });
 
-    // Create the new event document
+    // Create and save the event
     const eventWithBeneficiary = new EventWbenificiary({
       eventName,
       eventType,
@@ -75,16 +102,28 @@ exports.submitEvent = async (req, res) => {
       nationalLevel,
       facilitators: facilitators ? facilitators.split(',').map((f) => f.trim()) : [],
       beneficiaries: cleanedBeneficiaries,
-      photographs: req.files['photographs']?.map((file) => file.path) || [],
-      reports: req.files['reports']?.map((file) => file.path) || [],
+      photographs: req.files?.photographs?.map((file) => file.path) || [],
+      reports: req.files?.reports?.map((file) => file.path) || [],
       location: {
         type: 'Point',
         coordinates: [parseFloat(longitude), parseFloat(latitude)],
       },
     });
-    // Save to database
-    await eventWithBeneficiary.save();
-    res.redirect('/event-list');
+
+    const savedEvent = await eventWithBeneficiary.save();
+    console.log('Event saved:', savedEvent);
+
+    // Find and update the project
+    const project = await Project.findById(projectId);
+    if (!project) {
+      return res.status(404).send('Project not found.');
+    }
+
+    project.events.push(savedEvent._id);
+    await project.save();
+
+    console.log('Project updated with new event.');
+    res.status(200).send('Event saved and linked to project successfully.');
   } catch (error) {
     console.error('Error saving event:', error.message);
     if (!res.headersSent) {
@@ -110,44 +149,89 @@ exports.showEditForm = async (req, res) => {
 
 exports.updateEvent = async (req, res) => {
   try {
-    console.log(req.body); // Check if the form data is coming through
+    console.log('Request Body:', req.body); // Debugging: Check incoming form data
 
-    const { eventName, eventType, startDate, endDate, province, district, municipality, latitude, longitude, nationalLevel, facilitators, beneficiaries, photographs, reports } = req.body;
-    const eventId = req.params.id;
-    
-    // Update logic
-    const updatedEvent = await EventWbenificiary.findByIdAndUpdate(eventId, {
+    const {
       eventName,
       eventType,
       startDate,
       endDate,
-      venue: { province, district, municipality },
-      location: {
-        type: 'Point',
-        coordinates: [longitude, latitude],
-      },
+      province,
+      district,
+      municipality,
+      latitude,
+      longitude,
       nationalLevel,
-      facilitators: facilitators ? facilitators.split(',').map(facilitator => facilitator.trim()) : [],
+      facilitators,
       beneficiaries,
-      photographs,
-      reports,
-    }, { new: true });
+    } = req.body;
 
-    if (!updatedEvent) {
+    const eventId = req.params.id;
+
+    // Debugging: Log dates from request
+    console.log('Start Date from request:', startDate);
+    console.log('End Date from request:', endDate);
+
+    // Parse dates
+    const startDateObj = new Date(startDate);
+    const endDateObj = new Date(endDate);
+
+    // Debugging: Log parsed dates
+    console.log('Parsed Start Date:', startDateObj);
+    console.log('Parsed End Date:', endDateObj);
+
+    // Validate dates
+    if (!startDateObj || !endDateObj || isNaN(startDateObj.getTime()) || isNaN(endDateObj.getTime())) {
+      return res.status(400).json({ message: 'Invalid start date or end date.' });
+    }
+
+    if (endDateObj < startDateObj) {
+      return res.status(400).json({ message: 'End date must be greater than or equal to start date.' });
+    }
+
+    // Ensure beneficiaries is an array
+    const beneficiariesArray = Array.isArray(beneficiaries) ? beneficiaries : [beneficiaries];
+
+    // Fetch the event document
+    const event = await EventWbenificiary.findById(eventId);
+    if (!event) {
       return res.status(404).json({ message: 'Event not found' });
     }
 
-    console.log("Updated Event: ", updatedEvent); // Check updated data
+    // Update the event fields
+    event.eventName = eventName;
+    event.eventType = eventType;
+    event.startDate = startDateObj;
+    event.endDate = endDateObj;
+    event.venue = { province, district, municipality };
+    event.location = {
+      type: 'Point',
+      coordinates: [parseFloat(longitude), parseFloat(latitude)],
+    };
+    event.nationalLevel = nationalLevel;
+    event.facilitators = facilitators ? facilitators.split(',').map(facilitator => facilitator.trim()) : [];
+    event.beneficiaries = beneficiariesArray;
+
+    // Handle file uploads for photographs and reports
+    if (req.files) {
+      if (req.files['photographs']) {
+        event.photographs = req.files['photographs'].map(file => file.path);
+      }
+      if (req.files['reports']) {
+        event.reports = req.files['reports'].map(file => file.path);
+      }
+    }
+
+    // Save the updated event
+    const updatedEvent = await event.save();
+
+    console.log('Updated Event:', updatedEvent); // Debugging: Check updated data
     res.redirect('/event-list');
   } catch (error) {
-    console.error("Error updating event:", error);
+    console.error('Error updating event:', error);
     res.status(500).json({ message: 'Server error, failed to update event', error: error.message });
   }
 };
-
-
-
-
   // deleting events with its associated photographs and reports
   exports.deleteEvent = async (req, res) => {
     try {

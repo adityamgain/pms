@@ -8,30 +8,30 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" />
     <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
-    <!-- Include SheetJS library -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.16.9/xlsx.full.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
-    <div class="container">
+    <div class="viewone-container">
         <h1><%= event.eventName %> - <%= event.eventType %></h1>
 
         <!-- Event Details Section -->
         <div class="event-details">
             <!-- Start Date with Icon -->
             <p>
-                <i class="fas fa-calendar-alt"></i> <!-- Font Awesome calendar icon -->
+                <i class="fas fa-calendar-alt"></i>   <!-- Font Awesome calendar icon -->
                 <strong>Start Date:</strong> <%= event.startDate.toISOString().slice(0, 10) %>
             </p>
 
             <!-- End Date with Icon -->
             <p>
-                <i class="fas fa-calendar-alt"></i> <!-- Font Awesome calendar icon -->
+                <i class="fas fa-calendar-alt"></i>   <!-- Font Awesome calendar icon -->
                 <strong>End Date:</strong> <%= event.endDate.toISOString().slice(0, 10) %>
             </p>
 
             <!-- Venue with Icon -->
             <p>
-                <i class="fas fa-map-marker-alt"></i> <!-- Font Awesome map marker icon -->
+                <i class="fas fa-map-marker-alt"></i>   <!-- Font Awesome map marker icon -->
                 <%= event.venue 
                     ? event.venue.municipality + ', ' + event.venue.district + ', ' + event.venue.province 
                     : 'N/A' 
@@ -104,8 +104,35 @@
             </table>
         </div>
 
+<!-- Graphical Representations -->
+<h3>Graphical Representations</h3>
+<div class="graph-wrapper">
+
+    <!-- Gender Distribution Pie Chart -->
+    <div class="graph-item">
+        <canvas id="genderPieChart"></canvas>
+    </div>
+
+    <!-- Age Group Distribution Bar Graph -->
+    <div class="graph-item">
+        <canvas id="ageBarChart"></canvas>
+    </div>
+
+    <!-- Caste/Ethnicity Distribution Pie Chart -->
+    <div class="graph-item">
+        <canvas id="castePieChart"></canvas>
+    </div>
+
+    <!-- Poverty Status Distribution Bar Graph -->
+    <div class="graph-item">
+        <canvas id="povertyBarChart"></canvas>
+    </div>
+
+</div>
+
         <!-- Beneficiaries Table -->
-        <h3>Beneficiaries</h3>
+        <h3>Beneficiaries</h3>            
+        <button type="button" onclick="addBeneficiary()">Add Beneficiary</button>
         <table id="beneficiary-table" class="beneficiary-table">
             <thead>
                 <tr>
@@ -142,11 +169,11 @@
         <!-- Export Button -->
         <a href="/viewevent/<%= event._id %>?export=excel" class="export-link">Export to Excel</a>
 
-        <h3>Location</h3>
-
         <!-- Map Section -->
+        <h3>Location</h3>
         <div id="map" style="height: 380px; width: 100%;"></div>
 
+        <!-- Edit and Delete Buttons -->
         <a href="/events/<%= event._id %>/edit">Edit</a>
         <a href="/events/delete/<%= event._id %>">Delete</a>
 
@@ -181,36 +208,137 @@
         <img id="lightbox-img" src="" alt="Full Screen Image">
     </div>
 
+    <script src="/js/eventWbeneficiary.js"></script>
+
     <script>
-        // Open the lightbox and show the image
-        function openLightbox(image) {
-            console.log('Lightbox opened with image: ' + image); // Debugging log
-            const lightbox = document.getElementById("lightbox");
-            const lightboxImg = document.getElementById("lightbox-img");
+        // Beneficiary Summary Data (replace with your actual data)
+        const beneficiarySummary = {
+            totalMale: <%= overview.totalMale %>,
+            totalFemale: <%= overview.totalFemale %>,
+            totalUpto25: <%= overview.totalUpto25 %>,
+            total25To40: <%= overview.total25To40 %>,
+            totalabove40: <%= overview.totalabove40 %>,
+            totalDisability: <%= overview.totalDisability %>,
+            totalDalit: <%= overview.totalDalit %>,
+            totalTharu: <%= overview.totalTharu %>,
+            totalJanajati: <%= overview.totalJanajati %>,
+            totalBrahmanChhetri: <%= overview.totalBrahmanChhetri %>,
+            totalMadhesi: <%= overview.totalMadhesi %>,
+            totalOthersCaste: <%= overview.totalOthersCaste %>,
+            totalPovertyA: <%= overview.totalPovertyA %>,
+            totalPovertyB: <%= overview.totalPovertyB %>,
+            totalPovertyC: <%= overview.totalPovertyC %>,
+            totalPovertyD: <%= overview.totalPovertyD %>
+        };
 
-            lightboxImg.src = '/' + image;
+        // Pie Chart for Gender Distribution
+        const genderPieChartCtx = document.getElementById('genderPieChart').getContext('2d');
+        new Chart(genderPieChartCtx, {
+            type: 'pie',
+            data: {
+                labels: ['Male', 'Female'],
+                datasets: [{
+                    label: 'Gender Distribution',
+                    data: [beneficiarySummary.totalMale, beneficiarySummary.totalFemale],
+                    backgroundColor: ['#36A2EB', '#FF6384'],
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: { position: 'top' },
+                    title: { display: true, text: 'Gender Distribution' }
+                }
+            }
+        });
 
-            document.querySelector(".container").style.display = "none";
-            lightbox.style.display = "flex";
-        }
+        // Bar Graph for Age Group Distribution
+        const ageBarChartCtx = document.getElementById('ageBarChart').getContext('2d');
+        new Chart(ageBarChartCtx, {
+            type: 'bar',
+            data: {
+                labels: ['Upto 25 Years', '25-40 Years', '40+ Years'],
+                datasets: [{
+                    label: 'Age Group Distribution',
+                    data: [
+                        beneficiarySummary.totalUpto25,
+                        beneficiarySummary.total25To40,
+                        beneficiarySummary.totalabove40
+                    ],
+                    backgroundColor: ['#FF6384', '#36A2EB', '#FFCE56'],
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: { display: false },
+                    title: { display: true, text: 'Age Group Distribution' }
+                },
+                scales: { y: { beginAtZero: true } }
+            }
+        });
 
-        // Close the lightbox and show the event details again
-        document.getElementById("close-lightbox").addEventListener("click", function () {
-            console.log("Close button clicked!"); // Debugging log
-            const lightbox = document.getElementById("lightbox");
-            lightbox.style.display = "none"; // Hide the lightbox
-            document.querySelector(".container").style.display = "block"; // Show the main content
+        // Pie Chart for Caste/Ethnicity Distribution
+        const castePieChartCtx = document.getElementById('castePieChart').getContext('2d');
+        new Chart(castePieChartCtx, {
+            type: 'pie',
+            data: {
+                labels: ['Dalit', 'Tharu', 'Janajati', 'Brahman/Chhetri', 'Madhesi', 'Others'],
+                datasets: [{
+                    label: 'Caste/Ethnicity Distribution',
+                    data: [
+                        beneficiarySummary.totalDalit,
+                        beneficiarySummary.totalTharu,
+                        beneficiarySummary.totalJanajati,
+                        beneficiarySummary.totalBrahmanChhetri,
+                        beneficiarySummary.totalMadhesi,
+                        beneficiarySummary.totalOthersCaste
+                    ],
+                    backgroundColor: ['#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0', '#9966FF', '#FF9F40'],
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: { position: 'top' },
+                    title: { display: true, text: 'Caste/Ethnicity Distribution' }
+                }
+            }
+        });
+
+        // Bar Graph for Poverty Status Distribution
+        const povertyBarChartCtx = document.getElementById('povertyBarChart').getContext('2d');
+        new Chart(povertyBarChartCtx, {
+            type: 'bar',
+            data: {
+                labels: ['Poverty A', 'Poverty B', 'Poverty C', 'Poverty D'],
+                datasets: [{
+                    label: 'Poverty Status Distribution',
+                    data: [
+                        beneficiarySummary.totalPovertyA,
+                        beneficiarySummary.totalPovertyB,
+                        beneficiarySummary.totalPovertyC,
+                        beneficiarySummary.totalPovertyD
+                    ],
+                    backgroundColor: ['#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0'],
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: { display: false },
+                    title: { display: true, text: 'Poverty Status Distribution' }
+                },
+                scales: { y: { beginAtZero: true } }
+            }
         });
 
         // Initialize the map with coordinates from event data
         var eventLocation = <%= JSON.stringify(event.location.coordinates) %>;
-
         var map = L.map('map').setView([eventLocation[1], eventLocation[0]], 13); // Lat, Lng
-
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
             attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
         }).addTo(map);
-
         L.marker([eventLocation[1], eventLocation[0]]).addTo(map)
             .bindPopup("<b>Event Location</b><br>" + event.venue.municipality + ", " + event.venue.district)
             .openPopup();

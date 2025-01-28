@@ -1,190 +1,8 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Edit Event</title>
-    <style>
-        /* Base styles */
-/* Base styles */
-body {
-    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
-    background-color: #f8f9fa;
-    color: #333;
-    margin: 0;
-    padding: 0;
-    line-height: 1.6;
-}
 
-h1 {
-    text-align: center;
-    margin: 2rem 0;
-    font-size: 2.5rem;
-    color: #2c3e50;
-    font-weight: 700;
-}
+  <link rel="stylesheet" href="/css/editeventform.css">
 
-form {
-    max-width: 700px;
-    margin: 2rem auto;
-    background: #fff;
-    padding: 2rem;
-    border-radius: 12px;
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
-}
-
-fieldset {
-    border: none;
-    margin-bottom: 1.5rem;
-    padding: 0;
-}
-
-legend {
-    font-size: 1.4rem;
-    margin-bottom: 1rem;
-    font-weight: 600;
-    color: #2c3e50;
-    padding-bottom: 0.5rem;
-    border-bottom: 2px solid #4CAF50;
-}
-
-label {
-    display: block;
-    font-weight: 500;
-    margin-bottom: 0.5rem;
-    color: #555;
-    font-size: 0.95rem;
-}
-
-input, select, textarea, button {
-    width: 100%;
-    padding: 0.75rem;
-    margin-bottom: 1rem;
-    border: 1px solid #ddd;
-    border-radius: 8px;
-    font-size: 1rem;
-    box-sizing: border-box;
-    transition: border-color 0.3s ease, box-shadow 0.3s ease;
-}
-
-input:focus, select:focus, textarea:focus {
-    border-color: #4CAF50;
-    outline: none;
-    box-shadow: 0 0 0 3px rgba(76, 175, 80, 0.1);
-}
-
-button {
-    width: auto;
-    padding: 0.75rem 1.5rem;
-    cursor: pointer;
-    background-color: #4CAF50;
-    color: #fff;
-    border: none;
-    border-radius: 8px;
-    font-size: 1rem;
-    font-weight: 600;
-    transition: background-color 0.3s ease, transform 0.2s ease;
-}
-
-button:hover {
-    background-color: #45a049;
-    transform: translateY(-1px);
-}
-
-button:active {
-    transform: translateY(0);
-}
-
-.beneficiary {
-    border: 1px solid #e0e0e0;
-    border-radius: 8px;
-    padding: 1rem;
-    background-color: #fafafa;
-    margin-bottom: 1rem;
-    transition: box-shadow 0.3s ease;
-}
-
-.beneficiary:hover {
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-}
-
-.beneficiary label {
-    font-size: 0.9rem;
-    color: #666;
-}
-
-.beneficiary button {
-    background-color: #ff6b6b;
-    color: white;
-    font-size: 0.9rem;
-    padding: 0.5rem 1rem;
-    border: none;
-    border-radius: 6px;
-    cursor: pointer;
-    transition: background-color 0.3s ease, transform 0.2s ease;
-}
-
-.beneficiary button:hover {
-    background-color: #e55e5e;
-    transform: translateY(-1px);
-}
-
-.beneficiary button:active {
-    transform: translateY(0);
-}
-
-/* Additional styling for spacing and layout */
-.form-section {
-    margin-bottom: 1.5rem;
-}
-
-.form-actions {
-    text-align: right;
-    margin-top: 1.5rem;
-}
-
-.form-actions button {
-    margin-left: 0.5rem;
-}
-
-/* Animations */
-@keyframes fadeIn {
-    from {
-        opacity: 0;
-        transform: translateY(10px);
-    }
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
-}
-
-form {
-    animation: fadeIn 0.5s ease-in-out;
-}
-
-/* Responsive Design */
-@media (max-width: 768px) {
-    form {
-        padding: 1rem;
-    }
-
-    h1 {
-        font-size: 2rem;
-    }
-
-    button {
-        width: 100%;
-        margin-bottom: 0.5rem;
-    }
-
-    .form-actions {
-        text-align: center;
-    }
-}
-    </style>
-</head>
 <body>
+<div class="editevent-form">
     <h1>Edit Event</h1>
     <form id="eventForm" action="/events/<%= event._id %>/edit" method="POST" enctype="multipart/form-data">
 
@@ -206,10 +24,10 @@ form {
             </select>
 
             <label for="startDate">Start Date:</label>
-            <input type="date" id="startDate" name="startDate" value="<%= event.startDate || '' %>" required>
+            <input type="date" id="startDate" name="startDate" value="<%= event.startDate ? event.startDate.toISOString().split('T')[0] : '' %>" required>
 
             <label for="endDate">End Date:</label>
-            <input type="date" id="endDate" name="endDate" value="<%= event.endDate || '' %>" required>
+            <input type="date" id="endDate" name="endDate" value="<%= event.endDate ? event.endDate.toISOString().split('T')[0] : '' %>" required>
         </fieldset>
 
         <!-- Location Details -->
@@ -218,28 +36,30 @@ form {
 
             <label for="province">Province:</label>
             <select id="province" name="province" class="provinceSelect" required>
-                <option value="">Select Province</option>
+                <option value="">Select Provience</option>
+                <option value="<%= event.venue.province %>" selected><%= event.venue.province %></option>
             </select>
 
             <label for="district">District:</label>
-            <select id="district" name="district" class="districtSelect" required disabled>
+            <select id="district" name="district" class="districtSelect" required>
                 <option value="">Select District</option>
+                <option value="<%= event.venue.district %>" selected><%= event.venue.district %></option>
             </select>
 
             <label for="municipality">Municipality:</label>
-            <select id="municipality" name="municipality" class="municipalitySelect" required disabled>
+            <select id="municipality" name="municipality" class="municipalitySelect" required>
                 <option value="">Select Municipality</option>
+                <option value="<%= event.venue.municipality %>" selected><%= event.venue.municipality %></option>
             </select>
 
-        <label for="latitude">Latitude:</label>
-        <input type="text" id="latitude" name="latitude" value="<%= event.location.coordinates[1] %>" required>
+            <label for="latitude">Latitude:</label>
+            <input type="text" id="latitude" name="latitude" value="<%= event.location.coordinates[1] %>" required>
 
-        <label for="longitude">Longitude:</label>
-        <input type="text" id="longitude" name="longitude" value="<%= event.location.coordinates[0] %>" required>
+            <label for="longitude">Longitude:</label>
+            <input type="text" id="longitude" name="longitude" value="<%= event.location.coordinates[0] %>" required>
 
             <button type="button" id="fetchLocationButton" onclick="fetchGeolocation()">Get Current Location</button>
         </fieldset>
-
 
         <!-- National Level -->
         <fieldset>
@@ -247,9 +67,9 @@ form {
             <label for="nationalLevel">National Level:</label>
             <select id="nationalLevel" name="nationalLevel" required>
                 <option value="National" <%= event.nationalLevel === 'National' ? 'selected' : '' %>>National</option>
-                <option value="Province" <%= event.nationalLevel === 'Province' ? 'selected' : '' %>>Province</option>
+                <option value="Provincial" <%= event.nationalLevel === 'Provincial' ? 'selected' : '' %>>Province</option>
                 <option value="District" <%= event.nationalLevel === 'District' ? 'selected' : '' %>>District</option>
-                <option value="Municipality" <%= event.nationalLevel === 'Municipality' ? 'selected' : '' %>>Municipality</option>
+                <option value="Municipal" <%= event.nationalLevel === 'Municipal' ? 'selected' : '' %>>Municipality</option>
             </select>
         </fieldset>
 
@@ -263,11 +83,68 @@ form {
         <!-- Beneficiaries -->
         <fieldset>
             <legend>Beneficiaries</legend>
-            <div id="beneficiariesContainer"></div>
+            <div id="beneficiariesContainer">
+                <% event.beneficiaries.forEach((beneficiary, index) => { %>
+                    <div class="beneficiary">
+                        <label for="beneficiaryName<%= index %>">Beneficiary Name:</label>
+                        <input type="text" id="beneficiaryName<%= index %>" name="beneficiaries[<%= index %>][name]" value="<%= beneficiary.name || '' %>" required>
+
+                        <label for="gender<%= index %>">Gender:</label>
+                        <select id="gender<%= index %>" name="beneficiaries[<%= index %>][gender]" required>
+                            <option value="Male" <%= beneficiary.gender === 'Male' ? 'selected' : '' %>>Male</option>
+                            <option value="Female" <%= beneficiary.gender === 'Female' ? 'selected' : '' %>>Female</option>
+                            <option value="Other" <%= beneficiary.gender === 'Other' ? 'selected' : '' %>>Other</option>
+                        </select>
+
+                        <label for="age<%= index %>">Age:</label>
+                        <select id="age<%= index %>" name="beneficiaries[<%= index %>][age]" required>
+                            <option value="Upto 25 years" <%= beneficiary.age === 'Upto 25 years' ? 'selected' : '' %>>Upto 25 years</option>
+                            <option value="25-40 years" <%= beneficiary.age === '25-40 years' ? 'selected' : '' %>>25-40 years</option>
+                            <option value="40 above years" <%= beneficiary.age === '40 above years' ? 'selected' : '' %>>40 above years</option>
+                        </select>
+
+                        <label for="casteEthnicity<%= index %>">Caste/Ethnicity:</label>
+                        <select id="casteEthnicity<%= index %>" name="beneficiaries[<%= index %>][casteEthnicity]">
+                            <option value="Dalit" <%= beneficiary.casteEthnicity === 'Dalit' ? 'selected' : '' %>>Dalit</option>
+                            <option value="Janajati" <%= beneficiary.casteEthnicity === 'Janajati' ? 'selected' : '' %>>Janajati</option>
+                            <option value="Brahman/Chhetri" <%= beneficiary.casteEthnicity === 'Brahman/Chhetri' ? 'selected' : '' %>>Brahman/Chhetri</option>
+                            <option value="Tharu" <%= beneficiary.casteEthnicity === 'Tharu' ? 'selected' : '' %>>Tharu</option>
+                            <option value="Madhesi" <%= beneficiary.casteEthnicity === 'Madhesi' ? 'selected' : '' %>>Madhesi</option>
+                            <option value="Others" <%= beneficiary.casteEthnicity === 'Others' ? 'selected' : '' %>>Others</option>
+                        </select>
+
+                        <label for="orgName<%= index %>">Associated Organization Name:</label>
+                        <input type="text" id="orgName<%= index %>" name="beneficiaries[<%= index %>][associatedOrganization][name]" value="<%= beneficiary.associatedOrganization.name || '' %>" required>
+
+                        <label for="mainOrg<%= index %>">Main Organization Type:</label>
+                        <select id="mainOrg<%= index %>" name="beneficiaries[<%= index %>][associatedOrganization][main]" required>
+                            <option value="Community" <%= beneficiary.associatedOrganization.main === 'Community' ? 'selected' : '' %>>Community</option>
+                            <option value="Market" <%= beneficiary.associatedOrganization.main === 'Market' ? 'selected' : '' %>>Market</option>
+                            <option value="Government" <%= beneficiary.associatedOrganization.main === 'Government' ? 'selected' : '' %>>Government</option>
+                            <option value="CSO" <%= beneficiary.associatedOrganization.main === 'CSO' ? 'selected' : '' %>>CSO</option>
+                        </select>
+
+                        <label for="disability<%= index %>">Disability:</label>
+                        <input type="checkbox" id="disability<%= index %>" name="beneficiaries[<%= index %>][disability]" <%= beneficiary.disability ? 'checked' : '' %>>
+
+                        <label for="povertyStatus<%= index %>">Poverty Status:</label>
+                        <select id="povertyStatus<%= index %>" name="beneficiaries[<%= index %>][povertyStatus]" required>
+                            <option value="A" <%= beneficiary.povertyStatus === 'A' ? 'selected' : '' %>>A</option>
+                            <option value="B" <%= beneficiary.povertyStatus === 'B' ? 'selected' : '' %>>B</option>
+                            <option value="C" <%= beneficiary.povertyStatus === 'C' ? 'selected' : '' %>>C</option>
+                            <option value="D" <%= beneficiary.povertyStatus === 'D' ? 'selected' : '' %>>D</option>
+                        </select>
+
+                        <label for="benefits<%= index %>">Benefits from Activity:</label>
+                        <input type="checkbox" id="benefits<%= index %>" name="beneficiaries[<%= index %>][benefitsFromActivity]" <%= beneficiary.benefitsFromActivity ? 'checked' : '' %>>
+
+                        <button type="button" onclick="removeBeneficiary(<%= index %>)">Remove Beneficiary</button>
+                    </div>
+                <% }); %>
+            </div>
             <button type="button" onclick="addBeneficiary()">Add Beneficiary</button>
         </fieldset>
 
-        <!-- File Uploads -->
         <fieldset>
             <legend>File Uploads</legend>
             <label for="photographs">Upload Photographs:</label>
@@ -279,7 +156,8 @@ form {
 
         <!-- Submit -->
         <button type="submit">Update Event</button>
-    </form>
+        </form>
+</div>
 
 <script>
 
@@ -424,75 +302,100 @@ function fetchGeolocation() {
         });
     };
 
-    function addBeneficiary(data = {}) {
-        const container = document.getElementById('beneficiariesContainer');
-        const index = container.children.length;
+// Function to add a beneficiary
+function addBeneficiary(data = {}) {
+    const container = document.getElementById('beneficiariesContainer');
+    const index = container.children.length;
 
-        const beneficiaryHTML = `
-            <div class="beneficiary">
-                <label for="beneficiaryName${index}">Beneficiary Name:</label>
-                <input type="text" id="beneficiaryName${index}" name="beneficiaries[${index}][name]" value="${data.name || ''}" required>
+    const beneficiaryHTML = `
+        <div class="beneficiary">
+            <label for="beneficiaryName${index}">Beneficiary Name:</label>
+            <input type="text" id="beneficiaryName${index}" name="beneficiaries[${index}][name]" value="${data.name || ''}" required>
 
-                <label for="gender${index}">Gender:</label>
-                <select id="gender${index}" name="beneficiaries[${index}][gender]" required>
-                    <option value="Male" ${data.gender === 'Male' ? 'selected' : ''}>Male</option>
-                    <option value="Female" ${data.gender === 'Female' ? 'selected' : ''}>Female</option>
-                    <option value="Other" ${data.gender === 'Other' ? 'selected' : ''}>Other</option>
-                </select>
+            <label for="gender${index}">Gender:</label>
+            <select id="gender${index}" name="beneficiaries[${index}][gender]" required>
+                <option value="Male" ${data.gender === 'Male' ? 'selected' : ''}>Male</option>
+                <option value="Female" ${data.gender === 'Female' ? 'selected' : ''}>Female</option>
+                <option value="Other" ${data.gender === 'Other' ? 'selected' : ''}>Other</option>
+            </select>
 
-                <label for="age${index}">Age:</label>
-                <select id="age${index}" name="beneficiaries[${index}][age]" required>
-                    <option value="Upto 25 years" ${data.age === 'Upto 25 years' ? 'selected' : ''}>Upto 25 years</option>
-                    <option value="25-40 years" ${data.age === '25-40 years' ? 'selected' : ''}>25-40 years</option>
-                    <option value="40 above years" ${data.age === '40 above years' ? 'selected' : ''}>40 above years</option>
-                </select>
+            <label for="age${index}">Age:</label>
+            <select id="age${index}" name="beneficiaries[${index}][age]" required>
+                <option value="Upto 25 years" ${data.age === 'Upto 25 years' ? 'selected' : ''}>Upto 25 years</option>
+                <option value="25-40 years" ${data.age === '25-40 years' ? 'selected' : ''}>25-40 years</option>
+                <option value="40 above years" ${data.age === '40 above years' ? 'selected' : ''}>40 above years</option>
+            </select>
 
-                <label for="casteEthnicity${index}">Caste/Ethnicity:</label>
-                <select id="casteEthnicity${index}" name="beneficiaries[${index}][casteEthnicity]">
-                    <option value="Dalit" ${data.casteEthnicity === 'Dalit' ? 'selected' : ''}>Dalit</option>
-                    <option value="Janajati" ${data.casteEthnicity === 'Janajati' ? 'selected' : ''}>Janajati</option>
-                    <option value="Brahman/Chhetri" ${data.casteEthnicity === 'Brahman/Chhetri' ? 'selected' : ''}>Brahman/Chhetri</option>
-                    <option value="Tharu" ${data.casteEthnicity === 'Tharu' ? 'selected' : ''}>Tharu</option>
-                    <option value="Madhesi" ${data.casteEthnicity === 'Madhesi' ? 'selected' : ''}>Madhesi</option>
-                    <option value="Others" ${data.casteEthnicity === 'Others' ? 'selected' : ''}>Others</option>
-                </select>
+            <label for="casteEthnicity${index}">Caste/Ethnicity:</label>
+            <select id="casteEthnicity${index}" name="beneficiaries[${index}][casteEthnicity]">
+                <option value="Dalit" ${data.casteEthnicity === 'Dalit' ? 'selected' : ''}>Dalit</option>
+                <option value="Janajati" ${data.casteEthnicity === 'Janajati' ? 'selected' : ''}>Janajati</option>
+                <option value="Brahman/Chhetri" ${data.casteEthnicity === 'Brahman/Chhetri' ? 'selected' : ''}>Brahman/Chhetri</option>
+                <option value="Tharu" ${data.casteEthnicity === 'Tharu' ? 'selected' : ''}>Tharu</option>
+                <option value="Madhesi" ${data.casteEthnicity === 'Madhesi' ? 'selected' : ''}>Madhesi</option>
+                <option value="Others" ${data.casteEthnicity === 'Others' ? 'selected' : ''}>Others</option>
+            </select>
 
-                <label for="orgName${index}">Associated Organization Name:</label>
-                <input type="text" id="orgName${index}" name="beneficiaries[${index}][associatedOrganization][name]" value="${data.associatedOrganization.name || ''}" required>
+            <label for="orgName${index}">Associated Organization Name:</label>
+            <input type="text" id="orgName${index}" name="beneficiaries[${index}][associatedOrganization][name]" value="${data.associatedOrganization.name || ''}" required>
 
-                <label for="mainOrg${index}">Main Organization Type:</label>
-                <select id="mainOrg${index}" name="beneficiaries[${index}][associatedOrganization][main]" required>
-                    <option value="Community" ${data.associatedOrganization.main === 'Community' ? 'selected' : ''}>Community</option>
-                    <option value="Market" ${data.associatedOrganization.main === 'Market' ? 'selected' : ''}>Market</option>
-                    <option value="Government" ${data.associatedOrganization.main === 'Government' ? 'selected' : ''}>Government</option>
-                    <option value="CSO" ${data.associatedOrganization.main === 'CSO' ? 'selected' : ''}>CSO</option>
-                </select>
+            <label for="mainOrg${index}">Main Organization Type:</label>
+            <select id="mainOrg${index}" name="beneficiaries[${index}][associatedOrganization][main]" required>
+                <option value="Community" ${data.associatedOrganization.main === 'Community' ? 'selected' : ''}>Community</option>
+                <option value="Market" ${data.associatedOrganization.main === 'Market' ? 'selected' : ''}>Market</option>
+                <option value="Government" ${data.associatedOrganization.main === 'Government' ? 'selected' : ''}>Government</option>
+                <option value="CSO" ${data.associatedOrganization.main === 'CSO' ? 'selected' : ''}>CSO</option>
+            </select>
 
-                <label for="disability${index}">Disability:</label>
-                <input type="checkbox" id="disability${index}" name="beneficiaries[${index}][disability]" ${data.disability ? 'checked' : ''}>
+            <label for="disability${index}">Disability:</label>
+            <input type="checkbox" id="disability${index}" name="beneficiaries[${index}][disability]" ${data.disability ? 'checked' : ''}>
 
-                <label for="povertyStatus${index}">Poverty Status:</label>
-                <select id="povertyStatus${index}" name="beneficiaries[${index}][povertyStatus]" required>
-                    <option value="A" ${data.povertyStatus === 'A' ? 'selected' : ''}>A</option>
-                    <option value="B" ${data.povertyStatus === 'B' ? 'selected' : ''}>B</option>
-                    <option value="C" ${data.povertyStatus === 'C' ? 'selected' : ''}>C</option>
-                    <option value="D" ${data.povertyStatus === 'D' ? 'selected' : ''}>D</option>
-                </select>
+            <label for="povertyStatus${index}">Poverty Status:</label>
+            <select id="povertyStatus${index}" name="beneficiaries[${index}][povertyStatus]" required>
+                <option value="A" ${data.povertyStatus === 'A' ? 'selected' : ''}>A</option>
+                <option value="B" ${data.povertyStatus === 'B' ? 'selected' : ''}>B</option>
+                <option value="C" ${data.povertyStatus === 'C' ? 'selected' : ''}>C</option>
+                <option value="D" ${data.povertyStatus === 'D' ? 'selected' : ''}>D</option>
+            </select>
 
-                <label for="benefits${index}">Benefits from Activity:</label>
-                <input type="checkbox" id="benefits${index}" name="beneficiaries[${index}][benefitsFromActivity]" ${data.benefitsFromActivity ? 'checked' : ''}>
+            <label for="benefits${index}">Benefits from Activity:</label>
+            <input type="checkbox" id="benefits${index}" name="beneficiaries[${index}][benefitsFromActivity]" ${data.benefitsFromActivity ? 'checked' : ''}>
 
-                <button type="button" onclick="removeBeneficiary(${index})">Remove Beneficiary</button>
-            </div>
-        `;
-        
-        container.innerHTML += beneficiaryHTML;
-    }
+            <button type="button" onclick="removeBeneficiary(this)">Remove Beneficiary</button>
+        </div>
+    `;
 
-    function removeBeneficiary(index) {
-        const container = document.getElementById('beneficiariesContainer');
-        container.children[index].remove();
-    }
+    container.innerHTML += beneficiaryHTML;
+}
+
+// Function to remove a beneficiary
+function removeBeneficiary(button) {
+    const beneficiaryDiv = button.parentElement;
+    beneficiaryDiv.remove();
+}
+
+// Populate beneficiaries dynamically from server data
+const existingBeneficiaries = <%- JSON.stringify(event.beneficiaries || []) %>;
+
+window.onload = function () {
+    const container = document.getElementById('beneficiariesContainer');
+    container.innerHTML = ''; // Clear the container before adding beneficiaries
+
+    existingBeneficiaries.forEach((beneficiary) => {
+        addBeneficiary({
+            uniqueId: beneficiary.uniqueId || '',
+            name: beneficiary.name || '',
+            gender: beneficiary.gender || '',
+            age: beneficiary.age || '',
+            casteEthnicity: beneficiary.casteEthnicity || '',
+            associatedOrganization: beneficiary.associatedOrganization || {},
+            disability: beneficiary.disability || false,
+            povertyStatus: beneficiary.povertyStatus || '',
+            benefitsFromActivity: beneficiary.benefitsFromActivity || false
+        });
+    });
+};
+
 
     </script>
     <script src="/js/eventWbeneficiary.js"></script></body>

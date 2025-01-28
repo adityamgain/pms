@@ -1,0 +1,96 @@
+
+.project-detail-container {
+    max-width: 800px;
+    margin: 40px auto;
+    padding: 30px;
+    background-color: #fff;
+    border-radius: 12px;
+    box-shadow: 0 4px 24px rgba(0, 0, 0, 0.08);
+}
+
+.project-detail-container h1 {
+    text-align: center;
+    color: #2c3e50;
+    font-size: 2.5rem;
+    font-weight: 700;
+    margin-bottom: 30px;
+}
+
+/* Section Styles */
+.project-detail-container .section {
+    margin-bottom: 30px;
+    padding: 20px;
+    background-color: #fff;
+}
+
+.section h2 {
+    color: #948c5d;
+    font-size: 1.75rem;
+    font-weight: 600;
+    margin-bottom: 20px;
+    border-bottom: 2px solid #e0e0e0;
+    padding-bottom: 10px;
+}
+
+.section p {
+    font-size: 1rem;
+    color: #555;
+    margin-bottom: 15px;
+}
+
+.section p strong {
+    color: #2c3e50;
+    font-weight: 600;
+}
+
+/* Button Styles */
+.project-detail-container .btn {
+    display: inline-block;
+    padding: 12px 24px;
+    background-color: #948c5d;
+    color: white;
+    text-decoration: none;
+    border-radius: 6px;
+    font-size: 1rem;
+    font-weight: 600;
+    transition: background-color 0.3s ease, transform 0.2s ease;
+    margin-top: 20px;
+}
+
+.btn:hover {
+    background-color: #887e45;
+    transform: translateY(-1px);
+}
+
+.btn:active {
+    transform: translateY(0);
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .project-detail-container {
+        padding: 20px;
+    }
+
+    .project-detail-container h1 {
+        font-size: 2rem;
+    }
+
+    .section h2 {
+        font-size: 1.5rem;
+    }
+
+    .project-detail-container .btn {
+        width: 100%;
+        text-align: center;
+    }
+}
+
+/* Additional Professional Touches */
+.container a {
+    text-decoration: none;
+}
+
+.container a:hover {
+    text-decoration: underline;
+}

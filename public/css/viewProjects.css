@@ -1,0 +1,141 @@
+
+        .container {
+            max-width: 1200px;
+            margin: 40px auto;
+            padding: 30px;
+            background-color: #fff;
+            border-radius: 12px;
+            box-shadow: 0 4px 24px rgba(0, 0, 0, 0.08);
+        }
+
+        h1 {
+            text-align: center;
+            color: #2c3e50;
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 30px;
+        }
+
+        /* Table Styles */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+            background-color: #fff;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+        }
+
+        table th, table td {
+            padding: 16px;
+            text-align: left;
+            border-bottom: 1px solid #e0e0e0;
+        }
+
+        table th {
+            background-color: #948c5d;
+            color: white;
+            font-weight: 600;
+            text-transform: uppercase;
+            font-size: 0.9rem;
+            letter-spacing: 0.5px;
+        }
+
+        table tr:hover {
+            background-color: #f8f9fa;
+        }
+
+        table td {
+            color: #555;
+            font-size: 0.95rem;
+        }
+
+        /* Button Styles */
+        .btn-view {
+            display: inline-block;
+            padding: 8px 16px;
+            background-color: #c7bb6f;
+            color: white;
+            text-decoration: none;
+            border-radius: 6px;
+            font-size: 0.9rem;
+            font-weight: 500;
+            transition: background-color 0.3s ease, transform 0.2s ease;
+        }
+
+        .btn-view:hover {
+            background-color: #c9ba59;
+            transform: translateY(-1px);
+        }
+
+        .btn-view:active {
+            transform: translateY(0);
+        }
+
+        .btn-create {
+            display: inline-block;
+            margin-top: 30px;
+            padding: 12px 24px;
+            background-color: #58b645;
+            color: white;
+            text-decoration: none;
+            border-radius: 6px;
+            font-size: 1rem;
+            font-weight: 600;
+            transition: background-color 0.3s ease, transform 0.2s ease;
+        }
+
+        .btn-create:hover {
+            background-color: #3c8b2c;
+            transform: translateY(-1px);
+        }
+
+        .btn-create:active {
+            transform: translateY(0);
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .container {
+                padding: 20px;
+            }
+
+            h1 {
+                font-size: 2rem;
+            }
+
+            table th, table td {
+                padding: 12px;
+            }
+
+            .btn-create {
+                width: 100%;
+                text-align: center;
+            }
+        }
+
+        /* Additional Professional Touches */
+        .container a {
+            text-decoration: none;
+        }
+
+        .container a:hover {
+            text-decoration: underline;
+        }
+
+        /* Animation for Table Rows */
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        table tbody tr {
+            animation: fadeIn 0.5s ease-in-out;
+        }

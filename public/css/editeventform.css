@@ -1,0 +1,168 @@
+
+
+.editevent-form h1 {
+    text-align: center;
+    margin: 2rem 0;
+    font-size: 2.5rem;
+    color: #2c3e50;
+    font-weight: 700;
+}
+
+.editevent-form form {
+    max-width: 700px;
+    margin: 2rem auto;
+    background: #fff;
+    padding: 2rem;
+    border-radius: 12px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+}
+
+.editevent-form fieldset {
+    border: none;
+    margin-bottom: 1.5rem;
+    padding: 0;
+}
+
+.editevent-form legend {
+    font-size: 1.4rem;
+    margin-bottom: 1rem;
+    font-weight: 600;
+    color: #2c3e50;
+    padding-bottom: 0.5rem;
+    border-bottom: 2px solid #4CAF50;
+}
+
+.editevent-formlabel {
+    display: block;
+    font-weight: 500;
+    margin-bottom: 0.5rem;
+    color: #555;
+    font-size: 0.95rem;
+}
+
+.editevent-form input, select, textarea, button {
+    width: 100%;
+    padding: 0.75rem;
+    margin-bottom: 1rem;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    font-size: 1rem;
+    box-sizing: border-box;
+    transition: border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+.editevent-form input:focus, select:focus, textarea:focus {
+    border-color: #4CAF50;
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(76, 175, 80, 0.1);
+}
+
+.editevent-form button {
+    width: auto;
+    padding: 0.75rem 1.5rem;
+    cursor: pointer;
+    background-color: #4CAF50;
+    color: #fff;
+    border: none;
+    border-radius: 8px;
+    font-size: 1rem;
+    font-weight: 600;
+    transition: background-color 0.3s ease, transform 0.2s ease;
+}
+
+.editevent-form button:hover {
+    background-color: #45a049;
+    transform: translateY(-1px);
+}
+
+.editevent-form button:active {
+    transform: translateY(0);
+}
+
+.beneficiary {
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    padding: 1rem;
+    background-color: #fafafa;
+    margin-bottom: 1rem;
+    transition: box-shadow 0.3s ease;
+}
+
+.beneficiary:hover {
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.beneficiary label {
+    font-size: 0.9rem;
+    color: #666;
+}
+
+.beneficiary button {
+    background-color: #ff6b6b;
+    color: white;
+    font-size: 0.9rem;
+    padding: 0.5rem 1rem;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: background-color 0.3s ease, transform 0.2s ease;
+}
+
+.beneficiary button:hover {
+    background-color: #e55e5e;
+    transform: translateY(-1px);
+}
+
+.beneficiary button:active {
+    transform: translateY(0);
+}
+
+/* Additional styling for spacing and layout */
+.form-section {
+    margin-bottom: 1.5rem;
+}
+
+.form-actions {
+    text-align: right;
+    margin-top: 1.5rem;
+}
+
+.form-actions button {
+    margin-left: 0.5rem;
+}
+
+/* Animations */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.editevent-form form {
+    animation: fadeIn 0.5s ease-in-out;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .editevent-form form {
+        padding: 1rem;
+    }
+
+    .editevent-form h1 {
+        font-size: 2rem;
+    }
+
+    .editevent-form button {
+        width: 100%;
+        margin-bottom: 0.5rem;
+    }
+
+    .form-actions {
+        text-align: center;
+    }
+}

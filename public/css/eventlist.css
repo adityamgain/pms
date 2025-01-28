@@ -1,0 +1,141 @@
+@import url('https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css');
+
+
+/* Container for the event list */
+.eventlist-container {
+    max-width: 920px;
+    margin: 0 auto;
+    padding: 20px;
+    background-color: #fff;
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    animation: fadeIn 0.5s ease-in-out;
+}
+
+
+.eventlist-container h1 {
+    text-align: center;
+    font-size: 2.5rem;
+    margin-bottom: 20px;
+    color: #2c3e50;
+}
+
+/* Event Container */
+.event-container {
+    padding: 20px;
+    margin-bottom: 20px;
+    background-color: #e4e1e18e;
+    border-radius: 8px;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.event-container:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+}
+
+.event-container h2 {
+    font-size: 1.8rem;
+    margin-bottom: 10px;
+    color: #34495e;
+}
+
+.event-container h2::after {
+    content: '';
+    display: block;
+    width: 50px;
+    height: 3px;
+    background-color: #4CAF50;
+    margin-top: 10px;
+}
+
+/* Event Details Section */
+.event-details {
+    margin-bottom: 15px;
+}
+
+.event-details p {
+    font-size: 1rem;
+    margin-bottom: 8px;
+    color: #555;
+}
+
+.event-details p strong {
+    color: #2c3e50;
+}
+
+/* Facilitators Section */
+/* Facilitators Section */
+.facilitators {
+    margin-top: 15px;
+}
+
+.facilitators h3 {
+    font-size: 1.2rem;
+    margin-bottom: 10px;
+    color: #34495e;
+}
+
+.facilitators ul {
+    list-style-type: none;
+    padding-left: 0;
+    display: flex; /* Make the list items flex */
+    flex-wrap: wrap; /* Allow wrapping if the list is too long */
+    gap: 10px; /* Add spacing between items */
+}
+
+.facilitators ul li {
+    font-size: 1rem;
+    color: #555;
+    display: flex;
+    align-items: center;
+    white-space: nowrap; /* Prevent text from wrapping */
+}
+
+.facilitators ul li i {
+    margin-right: 5px; /* Reduce spacing between icon and text */
+    color: #4CAF50;
+    font-size: 1.2rem;
+}
+
+/* No Events Found Message */
+.eventlist-container p {
+    text-align: center;
+    font-size: 1.2rem;
+    color: #777;
+}
+
+/* Horizontal Line */
+hr {
+    border: 0;
+    height: 1px;
+    background-color: #ddd;
+    margin: 20px 0;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .eventlist-container {
+        padding: 15px;
+    }
+
+    .event-container {
+        padding: 15px;
+    }
+
+    .event-container h2 {
+        font-size: 1.5rem;
+    }
+
+    .event-details p {
+        font-size: 0.9rem;
+    }
+
+    .facilitators h3 {
+        font-size: 1.1rem;
+    }
+
+    .facilitators ul li {
+        font-size: 0.9rem;
+    }
+}

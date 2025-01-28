@@ -7,7 +7,7 @@ const BeneficiarySchema = new mongoose.Schema({
         type: String, 
         required: true, 
         unique: true, 
-        default: uuidv4 // Automatically generate a unique ID using uuid
+        default: () => uuidv4(), // Automatically generate a unique ID using uuid
     },
     name: { type: String, required: true },
     gender: { type: String, enum: ['Male', 'Female', 'Other'], required: true },
@@ -78,7 +78,7 @@ const EventWbenificiarySchema = new mongoose.Schema({
     },
     nationalLevel: { 
         type: String, 
-        enum: ['National', 'Provience', 'District', 'Municipality'], 
+        enum: ['National', 'Provincial', 'District', 'Municipal'], 
         required: true 
     }, 
     facilitators: [{ type: String }], // List of facilitators

@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MEAL</title>
+  <link rel="stylesheet" href="/css/home.css"> <!-- Global styles -->
+  <link rel="stylesheet" href="/css/navbar.css"> <!-- Navbar-specific styles -->
+</head>
+<body>
+  <div id="page_wrapper">
+    <!-- Include the side navigation -->
+    <%- include('partials/navbar') %>
+
+    <!-- Main content will be injected here -->
+    <main>
+      <%- body %>
+    </main>
+  </div>
+
+  <script src="/script/home.js"></script>
+</body>
+</html>

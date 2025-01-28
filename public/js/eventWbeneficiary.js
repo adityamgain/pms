@@ -142,8 +142,7 @@ function addBeneficiary() {
         <label for="name${beneficiaryCount}">Name:</label>
         <input type="text" id="name${beneficiaryCount}" name="beneficiaries[${beneficiaryCount}][name]" required>
 
-        <h4>Organizational Associated:</h4>
-        <label for="organizationName${beneficiaryCount}">Name of Organization:</label>
+        <label for="organizationName${beneficiaryCount}">Name of Associated Organization:</label>
         <input type="text" id="organizationName${beneficiaryCount}" name="beneficiaries[${beneficiaryCount}][associatedOrganization][name]" required>
 
         <label for="organizationType${beneficiaryCount}">Type of Organization:</label>
@@ -237,3 +236,5 @@ function showTypeSelection(beneficiaryCount) {
         governmentContainer.style.display = 'none';
     }
 }
+
+

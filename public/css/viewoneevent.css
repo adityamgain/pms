@@ -1,14 +1,7 @@
 /* Base styles */
-body {
-    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
-    background-color: #f8f9fa;
-    color: #333;
-    margin: 0;
-    padding: 0;
-    line-height: 1.6;
-}
 
-.container {
+
+.viewone-container {
     max-width: 1200px;
     margin: 2rem auto;
     padding: 2rem;
@@ -17,7 +10,7 @@ body {
     box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
 }
 
-h1 {
+.viewone-container h1 {
     text-align: center;
     margin: 2rem 0;
     font-size: 2.5rem;
@@ -25,7 +18,7 @@ h1 {
     font-weight: 700;
 }
 
-h3 {
+.viewone-container h3 {
     font-size: 1.5rem;
     margin-bottom: 1rem;
     color: #2c3e50;
@@ -46,16 +39,20 @@ h3 {
 
 .facilitators ul {
     list-style-type: none;
-    padding: 0;
+    padding-left: 20px;
+    margin-top: 30px;
+    margin-bottom: 30px;
+
 }
 
 .facilitators li {
     background: #f8f9fa;
+    display: inline;
     padding: 0.75rem;
-    margin-bottom: 0.5rem;
+    margin-right: 20px;
     border-radius: 8px;
     border: 1px solid #e0e0e0;
-    font-size: 1rem;
+    font-size: 1 rem;
     color: #555;
 }
 
@@ -66,10 +63,10 @@ h3 {
 }
 
 
-#export-btn {
+.viewone-container #export-btn {
     display: inline-block;
     padding: 0.75rem 1.5rem;
-    background-color: #4CAF50; /* Green background */
+    background-color:#997d5dcb; /* Green background */
     color: #fff; /* White text */
     border: none;
     border-radius: 8px;
@@ -80,12 +77,12 @@ h3 {
     margin-top: 1rem;
 }
 
-#export-btn:hover {
-    background-color: #45a049; /* Darker green on hover */
+.viewone-container #export-btn:hover {
+    background-color: #997d5dcb; /* Darker green on hover */
     transform: translateY(-1px); /* Slight lift effect */
 }
 
-#export-btn:active {
+.viewone-container #export-btn:active {
     transform: translateY(0); /* Reset lift effect on click */
 }
 .summary-table {
@@ -101,12 +98,12 @@ h3 {
 .summary-table td {
     padding: 0.75rem;
     text-align: center;
-    border: 1px solid #e0e0e0;
+    border: 1px solid #d8d1d1;
     font-size: 0.95rem;
 }
 
 .summary-table th {
-    background-color: #4CAF50;
+    background-color: #997d5dcb;
     color: #fff;
     font-weight: 600;
 }
@@ -134,7 +131,7 @@ h3 {
 }
 
 .beneficiary-table th {
-    background-color: #4CAF50;
+    background-color: #997d5dcb;
     color: #fff;
     font-weight: 600;
 }
@@ -144,7 +141,7 @@ h3 {
 }
 
 /* Export Button */
-#export-btn {
+.viewone-container #export-btn {
     display: inline-block;
     padding: 0.75rem 1.5rem;
     background-color: #4CAF50;
@@ -158,17 +155,17 @@ h3 {
     margin-bottom: 1.5rem;
 }
 
-#export-btn:hover {
+.viewone-container #export-btn:hover {
     background-color: #45a049;
     transform: translateY(-1px);
 }
 
-#export-btn:active {
+.viewone-container #export-btn:active {
     transform: translateY(0);
 }
 
 /* Map Section */
-#map {
+.viewone-container #map {
     height: 380px;
     width: 100%;
     border-radius: 8px;
@@ -293,8 +290,52 @@ h3 {
     }
 }
 
-.container {
+.viewone-container {
     animation: fadeIn 0.5s ease-in-out;
+}
+
+/* General styling for the graph wrapper */
+.graph-wrapper {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 20px; /* Adds space between the graphs */
+    justify-content: center; /* Centers the graphs horizontally */
+    padding: 20px;
+    max-width: 1000px; /* Limits the maximum width of the container */
+    margin: 0 auto; /* Centers the container horizontally */
+}
+
+/* Styling for each graph item */
+.graph-item {
+    flex: 1 1 calc(40% - 40px); /* Each item takes up 50% of the width minus the gap */
+    max-width: calc(50% - 40px); /* Ensures items don't exceed half the container width */
+    background-color: #fff; /* White background for each graph */
+    padding: 20px;
+    border-radius: 8px; /* Rounded corners */
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); /* Subtle shadow for each graph */
+    text-align: center; /* Centers the title and canvas */
+    min-width: 300px; /* Ensures graphs don't get too small on narrow screens */
+}
+
+
+/* Styling for the canvas elements */
+.graph-item canvas {
+    width: 100% !important; /* Ensures the canvas fills its container */
+    height: auto !important; /* Maintains aspect ratio */
+    max-height: 300px; /* Limits the height of the graphs */
+}
+
+/* Responsive design for smaller screens */
+@media (max-width: 768px) {
+    .graph-item {
+        flex: 1 1 100%; /* Each item takes full width on smaller screens */
+        max-width: 100%;
+        min-width: unset; /* Removes the minimum width restriction */
+    }
+
+    .graph-wrapper {
+        padding: 10px; /* Reduces padding on smaller screens */
+    }
 }
 
 /* Responsive Design */

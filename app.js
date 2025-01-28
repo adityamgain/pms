@@ -8,12 +8,14 @@ const session = require('express-session');
 const nepalGeoData = require('@nepalutils/nepal-geodata');
 const multer = require('multer');
 const { v4: uuidv4 } = require('uuid');
+const ejsLayouts = require('express-ejs-layouts');
 
 
 const employeeRoutes = require('./routes/employeeRoutes');
 const geoRoutes = require('./routes/geoRoutes');
 const schemaRoutes = require('./routes/schemaRoutes');
 const eventRoutes = require('./routes/eventRoutes');
+const projectRoutes = require('./routes/projectRoutes');
 
 const SchemaDefinition = require('./models/schemaDefination');
 const Event = require('./models/Events');
@@ -28,6 +30,8 @@ const app = express();
 app.engine('ejs',ejsMate);
 app.set('views', path.join(__dirname,'views'));
 app.set('view engine', 'ejs');
+app.set('layout', 'layout'); // Use layout.ejs as the default layout
+app.use(ejsLayouts);
 
 // Serve static files
 app.use(methodOverride('_method'));
@@ -75,6 +79,7 @@ app.use('/employee', employeeRoutes);
 app.use('/api', geoRoutes);
 app.use('/', eventRoutes); 
 app.use(schemaRoutes);
+app.use('/projects', projectRoutes);
 
 // Define getDynamicModel function first
 function getDynamicModel(collectionName) {

@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Create Project</title>
+    <style>
+
+        .createproject-form h1 {
+            text-align: center;
+            margin: 2rem 0;
+            font-size: 2.5rem;
+            color: #2c3e50;
+            font-weight: 600;
+            letter-spacing: -0.5px;
+        }
+
+        .createproject-form form {
+            max-width: 700px;
+            margin: 2rem auto;
+            background: #fff;
+            padding: 2.5rem;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+        }
+
+        .createproject-form label {
+            display: block;
+            font-weight: 500;
+            margin-bottom: 0.75rem;
+            color: #444;
+            font-size: 0.95rem;
+        }
+
+        .createproject-form input, select, textarea, button {
+            width: 100%;
+            padding: 0.875rem;
+            margin-bottom: 1.25rem;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 1rem;
+            box-sizing: border-box;
+            transition: border-color 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .createproject-form input:focus, select:focus, textarea:focus {
+            border-color: #4CAF50;
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(76, 175, 80, 0.1);
+        }
+
+        .createproject-form button {
+            width: auto;
+            padding: 0.875rem 2rem;
+            cursor: pointer;
+            background-color: #4CAF50;
+            color: #fff;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 600;
+            transition: background-color 0.3s ease, transform 0.2s ease;
+            display: block;
+            margin: 1.5rem auto 0;
+        }
+
+        .createproject-form button:hover {
+            background-color: #45a049;
+            transform: translateY(-2px);
+        }
+
+        .createproject-form button:active {
+            transform: translateY(0);
+        }
+
+        /* Custom Select Box */
+        .createproject-form select {
+            appearance: none; /* Remove default arrow */
+            background: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%232c3e50' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e")
+                no-repeat right 0.875rem center/16px 16px;
+            background-color: #fff;
+            padding-right: 2.5rem; /* Space for custom arrow */
+        }
+
+        .createproject-form select:hover {
+            border-color: #4CAF50;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .createproject-form form {
+                padding: 1.5rem;
+            }
+
+            .createproject-form h1 {
+                font-size: 2rem;
+            }
+
+            .createproject-form button {
+                width: 100%;
+                margin-bottom: 0.5rem;
+            }
+        }
+
+        /* Additional Professional Touches */
+        .createproject-form input::placeholder, textarea::placeholder {
+            color: #999;
+            font-size: 0.9rem;
+        }
+
+        .createproject-form .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .createproject-form .form-group:last-child {
+            margin-bottom: 0;
+        }
+
+        .createproject-form .form-group label {
+            font-size: 0.9rem;
+            color: #555;
+        }
+
+        .createproject-form form-group input[type="date"] {
+            color: #555;
+        }
+
+        .createproject-form .form-group input[type="date"]:focus {
+            color: #333;
+        }
+    </style>
+</head>
+<body>
+    <div class="createproject-form">
+    <h1>Create a New Project</h1>
+    <form action="/projects/createProject" method="POST">
+        <!-- Project Details -->
+        <div class="form-group">
+            <label for="projectName">Project Name:</label>
+            <input type="text" id="projectName" name="projectName" placeholder="Enter project name" required>
+        </div>
+
+        <div class="form-group">
+            <label for="donor">Donor:</label>
+            <input type="text" id="donor" name="donor" placeholder="Enter donor name" required>
+        </div>
+
+        <div class="form-group">
+            <label for="stakeholders">Stakeholders (comma-separated):</label>
+            <input type="text" id="stakeholders" name="stakeholders" placeholder="Enter stakeholders" required>
+        </div>
+
+        <div class="form-group">
+            <label for="startDate">Start Date:</label>
+            <input type="date" id="startDate" name="startDate" required>
+        </div>
+
+        <div class="form-group">
+            <label for="endDate">End Date:</label>
+            <input type="date" id="endDate" name="endDate" required>
+        </div>
+
+        <div class="form-group">
+            <label for="areaOfAction">Area of Action:</label>
+            <input type="text" id="areaOfAction" name="areaOfAction" placeholder="Enter area of action" required>
+        </div>
+
+        <div class="form-group">
+            <label for="reportingPeriod">Reporting Period:</label>
+            <select id="reportingPeriod" name="reportingPeriod" required>
+                <option value="" disabled selected>Select reporting period</option>
+                <option value="Monthly">Monthly</option>
+                <option value="Annually">Annually</option>
+                <option value="Semi-Annually">Semi-Annually</option>
+            </select>
+        </div>
+
+        <button type="submit">Create Project</button>
+    </form>
+    </div>
+</body>
+</html>

@@ -21,7 +21,8 @@ const SchemaDefinitionSchema = new mongoose.Schema({
     }
   ],
   under_project: {
-    type: String, // You may want to reference an ObjectId instead if this is linked to another model
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Program', // Reference to the Program model
     required: true
   }
 });
