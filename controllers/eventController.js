@@ -29,7 +29,7 @@ exports.submitEvent = async (req, res) => {
       latitude,
     } = req.body;
 
-    const { projectId } = req.params; // Correct destructuring
+    const { projectId } = req.params;
     console.log('Project ID:', projectId);
 
     // Validate projectId
@@ -37,7 +37,7 @@ exports.submitEvent = async (req, res) => {
       return res.status(400).send('Invalid or missing project ID.');
     }
 
-    // Ensure longitude and latitude are provided and valid
+    // Validate longitude and latitude
     if (!longitude || !latitude || isNaN(longitude) || isNaN(latitude)) {
       return res.status(400).send('Valid longitude and latitude are required.');
     }
@@ -46,16 +46,14 @@ exports.submitEvent = async (req, res) => {
     let cleanedBeneficiaries = [];
     if (beneficiaries) {
       try {
-        cleanedBeneficiaries = Array.isArray(beneficiaries)
-          ? beneficiaries
-          : JSON.parse(beneficiaries);
+        cleanedBeneficiaries = Array.isArray(beneficiaries) ? beneficiaries : JSON.parse(beneficiaries);
       } catch (err) {
         return res.status(400).send('Invalid beneficiaries data format.');
       }
     }
 
     cleanedBeneficiaries = cleanedBeneficiaries
-      .filter((b) => b && b.name) // Filter out invalid entries
+      .filter((b) => b && b.name) // Remove invalid entries
       .map((beneficiary) => {
         if (!beneficiary.associatedOrganization?.name || !beneficiary.associatedOrganization.main) {
           throw new Error(`Invalid associated organization for beneficiary "${beneficiary.name}".`);
@@ -63,11 +61,11 @@ exports.submitEvent = async (req, res) => {
 
         const associatedOrganization = beneficiary.associatedOrganization;
 
-        // Normalize fields
+        // Normalize organization fields
         associatedOrganization.name = associatedOrganization.name.trim();
         associatedOrganization.main = associatedOrganization.main.trim();
 
-        // Set subType based on main type
+        // Validate subType based on main organization type
         if (associatedOrganization.main === 'Community') {
           associatedOrganization.subType = ['CFUG', 'FG'].includes(associatedOrganization.subType)
             ? associatedOrganization.subType
@@ -83,11 +81,6 @@ exports.submitEvent = async (req, res) => {
         // Convert checkboxes to boolean
         beneficiary.benefitsFromActivity = beneficiary.benefitsFromActivity === 'on';
         beneficiary.disability = beneficiary.disability === 'on';
-
-        // Generate uniqueId if not present
-        if (!beneficiary.uniqueId) {
-          beneficiary.uniqueId = uuidv4();
-        }
 
         return beneficiary;
       });
@@ -192,6 +185,41 @@ exports.updateEvent = async (req, res) => {
     // Ensure beneficiaries is an array
     const beneficiariesArray = Array.isArray(beneficiaries) ? beneficiaries : [beneficiaries];
 
+    // Parse and clean beneficiaries
+    const cleanedBeneficiaries = beneficiariesArray.map((beneficiary) => {
+      if (typeof beneficiary === 'string') {
+        beneficiary = JSON.parse(beneficiary);
+      }
+      if (!beneficiary.associatedOrganization?.name || !beneficiary.associatedOrganization.main) {
+        throw new Error(`Invalid associated organization for beneficiary "${beneficiary.name}".`);
+      }
+
+      const associatedOrganization = beneficiary.associatedOrganization;
+
+      // Normalize organization fields
+      associatedOrganization.name = associatedOrganization.name.trim();
+      associatedOrganization.main = associatedOrganization.main.trim();
+
+      // Validate subType based on main organization type
+      if (associatedOrganization.main === 'Community') {
+        associatedOrganization.subType = ['CFUG', 'FG'].includes(associatedOrganization.subType)
+          ? associatedOrganization.subType
+          : null;
+      } else if (associatedOrganization.main === 'Government') {
+        associatedOrganization.subType = ['National', 'Provincial', 'Municipal'].includes(associatedOrganization.subType)
+          ? associatedOrganization.subType
+          : null;
+      } else {
+        associatedOrganization.subType = null;
+      }
+
+      // Convert checkboxes to boolean
+      beneficiary.benefitsFromActivity = beneficiary.benefitsFromActivity === 'on';
+      beneficiary.disability = beneficiary.disability === 'on';
+
+      return beneficiary;
+    });
+
     // Fetch the event document
     const event = await EventWbenificiary.findById(eventId);
     if (!event) {
@@ -210,7 +238,7 @@ exports.updateEvent = async (req, res) => {
     };
     event.nationalLevel = nationalLevel;
     event.facilitators = facilitators ? facilitators.split(',').map(facilitator => facilitator.trim()) : [];
-    event.beneficiaries = beneficiariesArray;
+    event.beneficiaries = cleanedBeneficiaries;
 
     // Handle file uploads for photographs and reports
     if (req.files) {
@@ -266,11 +294,20 @@ exports.updateEvent = async (req, res) => {
   };
     
 
-
-exports.viewAllEventData = async (req,res) => {
+  exports.viewAllEventData = async (req, res) => {
     try {
-        const events = await EventWbenificiary.find(); // Get all events
+        const { projectId } = req.params; // Get the project ID from the request parameters
+        console.log(projectId)
+        // Find the project by ID to ensure it exists
+        const project = await Project.findById(projectId);
+        console.log(project)
 
+        if (!project) {
+            return res.status(404).send('Project not found');
+        }
+
+        // Find events associated with the project ID
+        const events = await EventWbenificiary.find({ _id: { $in: project.events } });
         // Aggregate data for each event
         const overview = events.map(event => {
             const totalAttendees = event.beneficiaries.length;
@@ -282,12 +319,13 @@ exports.viewAllEventData = async (req,res) => {
         });
 
         // Pass events and the overview data to the view
-        res.render('eventList', { datas: events, overview });
+        res.render('eventList', { datas: events, overview, project });
     } catch (err) {
         console.error(err);
         res.status(500).send('Server error');
     }
-}
+};
+
 
 
 exports.viewOneEventData = async (req, res) => {

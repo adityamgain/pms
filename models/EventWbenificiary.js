@@ -3,12 +3,6 @@ const { v4: uuidv4 } = require('uuid');
 
 // Define Beneficiary Schema
 const BeneficiarySchema = new mongoose.Schema({
-    uniqueId: { 
-        type: String, 
-        required: true, 
-        unique: true, 
-        default: () => uuidv4(), // Automatically generate a unique ID using uuid
-    },
     name: { type: String, required: true },
     gender: { type: String, enum: ['Male', 'Female', 'Other'], required: true },
     age: { type: String, enum: ['Upto 25 years', '25-40 years', '40 above years'], required: true },

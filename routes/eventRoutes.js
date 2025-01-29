@@ -22,7 +22,7 @@ router.get('/events/delete/:id', eventController.deleteEvent);
 // router.post('/events/:id/delete', eventController.deleteEvent);
 
 // Route to view the saved event data
-router.get('/event-list', eventController.viewAllEventData);
+router.get('/projects/:projectId/event-list', eventController.viewAllEventData);
 
 // Route to view the saved event data
 router.get('/viewevent/:id', eventController.viewOneEventData);

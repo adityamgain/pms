@@ -132,51 +132,56 @@
 </head>
 <body>
     <div class="createproject-form">
-    <h1>Create a New Project</h1>
-    <form action="/projects/createProject" method="POST">
-        <!-- Project Details -->
-        <div class="form-group">
-            <label for="projectName">Project Name:</label>
-            <input type="text" id="projectName" name="projectName" placeholder="Enter project name" required>
-        </div>
+        <h1>Create a New Project</h1>
+        <form action="/projects/createProject" method="POST">
+            <!-- Project Details -->
+            <div class="form-group">
+                <label for="projectName">Project Name:</label>
+                <input type="text" id="projectName" name="projectName" placeholder="Enter project name" required>
+            </div>
 
-        <div class="form-group">
-            <label for="donor">Donor:</label>
-            <input type="text" id="donor" name="donor" placeholder="Enter donor name" required>
-        </div>
+            <div class="form-group">
+                <label for="donor">Donor:</label>
+                <input type="text" id="donor" name="donor" placeholder="Enter donor name" required>
+            </div>
 
-        <div class="form-group">
-            <label for="stakeholders">Stakeholders (comma-separated):</label>
-            <input type="text" id="stakeholders" name="stakeholders" placeholder="Enter stakeholders" required>
-        </div>
+            <div class="form-group">
+                <label for="stakeholders">Stakeholders (comma-separated):</label>
+                <input type="text" id="stakeholders" name="stakeholders" placeholder="Enter stakeholders" required>
+            </div>
 
-        <div class="form-group">
-            <label for="startDate">Start Date:</label>
-            <input type="date" id="startDate" name="startDate" required>
-        </div>
+            <div class="form-group">
+                <label for="startDate">Start Date:</label>
+                <input type="date" id="startDate" name="startDate" required>
+            </div>
 
-        <div class="form-group">
-            <label for="endDate">End Date:</label>
-            <input type="date" id="endDate" name="endDate" required>
-        </div>
+            <div class="form-group">
+                <label for="endDate">End Date:</label>
+                <input type="date" id="endDate" name="endDate" required>
+            </div>
 
-        <div class="form-group">
-            <label for="areaOfAction">Area of Action:</label>
-            <input type="text" id="areaOfAction" name="areaOfAction" placeholder="Enter area of action" required>
-        </div>
+            <div class="form-group">
+                <label for="areaOfAction">Area of Action:</label>
+                <div>
+                    <label><input type="checkbox" name="areaOfAction" value="Nature-based commercial agriculture"> Nature-based commercial agriculture</label>
+                    <label><input type="checkbox" name="areaOfAction" value="Sustainable Forest Management"> Sustainable Forest Management</label>
+                    <label><input type="checkbox" name="areaOfAction" value="Water"> Water</label>
+                    <label><input type="checkbox" name="areaOfAction" value="Climate Change"> Climate Change</label>
+                </div>
+            </div>
 
-        <div class="form-group">
-            <label for="reportingPeriod">Reporting Period:</label>
-            <select id="reportingPeriod" name="reportingPeriod" required>
-                <option value="" disabled selected>Select reporting period</option>
-                <option value="Monthly">Monthly</option>
-                <option value="Annually">Annually</option>
-                <option value="Semi-Annually">Semi-Annually</option>
-            </select>
-        </div>
+            <div class="form-group">
+                <label for="reportingPeriod">Reporting Period:</label>
+                <select id="reportingPeriod" name="reportingPeriod" required>
+                    <option value="" disabled selected>Select reporting period</option>
+                    <option value="Monthly">Monthly</option>
+                    <option value="Annually">Annually</option>
+                    <option value="Semi-Annually">Semi-Annually</option>
+                </select>
+            </div>
 
-        <button type="submit">Create Project</button>
-    </form>
+            <button type="submit">Create Project</button>
+        </form>
     </div>
 </body>
 </html>

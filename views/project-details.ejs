@@ -1,8 +1,14 @@
-  <link rel="stylesheet" href="/css/project-detail.css">
-
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Project Details</title>
+    <link rel="stylesheet" href="/css/project-detail.css">
+</head>
 <body>
     <div class="project-detail-container">
-        <h1>Project Details</h1>
+        <h1><%= project.projectName %></h1>
         <div class="section">
             <h2>Project Information</h2>
             <p><strong>Name:</strong> <%= project.projectName %></p>
@@ -12,7 +18,11 @@
             <p><strong>End Date:</strong> <%= project.endDate.toDateString() %></p>
             <p><strong>Area of Action:</strong> <%= project.areaOfAction %></p>
             <p><strong>Reporting Period:</strong> <%= project.reportingPeriod %></p>
+            <p><strong>Total Events:</strong> <%= totalEvents %></p> <!-- Display total events -->
         </div>
 
         <a href="/projects/<%= project._id %>/eventb" class="btn">Add Event</a>
+        <a href="/projects/<%= project._id %>/event-list" class="btn">View Events</a>
     </div>
+</body>
+</html>

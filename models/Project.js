@@ -3,12 +3,6 @@ const { v4: uuidv4 } = require('uuid');
 const EventWbenificiary = require('./EventWbenificiary');
 
 const ProjectSchema = new mongoose.Schema({
-    projectId: { 
-        type: String, 
-        required: true, 
-        unique: true,
-        default: () => uuidv4(), 
-    },
     projectName: { type: String, required: true },
     donor: { type: String, required: true },
     stakeholders: [{ type: String }],
@@ -23,7 +17,16 @@ const ProjectSchema = new mongoose.Schema({
             message: 'End date must be greater than or equal to start date.'
         }
     },
-    areaOfAction: { type: String, required: true },
+    areaOfAction: [{
+        type: String,
+        enum: [
+            'Nature-based commercial agriculture',
+            'Sustainable Forest Management',
+            'Water',
+            'Climate Change'
+        ],
+        required: true
+    }],
     reportingPeriod: { 
         type: String, 
         enum: ['Monthly', 'Annually', 'Semi-Annually'], 

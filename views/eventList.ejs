@@ -4,14 +4,14 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Event List</title>
-  <link rel="stylesheet" href="/css/eventlist.css">
-      <!-- Add Font Awesome -->
+    <link rel="stylesheet" href="/css/eventlist.css">
+    <!-- Add Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 </head>
 <body>
 
     <div class="eventlist-container">
-        <h1>Event List</h1>
+        <h1>Event List for Project: <%= project.projectName %></h1>
 
         <% if (datas && datas.length > 0) { %>
             <% datas.forEach((event, index) => { %>
