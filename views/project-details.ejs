@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Project Details</title>
     <link rel="stylesheet" href="/css/project-detail.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
     <div class="project-detail-container">
@@ -16,13 +17,114 @@
             <p><strong>Stakeholders:</strong> <%= project.stakeholders.join(', ') %></p>
             <p><strong>Start Date:</strong> <%= project.startDate.toDateString() %></p>
             <p><strong>End Date:</strong> <%= project.endDate.toDateString() %></p>
-            <p><strong>Area of Action:</strong> <%= project.areaOfAction %></p>
+            <p><strong>Area of Action:</strong> <%= project.areaOfAction.join(', ') %></p>
             <p><strong>Reporting Period:</strong> <%= project.reportingPeriod %></p>
-            <p><strong>Total Events:</strong> <%= totalEvents %></p> <!-- Display total events -->
+
+            <!-- Countdown Timer -->
+            <p><strong>Time Remaining:</strong> <span id="countdown"></span></p>
+
+            <section class="counting">
+                <div class="layout">  
+                    <div class="grid-3">
+                        <span class="count1 counter"><%= totalEvents %></span>
+                        <p>Events Completed</p>
+                    </div>
+                    <div class="grid-3">
+                        <span class="count2 counter"><%= totalAttendees %></span>
+                        <p>Total Attendees</p>
+                    </div>
+                    <div class="grid-3">
+                        <span class="counter "><%= totalBenefitted %></span>
+                        <p>Total Benefitted</p>
+                    </div>
+                    <div class="grid-3">
+                        <span class="counter "><%= benefittedRatio %> %</span>
+                        <p>Benefitted Ratio</p>
+                    </div>
+                </div>  
+            </section>
+
+            <% if (totalEvents > 0) { %>
+                <h2>Graphical Representation</h2>
+                <!-- Conditionally display the chart and heading -->
+                <div style="width: 650px; margin: 20px auto;">
+                    <h4>Event Distribution by Type</h4>
+                    <canvas id="eventTypeChart"></canvas>
+                </div>
+            <% } %>
         </div>
 
         <a href="/projects/<%= project._id %>/eventb" class="btn">Add Event</a>
         <a href="/projects/<%= project._id %>/event-list" class="btn">View Events</a>
     </div>
+
+    <!-- Conditionally initialize the chart -->
+    <% if (eventTypes.length > 0) { %>
+        <script>
+            // Get the event data passed from the server
+            const eventTypes = <%- eventTypes %>;
+            const eventCounts = <%- eventCounts %>;
+
+            // Create the chart
+            const ctx = document.getElementById('eventTypeChart').getContext('2d');
+            const eventTypeChart = new Chart(ctx, {
+                type: 'bar', // Use a bar chart
+                data: {
+                    labels: eventTypes, // Event types on the x-axis
+                    datasets: [{
+                        label: 'Number of Events',
+                        data: eventCounts, // Event counts on the y-axis
+                        backgroundColor: '#d8d3d3b7',
+                        borderColor: '#cabebe',
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    scales: {
+                        y: {
+                            beginAtZero: true
+                        }
+                    }
+                }
+            });
+        </script>
+    <% } %>
+
+    <!-- Countdown Timer Script -->
+    <script>
+        // Get the project end date from the server
+        const endDate = new Date("<%= project.endDate.toISOString() %>");
+
+        // Update the countdown every second
+        const countdownElement = document.getElementById('countdown');
+        const countdownInterval = setInterval(() => {
+            const now = new Date();
+            const timeRemaining = endDate - now;
+
+            // If the end date has passed, stop the countdown
+            if (timeRemaining <= 0) {
+                clearInterval(countdownInterval);
+                countdownElement.textContent = "Project has ended";
+                return;
+            }
+
+            // Calculate years, months, days, and hours
+            const years = Math.floor(timeRemaining / (1000 * 60 * 60 * 24 * 365));
+            const months = Math.floor((timeRemaining % (1000 * 60 * 60 * 24 * 365)) / (1000 * 60 * 60 * 24 * 30));
+            const days = Math.floor((timeRemaining % (1000 * 60 * 60 * 24 * 30)) / (1000 * 60 * 60 * 24));
+            const hours = Math.floor((timeRemaining % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+
+            // Display the countdown
+            let countdownText = "";
+            if (years > 0) countdownText += `${years}y `;
+            if (months > 0) countdownText += `${months}mo `;
+            if (days > 0) countdownText += `${days}d `;
+            countdownText += `${hours}h`;
+
+            countdownElement.textContent = countdownText.trim();
+        }, 1000);
+
+    </script>
+    
 </body>
 </html>

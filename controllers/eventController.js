@@ -254,7 +254,7 @@ exports.updateEvent = async (req, res) => {
     const updatedEvent = await event.save();
 
     console.log('Updated Event:', updatedEvent); // Debugging: Check updated data
-    res.redirect('/event-list');
+    res.redirect('/');
   } catch (error) {
     console.error('Error updating event:', error);
     res.status(500).json({ message: 'Server error, failed to update event', error: error.message });
@@ -286,7 +286,7 @@ exports.updateEvent = async (req, res) => {
         }
       }
       await EventWbenificiary.findByIdAndDelete(req.params.id);
-      res.redirect('/event-list');
+      res.redirect('/');
     } catch (err) {
       console.error('Error deleting event:', err.message);
       res.status(500).send(`Server Error: ${err.message}`);
@@ -294,36 +294,35 @@ exports.updateEvent = async (req, res) => {
   };
     
 
-  exports.viewAllEventData = async (req, res) => {
-    try {
-        const { projectId } = req.params; // Get the project ID from the request parameters
-        console.log(projectId)
-        // Find the project by ID to ensure it exists
-        const project = await Project.findById(projectId);
-        console.log(project)
+// Controller to view all event data for a project
+exports.viewAllEventData = async (req, res) => {
+  try {
+      const { projectId } = req.params; // Get the project ID from the request parameters
+      const project = await Project.findById(projectId);
+      if (!project) {
+          return res.status(404).send('Project not found');
+      }
 
-        if (!project) {
-            return res.status(404).send('Project not found');
-        }
+      // Find all events associated with the project
+      const events = await EventWbenificiary.find({ _id: { $in: project.events } });
 
-        // Find events associated with the project ID
-        const events = await EventWbenificiary.find({ _id: { $in: project.events } });
-        // Aggregate data for each event
-        const overview = events.map(event => {
-            const totalAttendees = event.beneficiaries.length;
+      // Create an overview for each event
+      const overview = events.map(event => {
+          const totalAttendees = event.beneficiaries.length;
+          const totalBenefited = event.beneficiaries.filter(b => b.benefitsFromActivity).length;
+          const benefitedRatio = totalAttendees > 0 ? (totalBenefited / totalAttendees) * 100 : 0;
+          return {
+              eventId: event._id,    // Add eventId for matching in the template
+              totalAttendees,
+              benefitedRatio: benefitedRatio.toFixed(2) // Convert to percentage and format
+          };
+      });
 
-            return {
-                eventId: event._id,    // Add eventId for matching in the template
-                totalAttendees,
-            };
-        });
-
-        // Pass events and the overview data to the view
-        res.render('eventList', { datas: events, overview, project });
-    } catch (err) {
-        console.error(err);
-        res.status(500).send('Server error');
-    }
+      res.render('eventList', { datas: events, overview, project });
+  } catch (err) {
+      console.error(err);
+      res.status(500).send('Server error');
+  }
 };
 
 

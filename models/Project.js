@@ -33,6 +33,7 @@ const ProjectSchema = new mongoose.Schema({
         required: true 
     },
     events: [{ type: mongoose.Schema.Types.ObjectId, ref: 'EventWbenificiary' }],
+    codeName: { type: String, unique: true, required: true },
 });
 
 module.exports = mongoose.model('Project', ProjectSchema);

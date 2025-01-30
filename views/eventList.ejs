@@ -9,7 +9,6 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 </head>
 <body>
-
     <div class="eventlist-container">
         <h1>Event List for Project: <%= project.projectName %></h1>
 
@@ -21,7 +20,8 @@
                         <h2><%= event.eventName %> - <%= event.eventType %></h2>
                         <!-- Event Details Section -->
                         <div class="event-details">
-                            <p><strong><%= overview.find(o => o.eventId.toString() === event._id.toString()).totalAttendees %> Number of Attendees</strong></p>
+                            <p><strong>Attendees: </strong><%= overview.find(o => o.eventId.toString() === event._id.toString()).totalAttendees %></p>
+                            <p><strong>Benefited Ratio:</strong> <%= overview.find(o => o.eventId.toString() === event._id.toString()).benefitedRatio %>%</p>
                             <p><strong>Venue:</strong> 
                                 <%= event.venue 
                                     ? event.venue.municipality + ', ' + event.venue.district + ', ' + event.venue.province 

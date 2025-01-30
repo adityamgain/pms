@@ -1,5 +1,11 @@
-  <link rel="stylesheet" href="/css/viewProjects.css">
-
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>View Projects</title>
+    <link rel="stylesheet" href="/css/viewProjects.css">
+</head>
 <body>
     <div class="container">
         <h1>All Projects</h1>
@@ -12,6 +18,7 @@
                     <th>End Date</th>
                     <th>Area of Action</th>
                     <th>Reporting Period</th>
+                    <th>Events Occurred</th>
                     <th>Actions</th>
                 </tr>
             </thead>
@@ -22,8 +29,9 @@
                         <td><%= project.donor %></td>
                         <td><%= project.startDate.toDateString() %></td>
                         <td><%= project.endDate.toDateString() %></td>
-                        <td><%= project.areaOfAction %></td>
+                        <td><%= project.areaOfAction.join(', ') %></td>
                         <td><%= project.reportingPeriod %></td>
+                        <td><%= project.totalEvents %></td>
                         <td>
                             <a href="/projects/<%= project._id %>" class="btn-view">View</a>
                         </td>
@@ -34,4 +42,5 @@
         <a href="/projects/createProject" class="btn-create">Create New Project</a>
     </div>
 </body>
+
 </html>

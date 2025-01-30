@@ -13,6 +13,7 @@
     "axios": "^1.7.9",
     "bcrypt": "^5.1.1",
     "body-parser": "^1.20.3",
+    "chart.js": "^4.4.7",
     "crypto": "^1.0.1",
     "ejs-mate": "^4.0.0",
     "exceljs": "^4.4.0",

@@ -1,32 +1,32 @@
 @import url('https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css');
 
-
 /* Container for the event list */
 .eventlist-container {
     max-width: 920px;
     margin: 0 auto;
     padding: 20px;
-    background-color: #fff;
-    border-radius: 8px;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    background-color: #f9f9f9;
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
     animation: fadeIn 0.5s ease-in-out;
 }
-
 
 .eventlist-container h1 {
     text-align: center;
     font-size: 2.5rem;
-    margin-bottom: 20px;
+    margin-bottom: 30px;
     color: #2c3e50;
+    font-weight: bold;
 }
 
 /* Event Container */
 .event-container {
     padding: 20px;
     margin-bottom: 20px;
-    background-color: #e4e1e18e;
-    border-radius: 8px;
+    background-color: #ffffff;
+    border-radius: 12px;
     transition: transform 0.2s ease, box-shadow 0.2s ease;
+    border-left: 5px solid #afa54c;
 }
 
 .event-container:hover {
@@ -38,6 +38,7 @@
     font-size: 1.8rem;
     margin-bottom: 10px;
     color: #34495e;
+    font-weight: bold;
 }
 
 .event-container h2::after {
@@ -48,6 +49,7 @@
     background-color: #4CAF50;
     margin-top: 10px;
 }
+
 
 /* Event Details Section */
 .event-details {
@@ -65,7 +67,6 @@
 }
 
 /* Facilitators Section */
-/* Facilitators Section */
 .facilitators {
     margin-top: 15px;
 }
@@ -74,14 +75,15 @@
     font-size: 1.2rem;
     margin-bottom: 10px;
     color: #34495e;
+    font-weight: bold;
 }
 
 .facilitators ul {
     list-style-type: none;
     padding-left: 0;
-    display: flex; /* Make the list items flex */
-    flex-wrap: wrap; /* Allow wrapping if the list is too long */
-    gap: 10px; /* Add spacing between items */
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
 }
 
 .facilitators ul li {
@@ -89,11 +91,11 @@
     color: #555;
     display: flex;
     align-items: center;
-    white-space: nowrap; /* Prevent text from wrapping */
+    white-space: nowrap;
 }
 
 .facilitators ul li i {
-    margin-right: 5px; /* Reduce spacing between icon and text */
+    margin-right: 5px;
     color: #4CAF50;
     font-size: 1.2rem;
 }
