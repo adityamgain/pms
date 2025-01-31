@@ -182,7 +182,7 @@
             <div class="photographs">
                 <h3>Photographs</h3>
                 <% event.photographs.forEach(photo => { %>
-                    <img src="/<%= photo %>" alt="Photograph" onclick="openLightbox('<%= photo %>')">
+                    <img src="/<%= photo %>" alt="Photograph" onclick="openLightbox('/<%= photo %>')">
                 <% }) %>
             </div>
         <% } %>
@@ -353,6 +353,7 @@
 
         // Add event listener to the export button
         document.getElementById("export-btn").addEventListener("click", exportTableToExcel);
+
     </script>
 </body>
 </html>

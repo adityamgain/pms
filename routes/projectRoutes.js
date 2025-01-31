@@ -1,5 +1,6 @@
 const express = require('express');
 const router = express.Router();
+const fs = require('fs').promises;
 const Project = require('../models/Project');
 const EventWbenificiary = require('../models/EventWbenificiary');
 
@@ -120,5 +121,43 @@ router.get('/:id', async (req, res) => {
     }
 });
 
+router.delete('/:id', async (req, res) => {
+    try {
+        const projectId = req.params.id;
+        const project = await Project.findById(projectId);
+        if (!project) {
+            return res.status(404).send('Project not found.');
+        }
+        const events = await EventWbenificiary.find({ _id: { $in: project.events } });
+        if (events.length > 0) {
+            for (const event of events) {
+                if (event.photographs?.length) {
+                    await Promise.all(event.photographs.map(async (photoPath) => {
+                        try {
+                            await fs.unlink(photoPath);
+                        } catch (error) {
+                            console.error(`Error deleting photograph: ${photoPath}`, error.message);
+                        }
+                    }));
+                }
+                if (event.reports?.length) {
+                    await Promise.all(event.reports.map(async (reportPath) => {
+                        try {
+                            await fs.unlink(reportPath);
+                        } catch (error) {
+                            console.error(`Error deleting report: ${reportPath}`, error.message);
+                        }
+                    }));
+                }
+            }
+            await EventWbenificiary.deleteMany({ _id: { $in: project.events } });
+        }
+        await Project.findByIdAndDelete(projectId);
+        res.redirect('/projects/view-projects'); 
+    } catch (err) {
+        console.error('Error deleting project and events:', err.message);
+        res.status(500).send(`Server Error: ${err.message}`);
+    }
+});
 
 module.exports = router;

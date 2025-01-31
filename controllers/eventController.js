@@ -112,6 +112,11 @@ exports.submitEvent = async (req, res) => {
       return res.status(404).send('Project not found.');
     }
 
+    // If this is the first event, update the project status to 'Active'
+    if (project.events.length === 0) { // Check if the events array is empty
+      project.projectStatus = 'Active';
+    }
+
     project.events.push(savedEvent._id);
     await project.save();
 
@@ -263,10 +268,15 @@ exports.updateEvent = async (req, res) => {
   // deleting events with its associated photographs and reports
   exports.deleteEvent = async (req, res) => {
     try {
-      const event = await EventWbenificiary.findById(req.params.id).exec();
+      const eventId = req.params.id;
+      
+      // Find the event by ID
+      const event = await EventWbenificiary.findById(eventId);
       if (!event) {
         return res.status(404).send('Event not found');
       }
+  
+      // Delete associated photographs
       if (event.photographs && event.photographs.length > 0) {
         for (const photoPath of event.photographs) {
           try {
@@ -276,6 +286,8 @@ exports.updateEvent = async (req, res) => {
           }
         }
       }
+  
+      // Delete associated reports
       if (event.reports && event.reports.length > 0) {
         for (const reportPath of event.reports) {
           try {
@@ -285,14 +297,20 @@ exports.updateEvent = async (req, res) => {
           }
         }
       }
-      await EventWbenificiary.findByIdAndDelete(req.params.id);
+  
+      // Remove the event reference from the associated project
+      await Project.updateOne({ events: eventId }, { $pull: { events: eventId } });
+  
+      // Delete the event from the database
+      await EventWbenificiary.findByIdAndDelete(eventId);
+  
       res.redirect('/');
     } catch (err) {
       console.error('Error deleting event:', err.message);
       res.status(500).send(`Server Error: ${err.message}`);
     }
   };
-    
+      
 
 // Controller to view all event data for a project
 exports.viewAllEventData = async (req, res) => {

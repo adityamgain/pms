@@ -129,6 +129,7 @@ hr {
 
 
 /* Project Detail Container */
+/* Project Detail Container */
 .project-detail-container {
     max-width: 800px;
     margin: 40px auto;
@@ -136,7 +137,35 @@ hr {
     background-color: #fff;
     border-radius: 12px;
     box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
+    position: relative; /* Required for absolute positioning of the status badge */
 }
+
+/* Status Badge Styles */
+.status-badge {
+    position: absolute;
+    top: 20px;
+    left: 20px;
+    padding: 8px 16px;
+    border-radius: 20px;
+    font-size: 0.9rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    color: #fff;
+    z-index: 10; /* Ensure it's above other content */
+}
+
+.status-badge.planning {
+    background-color: #f39c12; /* Orange for Planning */
+}
+
+.status-badge.active {
+    background-color: #2ecc71; /* Green for Active */
+}
+
+.status-badge.completed {
+    background-color: #3498db; /* Blue for Completed */
+}
+
 
 .project-detail-container h1 {
     text-align: center;

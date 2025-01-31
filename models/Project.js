@@ -34,6 +34,12 @@ const ProjectSchema = new mongoose.Schema({
     },
     events: [{ type: mongoose.Schema.Types.ObjectId, ref: 'EventWbenificiary' }],
     codeName: { type: String, unique: true, required: true },
+    projectStatus: {
+        type: String,
+        enum: ['Planning', 'Active', 'Completed'],
+        default: 'Planning',
+        required: true
+    }
 });
 
 module.exports = mongoose.model('Project', ProjectSchema);
