@@ -11,15 +11,27 @@ exports.renderEventForm = async (req, res) => {
   try {
       const projectId = req.params.projectId;
       const project = await Project.findById(projectId);
+
       if (!project) {
           return res.status(404).send('Project not found');
       }
-      res.render('eventEbineficiartForm', { projectId, activities: project.activities, outcomes: project.outcomes });
+
+      // Extract activities and their outcomes
+      const activities = project.activities.map(activity => ({
+          name: activity.name,
+          outcomes: activity.outcomes || []
+      }));
+
+      res.render('eventEbineficiartForm', { projectId, activities });
   } catch (error) {
-      console.error(error);
+      console.error("Error fetching project for event form:", error);
       res.status(500).send('Server error');
   }
 };
+
+
+
+
 
 exports.submitEvent = async (req, res) => {
   try {

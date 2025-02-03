@@ -1,10 +1,13 @@
-  <!-- Bootstrap CSS -->
-  <link rel="stylesheet" href="/css/eventbeneficiaryform.css">
-
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Event Data Form</title>
+    <link rel="stylesheet" href="/css/eventbeneficiaryform.css">
+</head>
 <body>
 <div class="eventbeneficiaryform-container">
-
-
     <h1>Event Data Form</h1>
     <form id="eventForm" action="/projects/<%= projectId %>/submit-event" method="POST" enctype="multipart/form-data">
 
@@ -13,17 +16,21 @@
             <legend>Event Details</legend>
             <label for="eventName">Event Name:</label>
             <select id="eventName" name="eventName" required>
+                <option value="">Select Activity</option>
                 <% activities.forEach(activity => { %>
-                    <option value="<%= activity %>"><%= activity %></option>
-                <% }); %>
+                    <option value="<%= activity.name %>" data-outcomes="<%= JSON.stringify(activity.outcomes) %>">
+                    <%= activity.name %>
+                    </option>
+                <% }) %>
             </select><br><br>
+
             <label for="outcome">Event Outcome:</label>
             <select id="outcome" name="outcome" required>
-                <% outcomes.forEach(outcome => { %>
-                    <option value="<%= outcome %>"><%= outcome %></option>
-                <% }); %>
+                <option value="">Select Outcome</option>
             </select><br><br>
-            
+
+
+
             <label for="eventType">Event Type:</label>
             <select id="eventType" name="eventType" required>
                 <option value="Workshop">Workshop</option>
@@ -41,23 +48,22 @@
             <label for="endDate">End Date:</label>
             <input type="date" id="endDate" name="endDate" required><br><br>
 
-          <div>
+            <div>
                 <select id="province" name="province" class="provinceSelect" required>
-                <option value="">Select Province</option>
+                    <option value="">Select Province</option>
                 </select>
 
                 <select id="district" name="district" class="districtSelect" required disabled>
-                <option value="">Select District</option>
+                    <option value="">Select District</option>
                 </select>
 
                 <select id="municipality" name="municipality" class="municipalitySelect" required disabled>
-                <option value="">Select Municipality</option>
+                    <option value="">Select Municipality</option>
                 </select>
-          </div>
+            </div>
 
             <div>
                 <legend>Event Location</legend>
-                
                 <label for="latitude">Latitude:</label>
                 <input type="text" id="latitude" name="latitude" placeholder="Enter latitude" required><br><br>
 
@@ -103,7 +109,25 @@
         <!-- Submit -->
         <button type="submit">Submit Event</button>
     </form>
-   </div> 
+</div>
 
- <script src="/js/eventWbeneficiary.js"></script></body>
+<script>
+document.getElementById("eventName").addEventListener("change", function() {
+      const selectedOption = this.options[this.selectedIndex];
+      const outcomes = JSON.parse(selectedOption.getAttribute("data-outcomes") || "[]");
 
+      let outcomeDropdown = document.getElementById("outcome");
+      outcomeDropdown.innerHTML = '<option value="">Select Outcome</option>'; 
+
+      outcomes.forEach(outcome => {
+          let option = document.createElement("option");
+          option.value = outcome;
+          option.textContent = outcome;
+          outcomeDropdown.appendChild(option);
+      });
+  });
+</script>
+
+<script src="/js/eventWbeneficiary.js"></script>
+</body>
+</html>

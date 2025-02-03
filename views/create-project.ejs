@@ -5,148 +5,154 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Create Project</title>
     <style>
+        /* General Reset */
+
+
+        .createproject-form {
+            max-width: 800px;
+            margin: 2rem auto;
+            padding: 2rem;
+            background: #fff;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+        }
 
         .createproject-form h1 {
             text-align: center;
-            margin: 2rem 0;
+            margin-bottom: 2rem;
             font-size: 2.5rem;
             color: #2c3e50;
             font-weight: 600;
-            letter-spacing: -0.5px;
         }
 
-        .createproject-form form {
-            max-width: 700px;
-            margin: 2rem auto;
-            background: #fff;
-            padding: 2.5rem;
-            border-radius: 12px;
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+        .form-group {
+            margin-bottom: 1.5rem;
         }
 
-        .createproject-form label {
+        .form-group label {
             display: block;
             font-weight: 500;
-            margin-bottom: 0.75rem;
+            margin-bottom: 0.5rem;
             color: #444;
-            font-size: 0.95rem;
+            font-size: 1rem;
         }
 
-        .createproject-form input, select, textarea, button {
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
             width: 100%;
-            padding: 0.875rem;
-            margin-bottom: 1.25rem;
+            padding: 0.75rem;
             border: 1px solid #e0e0e0;
             border-radius: 8px;
             font-size: 1rem;
-            box-sizing: border-box;
             transition: border-color 0.3s ease, box-shadow 0.3s ease;
         }
 
-        .createproject-form input:focus, select:focus, textarea:focus {
+        .form-group input:focus,
+        .form-group select:focus,
+        .form-group textarea:focus {
             border-color: #4CAF50;
             outline: none;
             box-shadow: 0 0 0 3px rgba(76, 175, 80, 0.1);
         }
 
-        .createproject-form button {
-            width: auto;
-            padding: 0.875rem 2rem;
-            cursor: pointer;
-            background-color: #4CAF50;
-            color: #fff;
-            border: none;
-            border-radius: 8px;
-            font-size: 1rem;
-            font-weight: 600;
-            transition: background-color 0.3s ease, transform 0.2s ease;
-            display: block;
-            margin: 1.5rem auto 0;
+        .form-group textarea {
+            resize: vertical;
+            min-height: 100px;
         }
 
-        .createproject-form button:hover {
+        .form-group .checkbox-group {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+
+        .form-group .checkbox-group label {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-weight: 400;
+            cursor: pointer;
+        }
+
+        .form-group .checkbox-group input[type="checkbox"] {
+            width: auto;
+        }
+
+        .activity-item,
+        .outcome-item {
+            margin-bottom: 1rem;
+            padding: 1rem;
+            background: #f9fafb;
+            border-radius: 8px;
+            border: 1px solid #e0e0e0;
+        }
+
+        .activity-item input,
+        .outcome-item input {
+            margin-bottom: 0.5rem;
+        }
+
+        .add-btn,
+        .remove-btn {
+            padding: 0.5rem 1rem;
+            border: none;
+            border-radius: 6px;
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: background-color 0.3s ease, transform 0.2s ease;
+        }
+
+        .add-btn {
+            background-color: #4CAF50;
+            color: white;
+        }
+
+        .add-btn:hover {
             background-color: #45a049;
             transform: translateY(-2px);
         }
 
-        .createproject-form button:active {
-            transform: translateY(0);
+        .remove-btn {
+            background-color: #ff4d4d;
+            color: white;
         }
 
-        /* Custom Select Box */
-        .createproject-form select {
-            appearance: none; /* Remove default arrow */
-            background: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%232c3e50' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e")
-                no-repeat right 0.875rem center/16px 16px;
-            background-color: #fff;
-            padding-right: 2.5rem; /* Space for custom arrow */
+        .remove-btn:hover {
+            background-color: #e60000;
         }
 
-        .createproject-form select:hover {
-            border-color: #4CAF50;
+        .submit-btn {
+            width: 100%;
+            padding: 1rem;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background-color 0.3s ease, transform 0.2s ease;
         }
-        
-        .activity-item, .outcome-item {
-        display: flex;
-        align-items: center;
-        gap: 10px;
-        margin-bottom: 5px;
-    }
 
-    .remove-btn {
-        background-color: red;
-        color: white;
-        border: none;
-        padding: 5px;
-        cursor: pointer;
-        border-radius: 5px;
-    }
-
-    .remove-btn:hover {
-        background-color: darkred;
-    }
+        .submit-btn:hover {
+            background-color: #45a049;
+            transform: translateY(-2px);
+        }
 
         /* Responsive Design */
         @media (max-width: 768px) {
-            .createproject-form form {
-                padding: 1.5rem;
+            .createproject-form {
+                padding: 1rem;
             }
 
             .createproject-form h1 {
                 font-size: 2rem;
             }
 
-            .createproject-form button {
-                width: 100%;
-                margin-bottom: 0.5rem;
+            .form-group .checkbox-group {
+                flex-direction: column;
             }
-        }
-
-        /* Additional Professional Touches */
-        .createproject-form input::placeholder, textarea::placeholder {
-            color: #999;
-            font-size: 0.9rem;
-        }
-
-        .createproject-form .form-group {
-            margin-bottom: 1.5rem;
-        }
-
-        .createproject-form .form-group:last-child {
-            margin-bottom: 0;
-        }
-
-        .createproject-form .form-group label {
-            font-size: 0.9rem;
-            color: #555;
-        }
-
-        .createproject-form form-group input[type="date"] {
-            color: #555;
-        }
-
-        .createproject-form .form-group input[type="date"]:focus {
-            color: #333;
         }
     </style>
 </head>
@@ -154,35 +160,38 @@
 <div class="createproject-form">
     <h1>Create a New Project</h1>
     <form action="/projects/createProject" method="POST">
-        <!-- Project Details -->
+        <!-- Project Name -->
         <div class="form-group">
             <label for="projectName">Project Name:</label>
-            <input type="text" id="projectName" name="projectName" placeholder="Enter project name" required>
+            <input type="text" id="projectName" name="projectName" required>
         </div>
 
+        <!-- Donor -->
         <div class="form-group">
             <label for="donor">Donor:</label>
-            <input type="text" id="donor" name="donor" placeholder="Enter donor name" required>
+            <input type="text" id="donor" name="donor" required>
         </div>
 
+        <!-- Stakeholders -->
         <div class="form-group">
             <label for="stakeholders">Stakeholders (comma-separated):</label>
-            <input type="text" id="stakeholders" name="stakeholders" placeholder="Enter stakeholders" required>
+            <input type="text" id="stakeholders" name="stakeholders" required>
         </div>
 
+        <!-- Dates -->
         <div class="form-group">
             <label for="startDate">Start Date:</label>
             <input type="date" id="startDate" name="startDate" required>
         </div>
-
         <div class="form-group">
             <label for="endDate">End Date:</label>
             <input type="date" id="endDate" name="endDate" required>
         </div>
 
+        <!-- Area of Action -->
         <div class="form-group">
-            <label for="areaOfAction">Area of Action:</label>
-            <div>
+            <label>Area of Action:</label>
+            <div class="checkbox-group">
                 <label><input type="checkbox" name="areaOfAction" value="Nature-based commercial agriculture"> Nature-based commercial agriculture</label>
                 <label><input type="checkbox" name="areaOfAction" value="Sustainable Forest Management"> Sustainable Forest Management</label>
                 <label><input type="checkbox" name="areaOfAction" value="Water"> Water</label>
@@ -190,6 +199,7 @@
             </div>
         </div>
 
+        <!-- Reporting Period -->
         <div class="form-group">
             <label for="reportingPeriod">Reporting Period:</label>
             <select id="reportingPeriod" name="reportingPeriod" required>
@@ -201,59 +211,71 @@
             </select>
         </div>
 
-        <!-- Dynamic Activities -->
+        <!-- Activities -->
         <div class="form-group">
             <label>Activities:</label>
             <div id="activities-container">
                 <div class="activity-item">
-                    <input type="text" name="activities[]" placeholder="Enter activity">
-                    <button type="button" class="remove-btn" onclick="removeActivity(this)">❌</button>
+                    <input type="text" name="activities[0][name]" placeholder="Enter activity name" required>
+                    <div class="outcomes-container">
+                        <div class="outcome-item">
+                            <input type="text" name="activities[0][outcomes][]" placeholder="Enter outcome">
+                            <button type="button" class="remove-btn" onclick="removeOutcome(this)">Remove Outcome</button>
+                        </div>
+                    </div>
+                    <button type="button" class="add-btn" onclick="addOutcome(this)">+ Add Outcome</button>
+                    <button type="button" class="remove-btn" onclick="removeActivity(this)">Remove Activity</button>
                 </div>
             </div>
-            <button type="button" onclick="addActivity()">+ Add Activity</button>
+            <button type="button" class="add-btn" onclick="addActivity()">+ Add Activity</button>
         </div>
 
-        <!-- Dynamic Outcomes -->
-        <div class="form-group">
-            <label>Outcomes:</label>
-            <div id="outcomes-container">
-                <div class="outcome-item">
-                    <input type="text" name="outcomes[]" placeholder="Enter outcome">
-                    <button type="button" class="remove-btn" onclick="removeOutcome(this)">❌</button>
-                </div>
-            </div>
-            <button type="button" onclick="addOutcome()">+ Add Outcome</button>
-        </div>
-
-        <button type="submit">Create Project</button>
+        <!-- Submit Button -->
+        <button type="submit" class="submit-btn">Create Project</button>
     </form>
 </div>
 
 <script>
-function addActivity() {
+    let activityCounter = 1;
+
+    function addActivity() {
         const container = document.getElementById('activities-container');
         const div = document.createElement('div');
         div.className = 'activity-item';
-        div.innerHTML = '<input type="text" name="activities[]" placeholder="Enter activity"> <button type="button" class="remove-btn" onclick="removeActivity(this)">❌</button>';
+        div.innerHTML = `
+            <input type="text" name="activities[${activityCounter}][name]" placeholder="Enter activity name" required>
+            <div class="outcomes-container">
+                <div class="outcome-item">
+                    <input type="text" name="activities[${activityCounter}][outcomes][]" placeholder="Enter outcome">
+                    <button type="button" class="remove-btn" onclick="removeOutcome(this)">Remove Outcome</button>
+                </div>
+            </div>
+            <button type="button" class="add-btn" onclick="addOutcome(this)">+ Add Outcome</button>
+            <button type="button" class="remove-btn" onclick="removeActivity(this)">Remove Activity</button>
+        `;
         container.appendChild(div);
+        activityCounter++;
     }
 
     function removeActivity(button) {
         button.parentElement.remove();
     }
 
-    function addOutcome() {
-        const container = document.getElementById('outcomes-container');
-        const div = document.createElement('div');
-        div.className = 'outcome-item';
-        div.innerHTML = '<input type="text" name="outcomes[]" placeholder="Enter outcome"> <button type="button" class="remove-btn" onclick="removeOutcome(this)">❌</button>';
-        container.appendChild(div);
+    function addOutcome(button) {
+        const activityItem = button.parentElement;
+        const outcomesContainer = activityItem.querySelector('.outcomes-container');
+        const outcomeItem = document.createElement('div');
+        outcomeItem.className = 'outcome-item';
+        outcomeItem.innerHTML = `
+            <input type="text" name="${activityItem.querySelector('input').name.replace('[name]', '[outcomes][]')}" placeholder="Enter outcome">
+            <button type="button" class="remove-btn" onclick="removeOutcome(this)">Remove Outcome</button>
+        `;
+        outcomesContainer.appendChild(outcomeItem);
     }
 
     function removeOutcome(button) {
         button.parentElement.remove();
     }
 </script>
-
 </body>
 </html>

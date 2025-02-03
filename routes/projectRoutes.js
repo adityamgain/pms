@@ -22,34 +22,65 @@ function generateCodeName() {
 // Handle form submission to create a new project
 router.post('/createProject', async (req, res) => {
     try {
-        const { projectName, donor, stakeholders, startDate, endDate, areaOfAction, reportingPeriod, activities, outcomes } = req.body;
+        const { projectName, donor, stakeholders, startDate, endDate, areaOfAction, reportingPeriod, activities: rawActivities } = req.body;
+
+        // Validate required fields
         if (!projectName || !donor || !startDate || !endDate || !areaOfAction || !reportingPeriod) {
             return res.status(400).send('Missing required fields');
         }
+
+        // Ensure start date is before end date
         if (new Date(startDate) > new Date(endDate)) {
             return res.status(400).send('End date must be greater than or equal to start date');
         }
+
+        // Ensure activities is an array before mapping
+        if (!Array.isArray(rawActivities)) {
+            return res.status(400).send('Activities must be an array');
+        }
+
+        // Validate each activity
+        const activities = rawActivities.map((activity) => {
+            if (!activity.name || typeof activity.name !== "string") {
+                throw new Error("Each activity must have a valid name (string).");
+            }
+            return {
+                name: activity.name,
+                outcomes: Array.isArray(activity.outcomes) ? activity.outcomes : [],
+            };
+        });
+
+        // Ensure areaOfAction is an array
         const areaOfActionArray = Array.isArray(areaOfAction) ? areaOfAction : [areaOfAction];
+
+        // Ensure stakeholders is an array (fix split issue)
+        const stakeholdersArray = Array.isArray(stakeholders) ? stakeholders : stakeholders.split(',').map(s => s.trim());
+
+        // Generate unique project code
         const codeName = generateCodeName();
+
+        // Create project object
         const project = new Project({
             projectName,
             donor,
-            stakeholders: stakeholders.split(',').map(s => s.trim()),
+            stakeholders: stakeholdersArray,
             startDate,
             endDate,
             areaOfAction: areaOfActionArray,
             reportingPeriod,
             codeName,
-            activities: Array.isArray(activities) ? activities.filter(a => a.trim() !== '') : [],
-            outcomes: Array.isArray(outcomes) ? outcomes.filter(o => o.trim() !== '') : []
+            activities
         });
+
+        // Save project
         await project.save();
         res.redirect(`/projects/${project._id}`);
     } catch (err) {
-        console.error('Error saving project:', err);
-        res.status(500).send('Error saving project');
+        console.error('Error saving project:', err.message);
+        res.status(500).send(err.message || 'Error saving project');
     }
 });
+
 
 // Display all projects
 router.get('/view-projects', async (req, res) => {
