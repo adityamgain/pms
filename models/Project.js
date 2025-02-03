@@ -29,7 +29,7 @@ const ProjectSchema = new mongoose.Schema({
     }],
     reportingPeriod: { 
         type: String, 
-        enum: ['Monthly', 'Annually', 'Semi-Annually'], 
+        enum: ['Monthly', 'Quarterly', 'Semi-Annually','Annually'], 
         required: true 
     },
     events: [{ type: mongoose.Schema.Types.ObjectId, ref: 'EventWbenificiary' }],
@@ -39,7 +39,9 @@ const ProjectSchema = new mongoose.Schema({
         enum: ['Planning', 'Active', 'Completed'],
         default: 'Planning',
         required: true
-    }
+    },
+    activities: [{ type: String }], // Now a simple array of strings
+    outcomes: [{ type: String }]
 });
 
 module.exports = mongoose.model('Project', ProjectSchema);

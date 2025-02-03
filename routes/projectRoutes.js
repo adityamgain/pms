@@ -22,7 +22,7 @@ function generateCodeName() {
 // Handle form submission to create a new project
 router.post('/createProject', async (req, res) => {
     try {
-        const { projectName, donor, stakeholders, startDate, endDate, areaOfAction, reportingPeriod } = req.body;
+        const { projectName, donor, stakeholders, startDate, endDate, areaOfAction, reportingPeriod, activities, outcomes } = req.body;
         if (!projectName || !donor || !startDate || !endDate || !areaOfAction || !reportingPeriod) {
             return res.status(400).send('Missing required fields');
         }
@@ -39,7 +39,9 @@ router.post('/createProject', async (req, res) => {
             endDate,
             areaOfAction: areaOfActionArray,
             reportingPeriod,
-            codeName   
+            codeName,
+            activities: Array.isArray(activities) ? activities.filter(a => a.trim() !== '') : [],
+            outcomes: Array.isArray(outcomes) ? outcomes.filter(o => o.trim() !== '') : []
         });
         await project.save();
         res.redirect(`/projects/${project._id}`);

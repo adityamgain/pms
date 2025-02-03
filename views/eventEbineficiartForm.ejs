@@ -12,8 +12,18 @@
         <fieldset>
             <legend>Event Details</legend>
             <label for="eventName">Event Name:</label>
-            <input type="text" id="eventName" name="eventName" required><br><br>
-
+            <select id="eventName" name="eventName" required>
+                <% activities.forEach(activity => { %>
+                    <option value="<%= activity %>"><%= activity %></option>
+                <% }); %>
+            </select><br><br>
+            <label for="outcome">Event Outcome:</label>
+            <select id="outcome" name="outcome" required>
+                <% outcomes.forEach(outcome => { %>
+                    <option value="<%= outcome %>"><%= outcome %></option>
+                <% }); %>
+            </select><br><br>
+            
             <label for="eventType">Event Type:</label>
             <select id="eventType" name="eventType" required>
                 <option value="Workshop">Workshop</option>

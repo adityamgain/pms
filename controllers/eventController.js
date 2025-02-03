@@ -7,15 +7,25 @@ const Joi = require('joi');
 const XLSX = require('xlsx');
 
 // Controller to render the event form
-exports.renderEventForm = (req, res) => {
-  const projectId = req.params.projectId;
-  res.render('eventEbineficiartForm', { projectId }); // Ensure this matches the correct EJS template
+exports.renderEventForm = async (req, res) => {
+  try {
+      const projectId = req.params.projectId;
+      const project = await Project.findById(projectId);
+      if (!project) {
+          return res.status(404).send('Project not found');
+      }
+      res.render('eventEbineficiartForm', { projectId, activities: project.activities, outcomes: project.outcomes });
+  } catch (error) {
+      console.error(error);
+      res.status(500).send('Server error');
+  }
 };
 
 exports.submitEvent = async (req, res) => {
   try {
     const {
       eventName,
+      outcome,
       eventType,
       startDate,
       endDate,
@@ -88,6 +98,7 @@ exports.submitEvent = async (req, res) => {
     // Create and save the event
     const eventWithBeneficiary = new EventWbenificiary({
       eventName,
+      outcome,
       eventType,
       startDate,
       endDate,
@@ -130,14 +141,18 @@ exports.submitEvent = async (req, res) => {
   }
 };
 
+
+
 // Show edit form for a specific event
 exports.showEditForm = async (req, res) => {
   try {
+    const projectId = req.params.projectId;
+    const project = await Project.findById(projectId);  
     const event = await EventWbenificiary.findById(req.params.id).exec();
     if (!event) {
       return res.status(404).send('Event not found');
     }
-    res.render('editEventWithBeneficiary', { event });
+    res.render('editEventWithBeneficiary', { event, activities: project.activities, outcomes: project.outcomes });
   } catch (error) {
     console.error(`Error fetching event with ID ${req.params.id}:`, error.message);
     res.status(500).send('Server Error');
@@ -151,6 +166,7 @@ exports.updateEvent = async (req, res) => {
 
     const {
       eventName,
+      outcome,
       eventType,
       startDate,
       endDate,
@@ -233,6 +249,7 @@ exports.updateEvent = async (req, res) => {
 
     // Update the event fields
     event.eventName = eventName;
+    event.outcome = outcome;
     event.eventType = eventType;
     event.startDate = startDateObj;
     event.endDate = endDateObj;

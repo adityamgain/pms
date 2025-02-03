@@ -85,6 +85,26 @@
         .createproject-form select:hover {
             border-color: #4CAF50;
         }
+        
+        .activity-item, .outcome-item {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        margin-bottom: 5px;
+    }
+
+    .remove-btn {
+        background-color: red;
+        color: white;
+        border: none;
+        padding: 5px;
+        cursor: pointer;
+        border-radius: 5px;
+    }
+
+    .remove-btn:hover {
+        background-color: darkred;
+    }
 
         /* Responsive Design */
         @media (max-width: 768px) {
@@ -131,57 +151,109 @@
     </style>
 </head>
 <body>
-    <div class="createproject-form">
-        <h1>Create a New Project</h1>
-        <form action="/projects/createProject" method="POST">
-            <!-- Project Details -->
-            <div class="form-group">
-                <label for="projectName">Project Name:</label>
-                <input type="text" id="projectName" name="projectName" placeholder="Enter project name" required>
-            </div>
+<div class="createproject-form">
+    <h1>Create a New Project</h1>
+    <form action="/projects/createProject" method="POST">
+        <!-- Project Details -->
+        <div class="form-group">
+            <label for="projectName">Project Name:</label>
+            <input type="text" id="projectName" name="projectName" placeholder="Enter project name" required>
+        </div>
 
-            <div class="form-group">
-                <label for="donor">Donor:</label>
-                <input type="text" id="donor" name="donor" placeholder="Enter donor name" required>
-            </div>
+        <div class="form-group">
+            <label for="donor">Donor:</label>
+            <input type="text" id="donor" name="donor" placeholder="Enter donor name" required>
+        </div>
 
-            <div class="form-group">
-                <label for="stakeholders">Stakeholders (comma-separated):</label>
-                <input type="text" id="stakeholders" name="stakeholders" placeholder="Enter stakeholders" required>
-            </div>
+        <div class="form-group">
+            <label for="stakeholders">Stakeholders (comma-separated):</label>
+            <input type="text" id="stakeholders" name="stakeholders" placeholder="Enter stakeholders" required>
+        </div>
 
-            <div class="form-group">
-                <label for="startDate">Start Date:</label>
-                <input type="date" id="startDate" name="startDate" required>
-            </div>
+        <div class="form-group">
+            <label for="startDate">Start Date:</label>
+            <input type="date" id="startDate" name="startDate" required>
+        </div>
 
-            <div class="form-group">
-                <label for="endDate">End Date:</label>
-                <input type="date" id="endDate" name="endDate" required>
-            </div>
+        <div class="form-group">
+            <label for="endDate">End Date:</label>
+            <input type="date" id="endDate" name="endDate" required>
+        </div>
 
-            <div class="form-group">
-                <label for="areaOfAction">Area of Action:</label>
-                <div>
-                    <label><input type="checkbox" name="areaOfAction" value="Nature-based commercial agriculture"> Nature-based commercial agriculture</label>
-                    <label><input type="checkbox" name="areaOfAction" value="Sustainable Forest Management"> Sustainable Forest Management</label>
-                    <label><input type="checkbox" name="areaOfAction" value="Water"> Water</label>
-                    <label><input type="checkbox" name="areaOfAction" value="Climate Change"> Climate Change</label>
+        <div class="form-group">
+            <label for="areaOfAction">Area of Action:</label>
+            <div>
+                <label><input type="checkbox" name="areaOfAction" value="Nature-based commercial agriculture"> Nature-based commercial agriculture</label>
+                <label><input type="checkbox" name="areaOfAction" value="Sustainable Forest Management"> Sustainable Forest Management</label>
+                <label><input type="checkbox" name="areaOfAction" value="Water"> Water</label>
+                <label><input type="checkbox" name="areaOfAction" value="Climate Change"> Climate Change</label>
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label for="reportingPeriod">Reporting Period:</label>
+            <select id="reportingPeriod" name="reportingPeriod" required>
+                <option value="" disabled selected>Select reporting period</option>
+                <option value="Monthly">Monthly</option>
+                <option value="Quarterly">Quarterly</option>
+                <option value="Semi-Annually">Semi-Annually</option>
+                <option value="Annually">Annually</option>
+            </select>
+        </div>
+
+        <!-- Dynamic Activities -->
+        <div class="form-group">
+            <label>Activities:</label>
+            <div id="activities-container">
+                <div class="activity-item">
+                    <input type="text" name="activities[]" placeholder="Enter activity">
+                    <button type="button" class="remove-btn" onclick="removeActivity(this)">❌</button>
                 </div>
             </div>
+            <button type="button" onclick="addActivity()">+ Add Activity</button>
+        </div>
 
-            <div class="form-group">
-                <label for="reportingPeriod">Reporting Period:</label>
-                <select id="reportingPeriod" name="reportingPeriod" required>
-                    <option value="" disabled selected>Select reporting period</option>
-                    <option value="Monthly">Monthly</option>
-                    <option value="Annually">Annually</option>
-                    <option value="Semi-Annually">Semi-Annually</option>
-                </select>
+        <!-- Dynamic Outcomes -->
+        <div class="form-group">
+            <label>Outcomes:</label>
+            <div id="outcomes-container">
+                <div class="outcome-item">
+                    <input type="text" name="outcomes[]" placeholder="Enter outcome">
+                    <button type="button" class="remove-btn" onclick="removeOutcome(this)">❌</button>
+                </div>
             </div>
+            <button type="button" onclick="addOutcome()">+ Add Outcome</button>
+        </div>
 
-            <button type="submit">Create Project</button>
-        </form>
-    </div>
+        <button type="submit">Create Project</button>
+    </form>
+</div>
+
+<script>
+function addActivity() {
+        const container = document.getElementById('activities-container');
+        const div = document.createElement('div');
+        div.className = 'activity-item';
+        div.innerHTML = '<input type="text" name="activities[]" placeholder="Enter activity"> <button type="button" class="remove-btn" onclick="removeActivity(this)">❌</button>';
+        container.appendChild(div);
+    }
+
+    function removeActivity(button) {
+        button.parentElement.remove();
+    }
+
+    function addOutcome() {
+        const container = document.getElementById('outcomes-container');
+        const div = document.createElement('div');
+        div.className = 'outcome-item';
+        div.innerHTML = '<input type="text" name="outcomes[]" placeholder="Enter outcome"> <button type="button" class="remove-btn" onclick="removeOutcome(this)">❌</button>';
+        container.appendChild(div);
+    }
+
+    function removeOutcome(button) {
+        button.parentElement.remove();
+    }
+</script>
+
 </body>
 </html>
