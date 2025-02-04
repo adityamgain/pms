@@ -6,22 +6,20 @@ const fs = require('fs').promises;
 const Joi = require('joi');
 const XLSX = require('xlsx');
 
+
 // Controller to render the event form
 exports.renderEventForm = async (req, res) => {
   try {
       const projectId = req.params.projectId;
       const project = await Project.findById(projectId);
-
       if (!project) {
           return res.status(404).send('Project not found');
       }
-
       // Extract activities and their outcomes
       const activities = project.activities.map(activity => ({
           name: activity.name,
           outcomes: activity.outcomes || []
       }));
-
       res.render('eventEbineficiartForm', { projectId, activities });
   } catch (error) {
       console.error("Error fetching project for event form:", error);
@@ -235,7 +233,6 @@ exports.showEditForm = async (req, res) => {
   }
 };
 
-
 exports.updateEvent = async (req, res) => {
   try {
     console.log('Request Body:', req.body); // Debugging: Check incoming form data
@@ -336,7 +333,7 @@ exports.updateEvent = async (req, res) => {
     };
     event.nationalLevel = nationalLevel;
     event.facilitators = facilitators ? facilitators.split(',').map(facilitator => facilitator.trim()) : [];
-    event.beneficiaries = cleanedBeneficiaries;
+    event.beneficiaries = cleanedBeneficiaries || []; // Ensure beneficiaries is not null
 
     // Handle file uploads for photographs and reports
     if (req.files) {
@@ -358,6 +355,11 @@ exports.updateEvent = async (req, res) => {
     res.status(500).json({ message: 'Server error, failed to update event', error: error.message });
   }
 };
+
+
+
+
+
   // deleting events with its associated photographs and reports
   exports.deleteEvent = async (req, res) => {
     try {
@@ -442,11 +444,9 @@ exports.viewOneEventData = async (req, res) => {
     try {
         // Find the event by its unique ID
         const event = await EventWbenificiary.findById(req.params.id).exec();
-
         if (!event) {
             return res.status(404).send('Event not found');
         }
-
         // Calculate the beneficiary summary (overview) data
         const totalAttendees = event.beneficiaries.length;
         const totalMale = event.beneficiaries.filter(b => b.gender === 'Male').length;
