@@ -5,155 +5,164 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Create Project</title>
     <style>
-        /* General Reset */
+/* General Reset */
+.createproject-form {
+    max-width: 800px;
+    margin: 2rem auto;
+    padding: 2rem;
+    background: #fff;
+    border-radius: 12px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+}
 
+.createproject-form h1 {
+    text-align: center;
+    margin-bottom: 2rem;
+    font-size: 2.5rem;
+    color: #2c3e50;
+    font-weight: 600;
+}
 
-        .createproject-form {
-            max-width: 800px;
-            margin: 2rem auto;
-            padding: 2rem;
-            background: #fff;
-            border-radius: 12px;
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
-        }
+.form-group {
+    margin-bottom: 1.5rem;
+}
 
-        .createproject-form h1 {
-            text-align: center;
-            margin-bottom: 2rem;
-            font-size: 2.5rem;
-            color: #2c3e50;
-            font-weight: 600;
-        }
+.form-group label {
+    display: block;
+    font-weight: 500;
+    margin-bottom: 0.5rem;
+    color: #2c3e50;
+    font-size: 1rem;
+}
 
-        .form-group {
-            margin-bottom: 1.5rem;
-        }
+.form-group input,
+.form-group select,
+.form-group textarea {
+    width: 100%;
+    padding: 0.75rem;
+    border: 1px solid #d1d5db;
+    border-radius: 8px;
+    font-size: 1rem;
+    transition: all 0.3s ease;
+    background: #f9fafb;
+}
 
-        .form-group label {
-            display: block;
-            font-weight: 500;
-            margin-bottom: 0.5rem;
-            color: #444;
-            font-size: 1rem;
-        }
+.form-group input:focus,
+.form-group select:focus,
+.form-group textarea:focus {
+    border-color: #4CAF50;
+    outline: none;
+    box-shadow: 0 0 5px rgba(76, 175, 80, 0.2);
+    background: white;
+}
 
-        .form-group input,
-        .form-group select,
-        .form-group textarea {
-            width: 100%;
-            padding: 0.75rem;
-            border: 1px solid #e0e0e0;
-            border-radius: 8px;
-            font-size: 1rem;
-            transition: border-color 0.3s ease, box-shadow 0.3s ease;
-        }
+.form-group textarea {
+    resize: vertical;
+    min-height: 100px;
+}
 
-        .form-group input:focus,
-        .form-group select:focus,
-        .form-group textarea:focus {
-            border-color: #4CAF50;
-            outline: none;
-            box-shadow: 0 0 0 3px rgba(76, 175, 80, 0.1);
-        }
+.form-group .checkbox-group {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+}
 
-        .form-group textarea {
-            resize: vertical;
-            min-height: 100px;
-        }
+.form-group .checkbox-group label {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-weight: 400;
+    cursor: pointer;
+}
 
-        .form-group .checkbox-group {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 1rem;
-        }
+.form-group .checkbox-group input[type="checkbox"] {
+    width: auto;
+}
 
-        .form-group .checkbox-group label {
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-            font-weight: 400;
-            cursor: pointer;
-        }
+.activity-item,
+.outcome-item {
+    margin-bottom: 1rem;
+    padding: 1rem;
+    background: #eef2f7;
+    border-radius: 8px;
+    border: 1px solid #d1d5db;
+}
 
-        .form-group .checkbox-group input[type="checkbox"] {
-            width: auto;
-        }
+.activity-item input,
+.outcome-item input {
+    margin-bottom: 0.5rem;
+    border-radius: 6px;
+    border: 1px solid #ccc;
+    padding: 0.5rem;
+    font-size: 0.95rem;
+    width: calc(100% - 1rem);
+}
 
-        .activity-item,
-        .outcome-item {
-            margin-bottom: 1rem;
-            padding: 1rem;
-            background: #f9fafb;
-            border-radius: 8px;
-            border: 1px solid #e0e0e0;
-        }
+.add-btn,
+.remove-btn {
+    padding: 0.6rem 1.2rem;
+    border: none;
+    border-radius: 8px;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: inline-block;
+}
 
-        .activity-item input,
-        .outcome-item input {
-            margin-bottom: 0.5rem;
-        }
+.add-btn {
+    background-color: #4CAF50;
+    color: white;
+    font-weight: 600;
+}
 
-        .add-btn,
-        .remove-btn {
-            padding: 0.5rem 1rem;
-            border: none;
-            border-radius: 6px;
-            font-size: 0.9rem;
-            cursor: pointer;
-            transition: background-color 0.3s ease, transform 0.2s ease;
-        }
+.add-btn:hover {
+    background-color: #45a049;
+    transform: translateY(-2px);
+}
 
-        .add-btn {
-            background-color: #4CAF50;
-            color: white;
-        }
+.remove-btn {
+    background-color: #ff4d4d;
+    color: white;
+    font-weight: 600;
+}
 
-        .add-btn:hover {
-            background-color: #45a049;
-            transform: translateY(-2px);
-        }
+.remove-btn:hover {
+    background-color: #e60000;
+}
 
-        .remove-btn {
-            background-color: #ff4d4d;
-            color: white;
-        }
+.submit-btn {
+    width: 100%;
+    padding: 1rem;
+    background-color: #4CAF50;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-size: 1.2rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    text-transform: uppercase;
+}
 
-        .remove-btn:hover {
-            background-color: #e60000;
-        }
+.submit-btn:hover {
+    background-color: #45a049;
+    transform: translateY(-2px);
+}
 
-        .submit-btn {
-            width: 100%;
-            padding: 1rem;
-            background-color: #4CAF50;
-            color: white;
-            border: none;
-            border-radius: 8px;
-            font-size: 1rem;
-            font-weight: 600;
-            cursor: pointer;
-            transition: background-color 0.3s ease, transform 0.2s ease;
-        }
+/* Responsive Design */
+@media (max-width: 768px) {
+    .createproject-form {
+        padding: 1rem;
+    }
 
-        .submit-btn:hover {
-            background-color: #45a049;
-            transform: translateY(-2px);
-        }
+    .createproject-form h1 {
+        font-size: 2rem;
+    }
 
-        /* Responsive Design */
-        @media (max-width: 768px) {
-            .createproject-form {
-                padding: 1rem;
-            }
-
-            .createproject-form h1 {
-                font-size: 2rem;
-            }
-
-            .form-group .checkbox-group {
-                flex-direction: column;
-            }
-        }
+    .form-group .checkbox-group {
+        flex-direction: column;
+    }
+}
     </style>
 </head>
 <body>

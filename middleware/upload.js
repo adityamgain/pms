@@ -1,25 +1,27 @@
 const multer = require('multer');
-const path = require('path');
 
-// Set up file storage and file filter
-const storage = multer.diskStorage({
-  destination: (req, file, cb) => {
-    cb(null, 'uploads/'); // Save files in the 'uploads' directory
-  },
-  filename: (req, file, cb) => {
-    cb(null, `${Date.now()}_${file.originalname}`); // Rename files to avoid conflicts
-  }
-});
+const storage = multer.memoryStorage(); // Use memory storage instead of disk storage
 
 const fileFilter = (req, file, cb) => {
-  const allowedTypes = ['image/jpeg', 'image/png', 'application/pdf']; // Example file types
+  const allowedTypes = [
+    'image/jpeg', 
+    'image/png',
+    'application/pdf',
+    'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', // Excel .xlsx
+    'application/vnd.ms-excel' // Excel .xls
+  ];
+
   if (allowedTypes.includes(file.mimetype)) {
-    cb(null, true); // Allow the file
+    cb(null, true);
   } else {
-    cb(new Error('Invalid file type'), false); // Reject the file
+    cb(new Error('Invalid file type. Allowed types: JPEG, PNG, PDF, XLSX, XLS'), false);
   }
 };
 
-const upload = multer({ storage, fileFilter });
+const upload = multer({
+  storage, // Now storing in memory
+  fileFilter,
+  limits: { fileSize: 1024 * 1024 * 10 } // 10MB limit
+});
 
 module.exports = upload;

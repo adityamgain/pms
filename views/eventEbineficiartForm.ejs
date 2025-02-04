@@ -62,7 +62,7 @@
                 </select>
             </div>
 
-            <div>
+            <fieldset>
                 <legend>Event Location</legend>
                 <label for="latitude">Latitude:</label>
                 <input type="text" id="latitude" name="latitude" placeholder="Enter latitude" required><br><br>
@@ -71,7 +71,7 @@
                 <input type="text" id="longitude" name="longitude" placeholder="Enter longitude" required><br><br>
 
                 <button type="button" onclick="fetchGeolocation()">Get Current Location</button>
-            </div>
+            </fieldset>
 
             <label for="nationalLevel">National Level:</label>
             <select id="nationalLevel" name="nationalLevel" required>
@@ -94,6 +94,10 @@
             <legend>Beneficiaries</legend>
             <div id="beneficiariesContainer"></div>
             <button type="button" onclick="addBeneficiary()">Add Beneficiary</button><br><br>
+                <strong>OR</strong>
+            <!-- Add Excel Import Button -->
+            <label for="beneficiariesFile">Import Beneficiaries from Excel:</label>
+            <input type="file" id="beneficiariesFile" name="beneficiariesFile" accept=".xlsx, .xls"><br><br>
         </fieldset>
 
         <!-- File Uploads -->
@@ -126,6 +130,33 @@ document.getElementById("eventName").addEventListener("change", function() {
           outcomeDropdown.appendChild(option);
       });
   });
+
+document.getElementById("beneficiariesFile").addEventListener("change", function(event) {
+    const file = event.target.files[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = function(e) {
+        const data = new Uint8Array(e.target.result);
+        const workbook = XLSX.read(data, { type: 'array' });
+
+        const sheetName = workbook.SheetNames[0];
+        const worksheet = workbook.Sheets[sheetName];
+        const jsonData = XLSX.utils.sheet_to_json(worksheet);
+
+        // Display beneficiaries in the form
+        const container = document.getElementById("beneficiariesContainer");
+        container.innerHTML = ""; 
+        jsonData.forEach(row => {
+            const div = document.createElement("div");
+            div.textContent = `${row['Name']} (${row['Organization Name']})`;
+            container.appendChild(div);
+        });
+
+        console.log(jsonData); // Log parsed data
+    };
+    reader.readAsArrayBuffer(file);
+});
 </script>
 
 <script src="/js/eventWbeneficiary.js"></script>

@@ -3,11 +3,11 @@ const router = express.Router();
 const eventController = require('../controllers/eventController');
 const upload = require('../middleware/upload'); // Assuming you have an upload middleware for handling file uploads
 
-// Corrected route for rendering the event form
+// Route for rendering the event form
 router.get('/projects/:projectId/eventb', eventController.renderEventForm);
 
 // Route to handle event form submission
-router.post('/projects/:projectId/submit-event', upload.fields([{ name: 'photographs', maxCount: 10 }, { name: 'reports', maxCount: 10 }]), eventController.submitEvent);
+router.post('/projects/:projectId/submit-event', upload.fields([{ name: 'photographs', maxCount: 10 }, { name: 'reports', maxCount: 10 }, { name: 'beneficiariesFile', maxCount: 1 }]), eventController.submitEvent);
 
 // Route to display the edit form for a specific event
 router.get('/events/:id/edit', eventController.showEditForm);
