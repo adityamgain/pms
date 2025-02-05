@@ -185,7 +185,7 @@
             <div class="photographs">
                 <h3>Photographs</h3>
                 <% event.photographs.forEach(photo => { %>
-                    <img src="/<%= photo %>" alt="Photograph" onclick="openLightbox('/<%= photo %>')">
+                    <img src="<%= photo %>" alt="Photograph" onclick="openLightbox('/<%= photo %>')">
                 <% }) %>
             </div>
         <% } %>
@@ -196,7 +196,7 @@
                 <h3>Reports</h3>
                 <ul>
                     <% event.reports.forEach(report => { %>
-                        <li><i class="fas fa-file-alt"></i><a href="/<%= report %>" target="_blank">View Report</a></li>
+                        <li><i class="fas fa-file-alt"></i><a href="<%= report %>" target="_blank">View Report</a></li>
                     <% }) %>
                 </ul>
             </div>

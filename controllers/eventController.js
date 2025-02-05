@@ -5,6 +5,15 @@ const mongoose = require('mongoose');
 const fs = require('fs').promises;
 const Joi = require('joi');
 const XLSX = require('xlsx');
+const cloudinary = require('cloudinary').v2;
+const path = require('path');
+
+
+cloudinary.config({
+  cloud_name: 'dgdbgblvb',
+  api_key: '862544784633327',
+  api_secret: 'h12L4lhNzkuB1ANCzZpboD0sNgQ'
+});
 
 
 // Controller to render the event form
@@ -58,116 +67,49 @@ exports.submitEvent = async (req, res) => {
       return res.status(400).send('Valid longitude and latitude are required.');
     }
 
+    // Process beneficiaries from Excel or JSON
     let cleanedBeneficiaries = [];
-
-    // Check if an Excel file was uploaded
-    if (req.files && req.files.beneficiariesFile && req.files.beneficiariesFile[0]) {
-      const fileBuffer = req.files.beneficiariesFile[0].buffer;
-      console.log('File Buffer:', fileBuffer); // Log the file buffer to check if it has data
-
-      if (!fileBuffer || fileBuffer.length === 0) {
-        return res.status(400).send('Uploaded file is empty.');
-      }
-
-      try {
-        const workbook = XLSX.read(fileBuffer, { type: 'buffer' });
-        const sheetName = workbook.SheetNames[0];
-        if (!sheetName) {
-          return res.status(400).send('Excel file does not contain any sheets.');
-        }
-
-        const worksheet = workbook.Sheets[sheetName];
-        const jsonData = XLSX.utils.sheet_to_json(worksheet);
-        if (!jsonData || jsonData.length === 0) {
-          return res.status(400).send('Excel sheet is empty.');
-        }
-
-        console.log('Parsed JSON Data:', jsonData);
-
-        cleanedBeneficiaries = jsonData.map((row) => {
-          const beneficiary = {
-            name: row['Full Name'],
-            gender: row['Gender'],
-            age: row['Age Group'],
-            casteEthnicity: row['Caste/Ethnicity'],
-            associatedOrganization: {
-              name: row['Organization'],
-              main: row['Organization Type'],
-            },
-            povertyStatus: row['Poverty Status'],
-            benefitsFromActivity: row['Benefits from Activity'] === 'Yes',
-            disability: row['Disability'] === 'Yes',
-          };
-
-          // Validate associated organization
-          if (!beneficiary.associatedOrganization.name || !beneficiary.associatedOrganization.main) {
-            throw new Error(`Invalid associated organization for beneficiary "${beneficiary.name}".`);
-          }
-
-          // Normalize organization fields
-          beneficiary.associatedOrganization.name = beneficiary.associatedOrganization.name.trim();
-          beneficiary.associatedOrganization.main = beneficiary.associatedOrganization.main.trim();
-
-          // Validate subType based on main organization type
-          if (beneficiary.associatedOrganization.main === 'Community') {
-            beneficiary.associatedOrganization.subType = ['CFUG', 'FG'].includes(beneficiary.associatedOrganization.subType)
-              ? beneficiary.associatedOrganization.subType
-              : null;
-          } else if (beneficiary.associatedOrganization.main === 'Government') {
-            beneficiary.associatedOrganization.subType = ['National', 'Provincial', 'Municipal'].includes(beneficiary.associatedOrganization.subType)
-              ? beneficiary.associatedOrganization.subType
-              : null;
-          } else {
-            beneficiary.associatedOrganization.subType = null;
-          }
-
-          return beneficiary;
-        });
-      } catch (err) {
-        console.error('Error parsing Excel file:', err);
-        return res.status(400).send('Error parsing Excel file.');
-      }
+    if (req.files?.beneficiariesFile?.[0]) {
+      cleanedBeneficiaries = await processExcelFile(req.files.beneficiariesFile[0].buffer);
     } else if (req.body.beneficiaries) {
-      // If no Excel file, fall back to JSON data
-      try {
-        cleanedBeneficiaries = Array.isArray(req.body.beneficiaries) ? req.body.beneficiaries : JSON.parse(req.body.beneficiaries);
-      } catch (err) {
-        return res.status(400).send('Invalid beneficiaries data format.');
+      cleanedBeneficiaries = processJSONBeneficiaries(req.body.beneficiaries);
+    }
+
+    // Upload photographs and reports to Cloudinary
+    const uploadToCloudinary = async (file) => {
+      if (!file || !file.buffer) {
+        console.error('File or file buffer is missing:', file);
+        throw new Error('File buffer is missing.');
       }
 
-      cleanedBeneficiaries = cleanedBeneficiaries
-        .filter((b) => b && b.name) // Remove invalid entries
-        .map((beneficiary) => {
-          if (!beneficiary.associatedOrganization?.name || !beneficiary.associatedOrganization.main) {
-            throw new Error(`Invalid associated organization for beneficiary "${beneficiary.name}".`);
-          }
-
-          const associatedOrganization = beneficiary.associatedOrganization;
-
-          // Normalize organization fields
-          associatedOrganization.name = associatedOrganization.name.trim();
-          associatedOrganization.main = associatedOrganization.main.trim();
-
-          // Validate subType based on main organization type
-          if (associatedOrganization.main === 'Community') {
-            associatedOrganization.subType = ['CFUG', 'FG'].includes(associatedOrganization.subType)
-              ? associatedOrganization.subType
-              : null;
-          } else if (associatedOrganization.main === 'Government') {
-            associatedOrganization.subType = ['National', 'Provincial', 'Municipal'].includes(associatedOrganization.subType)
-              ? associatedOrganization.subType
-              : null;
-          } else {
-            associatedOrganization.subType = null;
-          }
-
-          // Convert checkboxes to boolean
-          beneficiary.benefitsFromActivity = beneficiary.benefitsFromActivity === 'on';
-          beneficiary.disability = beneficiary.disability === 'on';
-
-          return beneficiary;
+      try {
+        const result = await new Promise((resolve, reject) => {
+          cloudinary.uploader.upload_stream(
+            { folder: `events/${projectId}` },
+            (error, result) => {
+              if (error) {
+                console.error('Cloudinary upload stream error:', error.message);
+                reject(new Error('Failed to upload file to Cloudinary.'));
+              }
+              resolve(result);
+            }
+          ).end(file.buffer);
         });
-    }
+
+        return result.secure_url;
+      } catch (error) {
+        console.error('Cloudinary upload error:', error.message);
+        throw new Error('Failed to upload file to Cloudinary.');
+      }
+    };
+
+    const photographs = req.files?.photographs
+      ? await Promise.all(req.files.photographs.map(uploadToCloudinary))
+      : [];
+
+    const reports = req.files?.reports
+      ? await Promise.all(req.files.reports.map(uploadToCloudinary))
+      : [];
 
     // Create and save the event
     const eventWithBeneficiary = new EventWbenificiary({
@@ -180,8 +122,8 @@ exports.submitEvent = async (req, res) => {
       nationalLevel,
       facilitators: facilitators ? facilitators.split(',').map((f) => f.trim()) : [],
       beneficiaries: cleanedBeneficiaries,
-      photographs: req.files?.photographs?.map((file) => file.path) || [],
-      reports: req.files?.reports?.map((file) => file.path) || [],
+      photographs,
+      reports,
       location: {
         type: 'Point',
         coordinates: [parseFloat(longitude), parseFloat(latitude)],
@@ -204,6 +146,7 @@ exports.submitEvent = async (req, res) => {
     project.events.push(savedEvent._id);
     await project.save();
     console.log('Project updated with new event.');
+
     res.status(200).send('Event saved and linked to project successfully.');
   } catch (error) {
     console.error('Error saving event:', error.message);
@@ -212,6 +155,122 @@ exports.submitEvent = async (req, res) => {
     }
   }
 };
+
+// Helper function to process Excel file
+const processExcelFile = async (fileBuffer) => {
+  try {
+    if (!fileBuffer || fileBuffer.length === 0) {
+      throw new Error('Uploaded file is empty.');
+    }
+
+    // Check for valid Excel file extension
+    const fileType = fileBuffer.toString('utf8', 0, 4);
+    if (!['PK\x03\x04', 'd0cf11e0a1b11ae1'].includes(fileType)) {
+      throw new Error('Uploaded file is not a valid Excel file.');
+    }
+
+    const workbook = XLSX.read(fileBuffer, { type: 'buffer' });
+    const sheetName = workbook.SheetNames[0];
+    if (!sheetName) {
+      throw new Error('Excel file does not contain any sheets.');
+    }
+
+    const worksheet = workbook.Sheets[sheetName];
+    const jsonData = XLSX.utils.sheet_to_json(worksheet);
+    if (!jsonData || jsonData.length === 0) {
+      throw new Error('Excel sheet is empty.');
+    }
+
+    console.log('Parsed JSON Data:', jsonData);
+
+    return jsonData.map((row) => {
+      const beneficiary = {
+        name: row['Full Name'],
+        gender: row['Gender'],
+        age: row['Age Group'],
+        casteEthnicity: row['Caste/Ethnicity'],
+        associatedOrganization: {
+          name: row['Organization'],
+          main: row['Organization Type'],
+        },
+        povertyStatus: row['Poverty Status'],
+        benefitsFromActivity: row['Benefits from Activity'] === 'Yes',
+        disability: row['Disability'] === 'Yes',
+      };
+
+      // Validate associated organization
+      if (!beneficiary.associatedOrganization.name || !beneficiary.associatedOrganization.main) {
+        throw new Error(`Invalid associated organization for beneficiary "${beneficiary.name}".`);
+      }
+
+      // Normalize organization fields
+      beneficiary.associatedOrganization.name = beneficiary.associatedOrganization.name.trim();
+      beneficiary.associatedOrganization.main = beneficiary.associatedOrganization.main.trim();
+
+      // Validate subType based on main organization type
+      if (beneficiary.associatedOrganization.main === 'Community') {
+        beneficiary.associatedOrganization.subType = ['CFUG', 'FG'].includes(beneficiary.associatedOrganization.subType)
+          ? beneficiary.associatedOrganization.subType
+          : null;
+      } else if (beneficiary.associatedOrganization.main === 'Government') {
+        beneficiary.associatedOrganization.subType = ['National', 'Provincial', 'Municipal'].includes(beneficiary.associatedOrganization.subType)
+          ? beneficiary.associatedOrganization.subType
+          : null;
+      } else {
+        beneficiary.associatedOrganization.subType = null;
+      }
+
+      return beneficiary;
+    });
+  } catch (error) {
+    console.error('Error processing Excel file:', error.message);
+    throw new Error('Error processing Excel file.');
+  }
+};
+
+// Helper function to process JSON beneficiaries
+const processJSONBeneficiaries = (beneficiaries) => {
+  try {
+    const parsedBeneficiaries = Array.isArray(beneficiaries) ? beneficiaries : JSON.parse(beneficiaries);
+
+    return parsedBeneficiaries
+      .filter((b) => b && b.name) // Remove invalid entries
+      .map((beneficiary) => {
+        if (!beneficiary.associatedOrganization?.name || !beneficiary.associatedOrganization.main) {
+          throw new Error(`Invalid associated organization for beneficiary "${beneficiary.name}".`);
+        }
+
+        const associatedOrganization = beneficiary.associatedOrganization;
+
+        // Normalize organization fields
+        associatedOrganization.name = associatedOrganization.name.trim();
+        associatedOrganization.main = associatedOrganization.main.trim();
+
+        // Validate subType based on main organization type
+        if (associatedOrganization.main === 'Community') {
+          associatedOrganization.subType = ['CFUG', 'FG'].includes(associatedOrganization.subType)
+            ? associatedOrganization.subType
+            : null;
+        } else if (associatedOrganization.main === 'Government') {
+          associatedOrganization.subType = ['National', 'Provincial', 'Municipal'].includes(associatedOrganization.subType)
+            ? associatedOrganization.subType
+            : null;
+        } else {
+          associatedOrganization.subType = null;
+        }
+
+        // Convert checkboxes to boolean
+        beneficiary.benefitsFromActivity = beneficiary.benefitsFromActivity === 'on';
+        beneficiary.disability = beneficiary.disability === 'on';
+
+        return beneficiary;
+      });
+  } catch (error) {
+    console.error('Error processing JSON beneficiaries:', error.message);
+    throw new Error('Invalid beneficiaries data format.');
+  }
+};
+
 
 
 
