@@ -9,6 +9,7 @@ router.get('/projects/:projectId/eventb', eventController.renderEventForm);
 // Route to handle event form submission
 router.post('/projects/:projectId/submit-event', upload.fields([{ name: 'photographs', maxCount: 5 }, { name: 'reports', maxCount: 5 }, { name: 'beneficiariesFile', maxCount: 1 }]), eventController.submitEvent);
 
+
 // Route to display the edit form for a specific event
 router.get('/events/:id/edit', eventController.showEditForm);
 
