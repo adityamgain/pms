@@ -466,35 +466,65 @@ exports.updateEvent = async (req, res) => {
   };
       
 
-// Controller to view all event data for a project
-exports.viewAllEventData = async (req, res) => {
-  try {
-      const { projectId } = req.params; // Get the project ID from the request parameters
-      const project = await Project.findById(projectId);
-      if (!project) {
-          return res.status(404).send('Project not found');
-      }
+  exports.viewAllEventData = async (req, res) => {
+    try {
+        const { projectId } = req.params;
+        const { eventType, startDate, endDate, nationalLevel, sort } = req.query;
 
-      // Find all events associated with the project
-      const events = await EventWbenificiary.find({ _id: { $in: project.events } });
+        const project = await Project.findById(projectId);
+        if (!project) {
+            return res.status(404).send('Project not found');
+        }
 
-      // Create an overview for each event
-      const overview = events.map(event => {
-          const totalAttendees = event.beneficiaries.length;
-          const totalBenefited = event.beneficiaries.filter(b => b.benefitsFromActivity).length;
-          const benefitedRatio = totalAttendees > 0 ? (totalBenefited / totalAttendees) * 100 : 0;
-          return {
-              eventId: event._id,    // Add eventId for matching in the template
-              totalAttendees,
-              benefitedRatio: benefitedRatio.toFixed(2) // Convert to percentage and format
-          };
-      });
+        let query = { _id: { $in: project.events } };
+        if (eventType) query.eventType = eventType;
+        if (nationalLevel) query.nationalLevel = nationalLevel;
+        if (startDate && endDate) {
+            query.startDate = { $gte: new Date(startDate) };
+            query.endDate = { $lte: new Date(endDate) };
+        }
 
-      res.render('eventList', { datas: events, overview, project });
-  } catch (err) {
-      console.error(err);
-      res.status(500).send('Server error');
-  }
+        let events = await EventWbenificiary.find(query);
+
+        // Generate event overview
+        const overview = events.map(event => {
+            const totalAttendees = event.beneficiaries.length;
+            const totalBenefited = event.beneficiaries.filter(b => b.benefitsFromActivity).length;
+            const benefitedRatio = totalAttendees > 0 ? (totalBenefited / totalAttendees) * 100 : 0;
+            return {
+                eventId: event._id,
+                totalAttendees,
+                benefitedRatio: benefitedRatio.toFixed(2)
+            };
+        });
+
+        // Sorting logic
+        if (sort === 'asc') {
+            events = events.sort((a, b) => new Date(a.startDate) - new Date(b.startDate));
+        } else if (sort === 'desc') {
+            events = events.sort((a, b) => new Date(b.startDate) - new Date(a.startDate));
+        } else if (sort === 'highest_attendee') {
+            events = events.sort((a, b) => {
+                return overview.find(o => o.eventId.toString() === b._id.toString()).totalAttendees -
+                       overview.find(o => o.eventId.toString() === a._id.toString()).totalAttendees;
+            });
+        } else if (sort === 'lowest_attendee') {
+            events = events.sort((a, b) => {
+                return overview.find(o => o.eventId.toString() === a._id.toString()).totalAttendees -
+                       overview.find(o => o.eventId.toString() === b._id.toString()).totalAttendees;
+            });
+        }
+
+        res.render('eventList', { 
+            datas: events, 
+            overview, 
+            project, 
+            filters: { eventType, startDate, endDate, nationalLevel, sort } 
+        });
+    } catch (err) {
+        console.error(err);
+        res.status(500).send('Server error');
+    }
 };
 
 

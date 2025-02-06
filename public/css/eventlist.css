@@ -1,11 +1,14 @@
 @import url('https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css');
 
+/* Global Styles */
+
 /* Container for the event list */
 .eventlist-container {
-    max-width: 920px;
-    margin: 0 auto;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    color: #333;
+    max-width: 1200px;
+    margin: 40px auto;
     padding: 20px;
-    background-color: #f9f9f9;
     border-radius: 12px;
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
 }
@@ -15,103 +18,159 @@
     font-size: 2.5rem;
     margin-bottom: 30px;
     color: #2c3e50;
-    font-weight: bold;
+    font-weight: 600;
 }
 
-/* Event Container */
-.event-container {
+/* Filter Form */
+.filter-form {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 15px;
+    margin-bottom: 30px;
     padding: 20px;
-    margin-bottom: 20px;
-    background-color: #ffffff;
-    border-radius: 12px;
-    animation: fadeIn 0.5s ease-in-out;
-    border-left: 5px solid #af8e8e;
 }
 
-.event-container:hover {
+.filter-group {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+
+.filter-group label {
+    font-weight: 600;
+    color: #555;
+}
+
+.filter-group select, .filter-group input {
+    padding: 8px;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    font-size: 14px;
+    background-color: #fff;
+    transition: border-color 0.3s ease;
+}
+
+.filter-group select:focus, .filter-group input:focus {
+    border-color: #007bff;
+    outline: none;
+}
+
+/* Filter Buttons */
+.filter-buttons {
+    grid-column: 1 / -1;
+    display: flex;
+    gap: 10px;
+}
+
+.apply-button {
+    padding: 10px;
+    background-color: #007bff;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    font-size: 16px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+.apply-button:hover {
+    background-color: #0056b3;
+}
+
+.reset-button {
+    padding: 10px;
+    background-color: #e0e0e0;
+    color: #333;
+    border: none;
+    border-radius: 6px;
+    font-size: 16px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+.reset-button:hover {
+    background-color: #bdbdbd;
+}
+
+/* Event Grid */
+.event-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 20px;
+}
+
+.event-card {
+    background-color: #fff;
+    border-radius: 12px;
+    padding: 20px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    text-decoration: none;
+    color: inherit;
+}
+
+.event-card:hover {
     transform: translateY(-5px);
     box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
 }
 
-.event-container h2 {
-    font-size: 1.8rem;
-    margin-bottom: 10px;
-    color: #34495e;
-    font-weight: bold;
-}
-
-.event-container h2::after {
-    content: '';
-    display: block;
-    width: 50px;
-    height: 3px;
-    background-color: #4CAF50;
-    margin-top: 10px;
-}
-
-
-/* Event Details Section */
-.event-details {
+.event-header {
     margin-bottom: 15px;
 }
 
-.event-details p {
-    font-size: 1rem;
-    margin-bottom: 8px;
+.event-header h2 {
+    font-size: 1.5rem;
+    margin: 0;
+    color: #2c3e50;
+    font-weight: 600;
+}
+
+.event-type {
+    font-size: 0.9rem;
+    color: #777;
+    font-weight: 500;
+}
+
+.event-details {
+    font-size: 0.95rem;
     color: #555;
 }
 
-.event-details p strong {
+.event-details p {
+    margin: 8px 0;
+}
+
+.event-details strong {
     color: #2c3e50;
 }
 
-/* Facilitators Section */
-.facilitators {
-    margin-top: 15px;
-}
-
-.facilitators h3 {
-    font-size: 1.2rem;
-    margin-bottom: 10px;
-    color: #34495e;
-    font-weight: bold;
-}
-
-.facilitators ul {
-    list-style-type: none;
-    padding-left: 0;
-    display: flex;
-    flex-wrap: wrap;
-    gap: 10px;
-}
-
-.facilitators ul li {
-    font-size: 1rem;
-    color: #555;
-    display: flex;
-    align-items: center;
-    white-space: nowrap;
-}
-
-.facilitators ul li i {
-    margin-right: 5px;
-    color: #4CAF50;
-    font-size: 1.2rem;
-}
-
 /* No Events Found Message */
-.eventlist-container p {
+.no-events {
     text-align: center;
     font-size: 1.2rem;
     color: #777;
+    margin-top: 20px;
 }
 
-/* Horizontal Line */
-hr {
-    border: 0;
-    height: 1px;
-    background-color: #ddd;
-    margin: 20px 0;
+.filter-container {
+    display: none;
+    padding: 10px;
+    border: 1px solid #ccc;
+    background: #f9f9f9;
+    margin-bottom: 15px;
+    border-radius: 5px;
+}
+
+.filter-toggle {
+    display: flex;
+    align-items: center;
+    cursor: pointer;
+    font-size: 18px;
+    margin-bottom: 10px;
+}
+
+.filter-toggle i {
+    margin-right: 8px;
 }
 
 /* Responsive Design */
@@ -120,23 +179,23 @@ hr {
         padding: 15px;
     }
 
-    .event-container {
+    .filter-form {
+        grid-template-columns: 1fr;
+    }
+
+    .event-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .event-card {
         padding: 15px;
     }
 
-    .event-container h2 {
-        font-size: 1.5rem;
+    .event-header h2 {
+        font-size: 1.3rem;
     }
 
-    .event-details p {
-        font-size: 0.9rem;
-    }
-
-    .facilitators h3 {
-        font-size: 1.1rem;
-    }
-
-    .facilitators ul li {
+    .event-details {
         font-size: 0.9rem;
     }
 }

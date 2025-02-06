@@ -5,22 +5,83 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Event List</title>
     <link rel="stylesheet" href="/css/eventlist.css">
-    <!-- Add Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 </head>
 <body>
     <div class="eventlist-container">
         <h1>Event List for Project: <%= project.projectName %></h1>
 
+        <!-- Filter Toggle Button -->
+        <div class="filter-toggle" onclick="toggleFilters()">
+            <i class="fas fa-filter"></i> Show Filters
+        </div>
+
+        <!-- Filter Form -->
+        <div id="filter-container" class="filter-container">
+            <form class="filter-form" action="" method="GET">
+                <div class="filter-group">
+                    <label for="eventType">Event Type:</label>
+                    <select name="eventType">
+                        <option value="" <%= !filters.eventType ? 'selected' : '' %>>All</option>
+                        <option value="Workshop" <%= filters.eventType === 'Workshop' ? 'selected' : '' %>>Workshop</option>
+                        <option value="Meeting" <%= filters.eventType === 'Meeting' ? 'selected' : '' %>>Meeting</option>
+                        <option value="Training" <%= filters.eventType === 'Training' ? 'selected' : '' %>>Training</option>
+                        <option value="Dialogues" <%= filters.eventType === 'Dialogues' ? 'selected' : '' %>>Dialogues</option>
+                        <option value="Facilities" <%= filters.eventType === 'Facilities' ? 'selected' : '' %>>Facilities</option>
+                        <option value="Inputs" <%= filters.eventType === 'Inputs' ? 'selected' : '' %>>Inputs</option>
+                        <option value="Infrastructures" <%= filters.eventType === 'Infrastructures' ? 'selected' : '' %>>Infrastructures</option>
+                    </select>
+                </div>
+
+                <div class="filter-group">
+                    <label for="nationalLevel">National Level:</label>
+                    <select name="nationalLevel">
+                        <option value="" <%= !filters.nationalLevel ? 'selected' : '' %>>All</option>
+                        <option value="National" <%= filters.nationalLevel === 'National' ? 'selected' : '' %>>National</option>
+                        <option value="Provincial" <%= filters.nationalLevel === 'Provincial' ? 'selected' : '' %>>Provincial</option>
+                        <option value="District" <%= filters.nationalLevel === 'District' ? 'selected' : '' %>>District</option>
+                        <option value="Municipal" <%= filters.nationalLevel === 'Municipal' ? 'selected' : '' %>>Municipal</option>
+                    </select>
+                </div>
+
+                <div class="filter-group">
+                    <label for="startDate">Start Date:</label>
+                    <input type="date" name="startDate" value="<%= filters.startDate || '' %>">
+                </div>
+
+                <div class="filter-group">
+                    <label for="endDate">End Date:</label>
+                    <input type="date" name="endDate" value="<%= filters.endDate || '' %>">
+                </div>
+
+                <div class="filter-group">
+                    <label for="sort">Sort By:</label>
+                    <select name="sort">
+                        <option value="desc" <%= filters.sort === 'desc' ? 'selected' : '' %>>Newest First</option>
+                        <option value="asc" <%= filters.sort === 'asc' ? 'selected' : '' %>>Oldest First</option>
+                        <option value="highest_attendee" <%= filters.sort === 'highest_attendee' ? 'selected' : '' %>>Highest Attendee</option>
+                        <option value="lowest_attendee" <%= filters.sort === 'lowest_attendee' ? 'selected' : '' %>>Lowest Attendee</option>
+                    </select>
+                </div>
+
+                <div class="filter-buttons">
+                    <button type="submit" class="apply-button">Apply Filters</button>
+                    <button type="button" class="reset-button" onclick="resetFilters()">Reset</button>
+                </div>
+            </form>
+        </div>
+
+        <!-- Event List -->
         <% if (datas && datas.length > 0) { %>
-            <% datas.forEach((event, index) => { %>
-                <!-- Wrap the entire event section in an anchor tag -->
-                <a href="/viewevent/<%= event._id %>" style="text-decoration: none; color: inherit;">
-                    <div class="event-container">
-                        <h2><%= event.eventName %> - <%= event.eventType %></h2>
-                        <!-- Event Details Section -->
+            <div class="event-grid">
+                <% datas.forEach((event, index) => { %>
+                    <a href="/viewevent/<%= event._id %>" class="event-card">
+                        <div class="event-header">
+                            <h2><%= event.eventName %></h2>
+                            <span class="event-type"><%= event.eventType %></span>
+                        </div>
                         <div class="event-details">
-                            <p><strong>Attendees: </strong><%= overview.find(o => o.eventId.toString() === event._id.toString()).totalAttendees %></p>
+                            <p><strong>Attendees:</strong> <%= overview.find(o => o.eventId.toString() === event._id.toString()).totalAttendees %></p>
                             <p><strong>Benefited Ratio:</strong> <%= overview.find(o => o.eventId.toString() === event._id.toString()).benefitedRatio %>%</p>
                             <p><strong>Venue:</strong> 
                                 <%= event.venue 
@@ -29,23 +90,27 @@
                                 %>
                             </p>
                         </div>
-
-                        <!-- Facilitators Section -->
-                        <div class="facilitators">
-                            <h3>Facilitators</h3>
-                            <ul>
-                                <% event.facilitators.forEach(facilitator => { %>
-                                    <li><i class="fas fa-user"></i> <%= facilitator %></li>
-                                <% }) %>
-                            </ul>
-                        </div>
-                    </div>
-                </a>
-                <hr>
-            <% }) %>
+                    </a>
+                <% }) %>
+            </div>
         <% } else { %>
-            <p>No events found.</p>
+            <p class="no-events">No events found.</p>
         <% } %>
     </div>
+
+    <script>
+        function toggleFilters() {
+            var filterContainer = document.getElementById('filter-container');
+            if (filterContainer.style.display === 'none' || filterContainer.style.display === '') {
+                filterContainer.style.display = 'block';
+            } else {
+                filterContainer.style.display = 'none';
+            }
+        }
+
+        function resetFilters() {
+            window.location.href = window.location.pathname; // Reload the page without query parameters
+        }
+    </script>
 </body>
 </html>

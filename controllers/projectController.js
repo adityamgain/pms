@@ -235,6 +235,7 @@ exports.getProjectDetails = async (req, res) => {
     }
 };
 
+
 // Export project data to Excel
 exports.exportProjectDetails = async (req, res) => {
     try {
@@ -268,7 +269,7 @@ exports.exportProjectDetails = async (req, res) => {
 
         const eventSummaryData = [
             [
-                'Year', 'Month', 'Start Date (dd-mm-yyyy)', 'End Date (dd-mm-yyyy)', 'Duration (days)', 'Events', 'Event Outcomes', 
+                'SN', 'Year', 'Month', 'Start Date (dd-mm-yyyy)', 'End Date (dd-mm-yyyy)', 'Duration (days)', 'Events', 'Event Outcomes', 
                 'Facilitators', 'National Level', 'Province', 'District', 'Municipality', 'Type.Category', 'Linked to Field of Action',
                 'Total Attendees', 'Total Male', 'Total Female', 'Total 25 Yrs', 'Total 25-40 Yrs', 'Total 40 Above', 'Total Benefitted', 'Total Disability',
                 'Total Dalit', 'Total Tharu', 'Total Janajati', 'Total Brahman/Chhetri', 'Total Madhesi', 'Total Others Caste', 'Total Poverty A', 'Total Poverty B', 'Total Poverty C', 'Total Poverty D'
@@ -276,6 +277,7 @@ exports.exportProjectDetails = async (req, res) => {
         ];
 
         let sn = 1;
+        let eventSn = 1;
         const overview = {
             totalAttendees: 0,
             totalMale: 0,
@@ -355,6 +357,7 @@ exports.exportProjectDetails = async (req, res) => {
             }
 
             eventSummaryData.push([
+                eventSn++,
                 eventYear,
                 eventMonth,
                 event.startDate.toLocaleDateString('en-GB'),

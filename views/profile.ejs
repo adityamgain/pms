@@ -1,10 +1,123 @@
-<body>
-   <section>
-      <h3>Additional Resources</h3>
-      <div class="button-group">
-        <a href="/schemas" class="button">View All Schemas</a>
-        <a href="/employee" class="button">View All Employees</a>
-        <a href="/employee/add" class="button">Add New Employee</a>
-      </div>
-    </section>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>User Profile</title>
+  <style>
 
+.profile-section {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 90vh;
+  margin: 0;
+}
+  
+.profile-container {
+  background-color: #fff;
+  border-radius: 12px;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.1);
+  width: 100%;
+  max-width: 500px;
+  padding: 35px;
+  text-align: center;
+  transition: transform 0.3s ease-in-out;
+}
+
+.profile-container:hover {
+  transform: translateY(-5px);
+}
+
+.profile-header {
+  margin-bottom: 20px;
+}
+
+.profile-header img {
+  width: 130px;
+  height: 130px;
+  border-radius: 50%;
+  border: 5px solid #007bff;
+  margin-bottom: 15px;
+}
+
+.profile-header h1 {
+  margin: 0;
+  font-size: 26px;
+  font-weight: 600;
+  color: #222;
+}
+
+.profile-header p {
+  margin: 5px 0;
+  font-size: 16px;
+  color: #555;
+  font-weight: 500;
+}
+
+.profile-details {
+  text-align: left;
+  margin-top: 25px;
+}
+
+.profile-details h2 {
+  font-size: 20px;
+  color: #007bff;
+  margin-bottom: 12px;
+  padding-bottom: 8px;
+  border-bottom: 2px solid #007bff;
+}
+
+.profile-details p {
+  font-size: 16px;
+  color: #444;
+  margin: 10px 0;
+  padding: 5px 0;
+  display: flex;
+  align-items: center;
+}
+
+.profile-details p strong {
+  color: #222;
+  min-width: 140px;
+  display: inline-block;
+}
+
+@media (max-width: 600px) {
+  .profile-container {
+    padding: 25px;
+  }
+
+  .profile-header h1 {
+    font-size: 24px;
+  }
+
+  .profile-details p {
+    font-size: 15px;
+  }
+}
+  </style>
+</head>
+<body>
+<div class="profile-section">
+  <div class="profile-container">
+    <!-- Profile Header -->
+    <div class="profile-header">
+      <h1>John Doe</h1>
+      <p>Senior Manager</p>
+    </div>
+
+    <!-- Profile Details -->
+    <div class="profile-details">
+      <h2>About Me</h2>
+      <p><strong>Email:</strong> test@ansab.org.np</p>
+      <p><strong>Phone:</strong> +9748764532</p>
+      <p><strong>Location:</strong> Bhimsengole, Kathmandu</p>
+      <p><strong>Date of Joining:</strong> January 1, 2020</p>
+      <p><strong>Authorization:</strong> A</p>
+    </div>
+  </div>
+</div>
+
+</body>
+</html>
