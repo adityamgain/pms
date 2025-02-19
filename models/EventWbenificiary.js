@@ -32,7 +32,7 @@ const BeneficiarySchema = new mongoose.Schema({
 // Define Event Schema
 const EventWbenificiarySchema = new mongoose.Schema({
     eventName: { type: String, required: true },
-    outcome: { type: String, required: true },
+    outcome: { type: [String], required: true },
     eventType: { 
         type: String, 
         enum: ['Workshop', 'Meeting', 'Training', 'Dialogues', 'Facilities', 'Inputs', 'Infrastructures'], 

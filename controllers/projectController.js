@@ -20,7 +20,8 @@ exports.renderCreateProjectForm = (req, res) => {
 // Handle form submission to create a new project
 exports.createProject = async (req, res) => {
     try {
-        const { projectName, donor, stakeholders, startDate, endDate, areaOfAction, reportingPeriod, activities: rawActivities } = req.body;
+        const { projectName, donor, stakeholders, startDate, endDate, areaOfAction, reportingPeriod, target_events, activities, outcomes } = req.body;
+        console.log("Received request body:", req.body);
 
         // Validate required fields
         if (!projectName || !donor || !startDate || !endDate || !areaOfAction || !reportingPeriod) {
@@ -32,21 +33,9 @@ exports.createProject = async (req, res) => {
             return res.status(400).send('End date must be greater than or equal to start date');
         }
 
-        // Ensure activities is an array before mapping
-        if (!Array.isArray(rawActivities)) {
-            return res.status(400).send('Activities must be an array');
-        }
-
-        // Validate each activity
-        const activities = rawActivities.map((activity) => {
-            if (!activity.name || typeof activity.name !== "string") {
-                throw new Error("Each activity must have a valid name (string).");
-            }
-            return {
-                name: activity.name,
-                outcomes: Array.isArray(activity.outcomes) ? activity.outcomes : [],
-            };
-        });
+        // Ensure activities and outcomes are arrays
+        const activitiesArray = Array.isArray(activities) ? activities.map(a => a.trim()).filter(a => a) : [];
+        const outcomesArray = Array.isArray(outcomes) ? outcomes.map(o => o.trim()).filter(o => o) : [];
 
         // Ensure areaOfAction is an array
         const areaOfActionArray = Array.isArray(areaOfAction) ? areaOfAction : [areaOfAction];
@@ -67,7 +56,9 @@ exports.createProject = async (req, res) => {
             areaOfAction: areaOfActionArray,
             reportingPeriod,
             codeName,
-            activities
+            target_events,
+            activities: activitiesArray,
+            outcomes: outcomesArray
         });
 
         // Save project
@@ -106,50 +97,113 @@ exports.viewProjects = async (req, res) => {
 // Display project details
 exports.getProjectDetails = async (req, res) => {
     try {
-        // Fetch the project and populate its events
-        const project = await Project.findById(req.params.id).populate('events');
-
+        const project = await Project.findById(req.params.id).populate({
+            path: 'events',
+            populate: { path: 'beneficiaries' }
+        }).lean();
+        
         if (!project) {
             return res.status(404).send('Project not found');
         }
 
+        // ✅ Check project status and update if needed
+        const currentDate = new Date();
+        if (new Date(project.endDate) < currentDate && project.projectStatus.toLowerCase() !== 'completed') {
+            await Project.findByIdAndUpdate(project._id, { projectStatus: 'Completed' });
+        }
+
         const totalEvents = project.events.length;
+        const targetevent = project.target_events;
+        const EventsPercent = project.target_events > 0 ? (totalEvents / project.target_events) * 100 : 0;
         const eventTypeCounts = {};
+
         let totalAttendees = 0;
         let totalBenefitted = 0;
 
-        // Aggregate events by type and calculate total attendees and benefitted ratio
-        for (const event of project.events) {
-            if (event.eventType) { 
+        let totalMale = 0, totalFemale = 0, totalOther = 0;
+        let totalDalit = 0, totalJanajati = 0, totalBrahminChhetri = 0, totalTharu = 0, totalMadhesi = 0, totalOthers = 0;
+        let ageUnder25 = 0, age25to40 = 0, ageAbove40 = 0;
+
+        // ✅ Iterate through events
+        project.events.forEach(event => {
+            if (event.eventType) {
                 eventTypeCounts[event.eventType] = (eventTypeCounts[event.eventType] || 0) + 1;
             }
-            if (event.beneficiaries) {
+
+            if (Array.isArray(event.beneficiaries)) {
                 totalAttendees += event.beneficiaries.length;
                 totalBenefitted += event.beneficiaries.filter(b => b.benefitsFromActivity).length;
+
+                event.beneficiaries.forEach(beneficiary => {
+                    // Gender count
+                    if (beneficiary.gender === 'Male') totalMale++;
+                    else if (beneficiary.gender === 'Female') totalFemale++;
+                    else if (beneficiary.gender === 'Other') totalOther++;
+
+                    // Caste/Ethnicity count
+                    switch (beneficiary.casteEthnicity) {
+                        case 'Dalit': totalDalit++; break;
+                        case 'Janajati': totalJanajati++; break;
+                        case 'Brahman/Chhetri': totalBrahminChhetri++; break;
+                        case 'Tharu': totalTharu++; break;
+                        case 'Madhesi': totalMadhesi++; break;
+                        case 'Others': totalOthers++; break;
+                    }
+
+                    // Age group count
+                    switch (beneficiary.age) {
+                        case 'Upto 25 years': ageUnder25++; break;
+                        case '25-40 years': age25to40++; break;
+                        case '40 above years': ageAbove40++; break;
+                    }
+
+                });
             }
-        }
+        });
 
-        // Calculate the benefitted ratio as a percentage
         const benefittedRatio = totalAttendees > 0 ? (totalBenefitted / totalAttendees) * 100 : 0;
-
-        // Convert the aggregated data into a format suitable for Chart.js
         const eventTypes = Object.keys(eventTypeCounts);
         const eventCounts = Object.values(eventTypeCounts);
 
         res.render('project-details', {
             project,
+            EventsPercent: EventsPercent.toFixed(1),
             totalEvents,
+            targetevent,
             totalAttendees,
             totalBenefitted,
-            benefittedRatio: benefittedRatio.toFixed(2), // Round to 2 decimal places
+            benefittedRatio: benefittedRatio.toFixed(2),
             eventTypes: JSON.stringify(eventTypes),
-            eventCounts: JSON.stringify(eventCounts)
+            eventCounts: JSON.stringify(eventCounts),
+
+            // Gender distribution
+            totalMale,
+            totalFemale,
+            totalOther,
+
+            // Caste/Ethnicity distribution
+            totalDalit,
+            totalJanajati,
+            totalBrahminChhetri,
+            totalTharu,
+            totalMadhesi,
+            totalOthers,
+
+            // Age group distribution
+            ageUnder25,
+            age25to40,
+            ageAbove40
+
         });
+
     } catch (err) {
         console.error('Error fetching project:', err);
         res.status(500).send('Error fetching project');
     }
 };
+
+
+
 
 
 // Delete a project and its associated events
@@ -193,47 +247,6 @@ exports.deleteProject = async (req, res) => {
 };
 
 
-
-
-
-
-// Display project details
-exports.getProjectDetails = async (req, res) => {
-    try {
-        const project = await Project.findById(req.params.id).populate('events');
-        if (!project) {
-            return res.status(404).send('Project not found');
-        }
-        const totalEvents = project.events.length;
-        const eventTypeCounts = {};
-        let totalAttendees = 0;
-        let totalBenefitted = 0;
-        for (const event of project.events) {
-            if (event.eventType) {
-                eventTypeCounts[event.eventType] = (eventTypeCounts[event.eventType] || 0) + 1;
-            }
-            if (event.beneficiaries) {
-                totalAttendees += event.beneficiaries.length;
-                totalBenefitted += event.beneficiaries.filter(b => b.benefitsFromActivity).length;
-            }
-        }
-        const benefittedRatio = totalAttendees > 0 ? (totalBenefitted / totalAttendees) * 100 : 0;
-        const eventTypes = Object.keys(eventTypeCounts);
-        const eventCounts = Object.values(eventTypeCounts);
-        res.render('project-details', {
-            project,
-            totalEvents,
-            totalAttendees,
-            totalBenefitted,
-            benefittedRatio: benefittedRatio.toFixed(2),
-            eventTypes: JSON.stringify(eventTypes),
-            eventCounts: JSON.stringify(eventCounts)
-        });
-    } catch (err) {
-        console.error('Error fetching project:', err);
-        res.status(500).send('Error fetching project');
-    }
-};
 
 
 // Export project data to Excel

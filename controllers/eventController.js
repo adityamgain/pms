@@ -25,11 +25,10 @@ exports.renderEventForm = async (req, res) => {
           return res.status(404).send('Project not found');
       }
       // Extract activities and their outcomes
-      const activities = project.activities.map(activity => ({
-          name: activity.name,
-          outcomes: activity.outcomes || []
-      }));
-      res.render('eventEbineficiartForm', { projectId, activities });
+      const activities = project.activities || [];
+      const outcomes = project.outcomes || [];
+
+      res.render('eventEbineficiartForm', { projectId, activities, outcomes });
   } catch (error) {
       console.error("Error fetching project for event form:", error);
       res.status(500).send('Server error');
@@ -41,7 +40,6 @@ exports.submitEvent = async (req, res) => {
   try {
     const {
       eventName,
-      outcome,
       eventType,
       startDate,
       endDate,
@@ -53,20 +51,17 @@ exports.submitEvent = async (req, res) => {
       longitude,
       latitude,
     } = req.body;
-
     const { projectId } = req.params;
+    const outcome = Array.isArray(req.body.outcome) ? req.body.outcome : [req.body.outcome];
     console.log('Project ID:', projectId);
-
     // Validate projectId
     if (!mongoose.Types.ObjectId.isValid(projectId)) {
       return res.status(400).send('Invalid or missing project ID.');
     }
-
     // Validate longitude and latitude
     if (!longitude || !latitude || isNaN(longitude) || isNaN(latitude)) {
       return res.status(400).send('Valid longitude and latitude are required.');
     }
-
     // Process beneficiaries from Excel or JSON
     let cleanedBeneficiaries = [];
     if (req.files?.beneficiariesFile?.[0]) {
@@ -74,14 +69,12 @@ exports.submitEvent = async (req, res) => {
     } else if (req.body.beneficiaries) {
       cleanedBeneficiaries = processJSONBeneficiaries(req.body.beneficiaries);
     }
-
     // Upload photographs and reports to Cloudinary
     const uploadToCloudinary = async (file) => {
       if (!file || !file.buffer) {
         console.error('File or file buffer is missing:', file);
         throw new Error('File buffer is missing.');
       }
-
       try {
         const result = await new Promise((resolve, reject) => {
           cloudinary.uploader.upload_stream(
@@ -95,23 +88,18 @@ exports.submitEvent = async (req, res) => {
             }
           ).end(file.buffer);
         });
-
         return result.secure_url;
       } catch (error) {
         console.error('Cloudinary upload error:', error.message);
         throw new Error('Failed to upload file to Cloudinary.');
       }
     };
-
     const photographs = req.files?.photographs
       ? await Promise.all(req.files.photographs.map(uploadToCloudinary))
       : [];
-
     const reports = req.files?.reports
       ? await Promise.all(req.files.reports.map(uploadToCloudinary))
       : [];
-
-    // Create and save the event
     const eventWithBeneficiary = new EventWbenificiary({
       eventName,
       outcome,
@@ -129,24 +117,18 @@ exports.submitEvent = async (req, res) => {
         coordinates: [parseFloat(longitude), parseFloat(latitude)],
       },
     });
-
     const savedEvent = await eventWithBeneficiary.save();
     console.log('Event saved:', savedEvent);
-
-    // Find and update the project
     const project = await Project.findById(projectId);
     if (!project) {
       return res.status(404).send('Project not found.');
     }
-
-    // If this is the first event, update the project status to 'Active'
     if (project.events.length === 0) {
       project.projectStatus = 'Active';
     }
     project.events.push(savedEvent._id);
     await project.save();
     console.log('Project updated with new event.');
-
     res.status(200).send('Event saved and linked to project successfully.');
   } catch (error) {
     console.error('Error saving event:', error.message);
@@ -155,34 +137,26 @@ exports.submitEvent = async (req, res) => {
     }
   }
 };
-
-// Helper function to process Excel file
 const processExcelFile = async (fileBuffer) => {
   try {
     if (!fileBuffer || fileBuffer.length === 0) {
       throw new Error('Uploaded file is empty.');
     }
-
-    // Check for valid Excel file extension
     const fileType = fileBuffer.toString('utf8', 0, 4);
     if (!['PK\x03\x04', 'd0cf11e0a1b11ae1'].includes(fileType)) {
       throw new Error('Uploaded file is not a valid Excel file.');
     }
-
     const workbook = XLSX.read(fileBuffer, { type: 'buffer' });
     const sheetName = workbook.SheetNames[0];
     if (!sheetName) {
       throw new Error('Excel file does not contain any sheets.');
     }
-
     const worksheet = workbook.Sheets[sheetName];
     const jsonData = XLSX.utils.sheet_to_json(worksheet);
     if (!jsonData || jsonData.length === 0) {
       throw new Error('Excel sheet is empty.');
     }
-
     console.log('Parsed JSON Data:', jsonData);
-
     return jsonData.map((row) => {
       const beneficiary = {
         name: row['Full Name'],
@@ -197,17 +171,11 @@ const processExcelFile = async (fileBuffer) => {
         benefitsFromActivity: row['Benefits from Activity'] === 'Yes',
         disability: row['Disability'] === 'Yes',
       };
-
-      // Validate associated organization
       if (!beneficiary.associatedOrganization.name || !beneficiary.associatedOrganization.main) {
         throw new Error(`Invalid associated organization for beneficiary "${beneficiary.name}".`);
       }
-
-      // Normalize organization fields
       beneficiary.associatedOrganization.name = beneficiary.associatedOrganization.name.trim();
       beneficiary.associatedOrganization.main = beneficiary.associatedOrganization.main.trim();
-
-      // Validate subType based on main organization type
       if (beneficiary.associatedOrganization.main === 'Community') {
         beneficiary.associatedOrganization.subType = ['CFUG', 'FG'].includes(beneficiary.associatedOrganization.subType)
           ? beneficiary.associatedOrganization.subType
@@ -219,7 +187,6 @@ const processExcelFile = async (fileBuffer) => {
       } else {
         beneficiary.associatedOrganization.subType = null;
       }
-
       return beneficiary;
     });
   } catch (error) {
@@ -294,8 +261,7 @@ exports.showEditForm = async (req, res) => {
 
 exports.updateEvent = async (req, res) => {
   try {
-    console.log('Request Body:', req.body); // Debugging: Check incoming form data
-
+    console.log('Request Body:', req.body); 
     const {
       eventName,
       outcome,
@@ -311,34 +277,16 @@ exports.updateEvent = async (req, res) => {
       facilitators,
       beneficiaries,
     } = req.body;
-
     const eventId = req.params.id;
-
-    // Debugging: Log dates from request
-    console.log('Start Date from request:', startDate);
-    console.log('End Date from request:', endDate);
-
-    // Parse dates
     const startDateObj = new Date(startDate);
     const endDateObj = new Date(endDate);
-
-    // Debugging: Log parsed dates
-    console.log('Parsed Start Date:', startDateObj);
-    console.log('Parsed End Date:', endDateObj);
-
-    // Validate dates
     if (!startDateObj || !endDateObj || isNaN(startDateObj.getTime()) || isNaN(endDateObj.getTime())) {
       return res.status(400).json({ message: 'Invalid start date or end date.' });
     }
-
     if (endDateObj < startDateObj) {
       return res.status(400).json({ message: 'End date must be greater than or equal to start date.' });
     }
-
-    // Ensure beneficiaries is an array
     const beneficiariesArray = Array.isArray(beneficiaries) ? beneficiaries : [beneficiaries];
-
-    // Parse and clean beneficiaries
     const cleanedBeneficiaries = beneficiariesArray.map((beneficiary) => {
       if (typeof beneficiary === 'string') {
         beneficiary = JSON.parse(beneficiary);
@@ -346,14 +294,9 @@ exports.updateEvent = async (req, res) => {
       if (!beneficiary.associatedOrganization?.name || !beneficiary.associatedOrganization.main) {
         throw new Error(`Invalid associated organization for beneficiary "${beneficiary.name}".`);
       }
-
       const associatedOrganization = beneficiary.associatedOrganization;
-
-      // Normalize organization fields
       associatedOrganization.name = associatedOrganization.name.trim();
       associatedOrganization.main = associatedOrganization.main.trim();
-
-      // Validate subType based on main organization type
       if (associatedOrganization.main === 'Community') {
         associatedOrganization.subType = ['CFUG', 'FG'].includes(associatedOrganization.subType)
           ? associatedOrganization.subType
@@ -365,21 +308,14 @@ exports.updateEvent = async (req, res) => {
       } else {
         associatedOrganization.subType = null;
       }
-
-      // Convert checkboxes to boolean
       beneficiary.benefitsFromActivity = beneficiary.benefitsFromActivity === 'on';
       beneficiary.disability = beneficiary.disability === 'on';
-
       return beneficiary;
     });
-
-    // Fetch the event document
     const event = await EventWbenificiary.findById(eventId);
     if (!event) {
       return res.status(404).json({ message: 'Event not found' });
     }
-
-    // Update the event fields
     event.eventName = eventName;
     event.outcome = outcome;
     event.eventType = eventType;
@@ -392,9 +328,7 @@ exports.updateEvent = async (req, res) => {
     };
     event.nationalLevel = nationalLevel;
     event.facilitators = facilitators ? facilitators.split(',').map(facilitator => facilitator.trim()) : [];
-    event.beneficiaries = cleanedBeneficiaries || []; // Ensure beneficiaries is not null
-
-    // Handle file uploads for photographs and reports
+    event.beneficiaries = cleanedBeneficiaries || []; 
     if (req.files) {
       if (req.files['photographs']) {
         event.photographs = req.files['photographs'].map(file => file.path);
@@ -403,11 +337,8 @@ exports.updateEvent = async (req, res) => {
         event.reports = req.files['reports'].map(file => file.path);
       }
     }
-
-    // Save the updated event
     const updatedEvent = await event.save();
-
-    console.log('Updated Event:', updatedEvent); // Debugging: Check updated data
+    console.log('Updated Event:', updatedEvent); 
     res.redirect('/');
   } catch (error) {
     console.error('Error updating event:', error);
@@ -469,7 +400,7 @@ exports.updateEvent = async (req, res) => {
   exports.viewAllEventData = async (req, res) => {
     try {
         const { projectId } = req.params;
-        const { eventType, startDate, endDate, nationalLevel, sort } = req.query;
+        const { eventType, startDate, endDate, nationalLevel, sort, outcome, activity } = req.query;
 
         const project = await Project.findById(projectId);
         if (!project) {
@@ -479,12 +410,19 @@ exports.updateEvent = async (req, res) => {
         let query = { _id: { $in: project.events } };
         if (eventType) query.eventType = eventType;
         if (nationalLevel) query.nationalLevel = nationalLevel;
+        if (outcome) query.outcome = outcome;
+        if (activity) query.eventName = activity; // Fix: Match against eventName, not activity
         if (startDate && endDate) {
             query.startDate = { $gte: new Date(startDate) };
             query.endDate = { $lte: new Date(endDate) };
         }
 
         let events = await EventWbenificiary.find(query);
+
+        // Extract unique outcomes and event names (instead of 'activity')
+        const allEvents = await EventWbenificiary.find({ _id: { $in: project.events } });
+        const uniqueOutcomes = [...new Set(allEvents.map(e => e.outcome).filter(Boolean))];
+        const uniqueActivities = [...new Set(allEvents.map(e => e.eventName).filter(Boolean))]; // Fix: Extract eventName
 
         // Generate event overview
         const overview = events.map(event => {
@@ -519,7 +457,9 @@ exports.updateEvent = async (req, res) => {
             datas: events, 
             overview, 
             project, 
-            filters: { eventType, startDate, endDate, nationalLevel, sort } 
+            filters: { eventType, startDate, endDate, nationalLevel, sort, outcome, activity },
+            uniqueOutcomes, // Pass the unique outcomes
+            uniqueActivities // Pass the unique event names (activities)
         });
     } catch (err) {
         console.error(err);
@@ -529,14 +469,13 @@ exports.updateEvent = async (req, res) => {
 
 
 
+
 exports.viewOneEventData = async (req, res) => {
     try {
-        // Find the event by its unique ID
         const event = await EventWbenificiary.findById(req.params.id).exec();
         if (!event) {
             return res.status(404).send('Event not found');
         }
-        // Calculate the beneficiary summary (overview) data
         const totalAttendees = event.beneficiaries.length;
         const totalMale = event.beneficiaries.filter(b => b.gender === 'Male').length;
         const totalFemale = event.beneficiaries.filter(b => b.gender === 'Female').length;
@@ -545,22 +484,18 @@ exports.viewOneEventData = async (req, res) => {
         const total25To40 = event.beneficiaries.filter(b => b.age === '25-40 years').length;
         const totalabove40 = event.beneficiaries.filter(b => b.age === '40 above years').length;
         const totalBenefitted = event.beneficiaries.filter(b => b.benefitsFromActivity).length;
-
-        // Calculate additional summary data
         const totalDalit = event.beneficiaries.filter(b => b.casteEthnicity === 'Dalit').length;
         const totalJanajati = event.beneficiaries.filter(b => b.casteEthnicity === 'Janajati').length;
         const totalBrahmanChhetri = event.beneficiaries.filter(b => b.casteEthnicity === 'Brahman/Chhetri').length;
         const totalTharu = event.beneficiaries.filter(b => b.casteEthnicity === 'Tharu').length;
         const totalMadhesi = event.beneficiaries.filter(b => b.casteEthnicity === 'Madhesi').length;
         const totalOthersCaste = event.beneficiaries.filter(b => b.casteEthnicity === 'Others').length;
-
         const totalDisability = event.beneficiaries.filter(b => b.disability === true).length;
         const totalPovertyA = event.beneficiaries.filter(b => b.povertyStatus === 'A').length;
         const totalPovertyB = event.beneficiaries.filter(b => b.povertyStatus === 'B').length;
         const totalPovertyC = event.beneficiaries.filter(b => b.povertyStatus === 'C').length;
         const totalPovertyD = event.beneficiaries.filter(b => b.povertyStatus === 'D').length;
 
-        // Prepare the overview data
         const overview = {
             totalAttendees,
             totalMale,
@@ -587,7 +522,6 @@ exports.viewOneEventData = async (req, res) => {
         if (req.query.export === 'excel') {
             // Create a new workbook
             const workbook = XLSX.utils.book_new();
-
             // Create a worksheet for the beneficiary summary
             const summarySheetData = [
                 ['Total Attendees', overview.totalAttendees],

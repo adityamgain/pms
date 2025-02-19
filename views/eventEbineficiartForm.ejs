@@ -1,135 +1,160 @@
 <!DOCTYPE html>
 <html lang="en">
+<link href="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.13/css/select2.min.css" rel="stylesheet" />
+<script src="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.13/js/select2.min.js"></script>
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Event Data Form</title>
     <link rel="stylesheet" href="/css/eventbeneficiaryform.css">
 </head>
-<body>
 <div class="eventbeneficiaryform-container">
     <h1>Event Data Form</h1>
     <form id="eventForm" action="/projects/<%= projectId %>/submit-event" method="POST" enctype="multipart/form-data">
 
         <!-- Event Details -->
-        <fieldset>
-            <legend>Event Details</legend>
-            <label for="eventName">Event Name:</label>
-            <select id="eventName" name="eventName" required>
-                <option value="">Select Activity</option>
-                <% activities.forEach(activity => { %>
-                    <option value="<%= activity.name %>" data-outcomes="<%= JSON.stringify(activity.outcomes) %>">
-                    <%= activity.name %>
-                    </option>
-                <% }) %>
-            </select><br><br>
+        <fieldset class="event-details">
+            <legend>Event Information</legend>
 
-            <label for="outcome">Event Outcome:</label>
-            <select id="outcome" name="outcome" required>
-                <option value="">Select Outcome</option>
-            </select><br><br>
+            <div class="form-group">
+                <label for="eventName">Event Name:</label>
+                <select id="eventName" name="eventName" required>
+                    <option value="">Select Activity</option>
+                    <% activities.forEach(activity => { %>
+                        <option value="<%= activity %>"><%= activity %></option>
+                    <% }) %>
+                </select>
+            </div>
 
+            <div class="form-group">
+                <label>Event Outcomes:</label>
+                <div id="outcomeContainer">
+                    <% outcomes.forEach((outcome, index) => { %>
+                        <label class="checkbox-label" data-number="<%= index + 1 %>">
+                            <input type="checkbox" name="outcome[]" value="<%= outcome %>">
+                            <%= outcome %>
+                        </label>
+                    <% }) %>
+                </div>
+                <small>Select all applicable outcomes.</small>
+            </div>
 
+            <div class="form-group">
+                <label for="eventType">Event Type:</label>
+                <select id="eventType" name="eventType" required>
+                    <option value="Workshop">Workshop</option>
+                    <option value="Meeting">Meeting</option>
+                    <option value="Training">Training</option>
+                    <option value="Dialogues">Dialogues</option>
+                    <option value="Facilities">Facilities</option>
+                    <option value="Inputs">Inputs</option>
+                    <option value="Infrastructures">Infrastructures</option>
+                </select>
+            </div>
 
-            <label for="eventType">Event Type:</label>
-            <select id="eventType" name="eventType" required>
-                <option value="Workshop">Workshop</option>
-                <option value="Meeting">Meeting</option>
-                <option value="Training">Training</option>
-                <option value="Dialogues">Dialogues</option>
-                <option value="Facilities">Facilities</option>
-                <option value="Inputs">Inputs</option>
-                <option value="Infrastructures">Infrastructures</option>
-            </select><br><br>
+            <div class="form-group date-select">
+                <label for="startDate">Start Date:</label>
+                <input type="date" id="startDate" name="startDate" required>
+            </div>
 
-            <label for="startDate">Start Date:</label>
-            <input type="date" id="startDate" name="startDate" required><br><br>
+            <div class="form-group date-select">
+                <label for="endDate">End Date:</label>
+                <input type="date" id="endDate" name="endDate" required>
+            </div>
 
-            <label for="endDate">End Date:</label>
-            <input type="date" id="endDate" name="endDate" required><br><br>
-
-            <div>
+            <div class="form-group location-select">
+                <label for="province">Location:</label>
                 <select id="province" name="province" class="provinceSelect" required>
                     <option value="">Select Province</option>
                 </select>
-
                 <select id="district" name="district" class="districtSelect" required disabled>
                     <option value="">Select District</option>
                 </select>
-
                 <select id="municipality" name="municipality" class="municipalitySelect" required disabled>
                     <option value="">Select Municipality</option>
                 </select>
             </div>
 
-            <fieldset>
+            <fieldset class="geo-location">
                 <legend>Event Location</legend>
-                <label for="latitude">Latitude:</label>
-                <input type="text" id="latitude" name="latitude" placeholder="Enter latitude" required><br><br>
-
-                <label for="longitude">Longitude:</label>
-                <input type="text" id="longitude" name="longitude" placeholder="Enter longitude" required><br><br>
-
-                <button type="button" onclick="fetchGeolocation()">Get Current Location</button>
+                <div class="form-group">
+                    <label for="latitude">Latitude:</label>
+                    <input type="text" id="latitude" name="latitude" placeholder="Enter latitude" required>
+                </div>
+                <div class="form-group">
+                    <label for="longitude">Longitude:</label>
+                    <input type="text" id="longitude" name="longitude" placeholder="Enter longitude" required>
+                </div>
+                <button type="button" class="btn-location" onclick="fetchGeolocation()">Get Current Location</button>
             </fieldset>
 
-            <label for="nationalLevel">National Level:</label>
-            <select id="nationalLevel" name="nationalLevel" required>
-                <option value="National">National</option>
-                <option value="Provincial">Provincial</option>
-                <option value="District">District</option>
-                <option value="Municipal">Municipal</option>
-            </select><br><br>
+            <div class="form-group">
+                <label for="nationalLevel">Event Scope:</label>
+                <select id="nationalLevel" name="nationalLevel" required>
+                    <option value="National">National</option>
+                    <option value="Provincial">Provincial</option>
+                    <option value="District">District</option>
+                    <option value="Municipal">Municipal</option>
+                </select>
+            </div>
         </fieldset>
 
         <!-- Facilitators -->
-        <fieldset>
+        <fieldset class="facilitators">
             <legend>Facilitators</legend>
-            <label for="facilitators">Facilitators (comma-separated):</label>
-            <input type="text" id="facilitators" name="facilitators"><br><br>
+            <div class="form-group">
+                <label for="facilitators">Facilitators (comma-separated):</label>
+                <input type="text" id="facilitators" name="facilitators">
+            </div>
         </fieldset>
 
         <!-- Beneficiaries -->
-        <fieldset>
+        <fieldset class="beneficiaries">
             <legend>Beneficiaries</legend>
             <div id="beneficiariesContainer"></div>
-            <button type="button" onclick="addBeneficiary()">Add Beneficiary</button><br><br>
-                <strong>OR</strong>
-            <!-- Add Excel Import Button -->
-            <label for="beneficiariesFile">Import Beneficiaries from Excel:</label>
-            <input type="file" id="beneficiariesFile" name="beneficiariesFile" accept=".xlsx, .xls"><br><br>
+            <button type="button" class="btn-add" onclick="addBeneficiary()">Add Beneficiary</button>
+            <strong>OR</strong>
+            <div class="form-group">
+                <label for="beneficiariesFile">Import Beneficiaries from Excel:</label>
+                <input type="file" id="beneficiariesFile" name="beneficiariesFile" accept=".xlsx, .xls">
+            </div>
         </fieldset>
 
         <!-- File Uploads -->
-        <fieldset>
+        <fieldset class="file-uploads">
             <legend>File Uploads</legend>
-            <label for="photographs">Upload Photographs:</label>
-            <input type="file" id="photographs" name="photographs" multiple><br><br>
-
-            <label for="reports">Upload Reports:</label>
-            <input type="file" id="reports" name="reports" multiple><br><br>
+            <div class="form-group">
+                <label for="photographs">Upload Photographs:</label>
+                <input type="file" id="photographs" name="photographs" multiple>
+            </div>
+            <div class="form-group">
+                <label for="reports">Upload Reports:</label>
+                <input type="file" id="reports" name="reports" multiple>
+            </div>
         </fieldset>
 
         <!-- Submit -->
-        <button type="submit">Submit Event</button>
+        <button type="submit" class="btn-submit">Submit Event</button>
     </form>
 </div>
 
 <script>
+const activities = <%= JSON.stringify(activities) %>;
+const outcomes = <%= JSON.stringify(outcomes) %>;
+
 document.getElementById("eventName").addEventListener("change", function() {
-      const selectedOption = this.options[this.selectedIndex];
-      const outcomes = JSON.parse(selectedOption.getAttribute("data-outcomes") || "[]");
+    const outcomeSelect = document.getElementById("outcome");
+    outcomeSelect.innerHTML = '<option value="">Select Outcome</option>';
 
-      let outcomeDropdown = document.getElementById("outcome");
-      outcomeDropdown.innerHTML = '<option value="">Select Outcome</option>'; 
-
-      outcomes.forEach(outcome => {
-          let option = document.createElement("option");
-          option.value = outcome;
-          option.textContent = outcome;
-          outcomeDropdown.appendChild(option);
-      });
-  });
+    // Populate with all available outcomes
+    outcomes.forEach(outcome => {
+        const option = document.createElement("option");
+        option.value = outcome;
+        option.textContent = outcome;
+        outcomeSelect.appendChild(option);
+    });
+});
 
 document.getElementById("beneficiariesFile").addEventListener("change", function(event) {
     const file = event.target.files[0];
@@ -157,8 +182,31 @@ document.getElementById("beneficiariesFile").addEventListener("change", function
     };
     reader.readAsArrayBuffer(file);
 });
+
+$(document).ready(function() {
+    $('.select2-outcome').select2({
+        placeholder: "Select Event Outcomes",
+        allowClear: true
+    });
+
+    // Handle activity change to filter relevant outcomes
+    $("#eventName").on("change", function() {
+        const selectedActivity = $(this).val();
+        const outcomeSelect = $("#outcome");
+
+        outcomeSelect.find("option").each(function() {
+            const outcome = $(this).val();
+            if (outcome && !outcomes.includes(outcome)) {
+                $(this).hide();
+            } else {
+                $(this).show();
+            }
+        });
+
+        outcomeSelect.val(null).trigger("change"); // Reset selection
+    });
+});
 </script>
 
 <script src="/js/eventWbeneficiary.js"></script>
-</body>
-</html>
+</body></html>

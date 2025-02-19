@@ -5,164 +5,130 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Create Project</title>
     <style>
-/* General Reset */
-.createproject-form {
-    max-width: 800px;
-    margin: 2rem auto;
-    padding: 2rem;
-    background: #fff;
-    border-radius: 12px;
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
-}
-
-.createproject-form h1 {
-    text-align: center;
-    margin-bottom: 2rem;
-    font-size: 2.5rem;
-    color: #2c3e50;
-    font-weight: 600;
-}
-
-.form-group {
-    margin-bottom: 1.5rem;
-}
-
-.form-group label {
-    display: block;
-    font-weight: 500;
-    margin-bottom: 0.5rem;
-    color: #2c3e50;
-    font-size: 1rem;
-}
-
-.form-group input,
-.form-group select,
-.form-group textarea {
-    width: 100%;
-    padding: 0.75rem;
-    border: 1px solid #d1d5db;
-    border-radius: 8px;
-    font-size: 1rem;
-    transition: all 0.3s ease;
-    background: #f9fafb;
-}
-
-.form-group input:focus,
-.form-group select:focus,
-.form-group textarea:focus {
-    border-color: #4CAF50;
-    outline: none;
-    box-shadow: 0 0 5px rgba(76, 175, 80, 0.2);
-    background: white;
-}
-
-.form-group textarea {
-    resize: vertical;
-    min-height: 100px;
-}
-
-.form-group .checkbox-group {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 1rem;
-}
-
-.form-group .checkbox-group label {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    font-weight: 400;
-    cursor: pointer;
-}
-
-.form-group .checkbox-group input[type="checkbox"] {
-    width: auto;
-}
-
-.activity-item,
-.outcome-item {
-    margin-bottom: 1rem;
-    padding: 1rem;
-    background: #eef2f7;
-    border-radius: 8px;
-    border: 1px solid #d1d5db;
-}
-
-.activity-item input,
-.outcome-item input {
-    margin-bottom: 0.5rem;
-    border-radius: 6px;
-    border: 1px solid #ccc;
-    padding: 0.5rem;
-    font-size: 0.95rem;
-    width: calc(100% - 1rem);
-}
-
-.add-btn,
-.remove-btn {
-    padding: 0.6rem 1.2rem;
-    border: none;
-    border-radius: 8px;
-    font-size: 1rem;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    display: inline-block;
-}
-
-.add-btn {
-    background-color: #4CAF50;
-    color: white;
-    font-weight: 600;
-}
-
-.add-btn:hover {
-    background-color: #45a049;
-    transform: translateY(-2px);
-}
-
-.remove-btn {
-    background-color: #ff4d4d;
-    color: white;
-    font-weight: 600;
-}
-
-.remove-btn:hover {
-    background-color: #e60000;
-}
-
-.submit-btn {
-    width: 100%;
-    padding: 1rem;
-    background-color: #4CAF50;
-    color: white;
-    border: none;
-    border-radius: 8px;
-    font-size: 1.2rem;
-    font-weight: 700;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    text-transform: uppercase;
-}
-
-.submit-btn:hover {
-    background-color: #45a049;
-    transform: translateY(-2px);
-}
-
-/* Responsive Design */
-@media (max-width: 768px) {
     .createproject-form {
-        padding: 1rem;
+        max-width: 800px;
+        margin: 2rem auto;
+        padding: 2rem;
+        background: #fff;
+        border-radius: 12px;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
     }
 
     .createproject-form h1 {
-        font-size: 2rem;
+        text-align: center;
+        margin-bottom: 2rem;
+        font-size: 2.5rem;
+        color: #2c3e50;
+        font-weight: 600;
     }
 
-    .form-group .checkbox-group {
-        flex-direction: column;
+    .form-group {
+        margin-bottom: 1.5rem;
     }
-}
+
+    .form-group label {
+        display: block;
+        font-weight: 500;
+        margin-bottom: 0.5rem;
+        color: #2c3e50;
+        font-size: 1rem;
+    }
+
+    .form-group input,
+    .form-group select,
+    .form-group textarea {
+        width: 100%;
+        padding: 0.75rem;
+        border: 1px solid #d1d5db;
+        border-radius: 8px;
+        font-size: 1rem;
+        transition: all 0.3s ease;
+        background: #f9fafb;
+    }
+
+    .form-group input:focus,
+    .form-group select:focus,
+    .form-group textarea:focus {
+        border-color: #4CAF50;
+        outline: none;
+        box-shadow: 0 0 5px rgba(76, 175, 80, 0.2);
+        background: white;
+    }
+
+    .form-group textarea {
+        resize: vertical;
+        min-height: 100px;
+    }
+
+    .activity-item,
+        .outcome-item {
+            margin-bottom: 1rem;
+            padding: 1rem;
+            background: #e9ecef;
+            border-radius: 8px;
+            border: 1px solid #ced4da;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+    .add-btn,
+        .remove-btn {
+            padding: 0.7rem 1.4rem;
+            border: none;
+            border-radius: 5px;
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .add-btn {
+            background-color: #4CAF50;
+            color: white;
+            font-weight: 600;
+        }
+
+        .add-btn:hover {
+            background-color: #45a049;
+            transform: translateY(-2px);
+        }
+
+        .remove-btn {
+            background-color: #f44336;
+            color: white;
+            font-weight: 400;
+        }
+
+        .remove-btn:hover {
+            background-color: #e53935;
+        }
+    .submit-btn {
+        width: 100%;
+        padding: 1rem;
+        background-color: #4CAF50;
+        color: white;
+        border: none;
+        border-radius: 8px;
+        font-size: 1.2rem;
+        font-weight: 700;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        text-transform: uppercase;
+    }
+
+    .submit-btn:hover {
+        background-color: #45a049;
+        transform: translateY(-2px);
+    }
+
+    .checkbox-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+        }
+
+    .checkbox-group input {
+        margin-right: 0.5rem;
+    }
     </style>
 </head>
 <body>
@@ -200,11 +166,11 @@
         <!-- Area of Action -->
         <div class="form-group">
             <label>Area of Action:</label>
-            <div class="checkbox-group">
-                <label><input type="checkbox" name="areaOfAction" value="Nature-based commercial agriculture"> Nature-based commercial agriculture</label>
-                <label><input type="checkbox" name="areaOfAction" value="Sustainable Forest Management"> Sustainable Forest Management</label>
-                <label><input type="checkbox" name="areaOfAction" value="Water"> Water</label>
-                <label><input type="checkbox" name="areaOfAction" value="Climate Change"> Climate Change</label>
+            <div id="areaOfAction" class="checkbox-group">
+                <label><input type="checkbox" name="areaOfAction[]" value="Nature-based commercial agriculture"> Nature-based commercial agriculture</label>
+                <label><input type="checkbox" name="areaOfAction[]" value="Sustainable Forest Management"> Sustainable Forest Management</label>
+                <label><input type="checkbox" name="areaOfAction[]" value="Water"> Water</label>
+                <label><input type="checkbox" name="areaOfAction[]" value="Climate Change"> Climate Change</label>
             </div>
         </div>
 
@@ -212,31 +178,40 @@
         <div class="form-group">
             <label for="reportingPeriod">Reporting Period:</label>
             <select id="reportingPeriod" name="reportingPeriod" required>
-                <option value="" disabled selected>Select reporting period</option>
                 <option value="Monthly">Monthly</option>
                 <option value="Quarterly">Quarterly</option>
                 <option value="Semi-Annually">Semi-Annually</option>
                 <option value="Annually">Annually</option>
             </select>
         </div>
+        
+        <div class="form-group">
+            <label for="target_events">Targeted Number of Events:</label>
+            <input type="number" id="target_events" name="target_events" min="1" required oninput="validatePositiveNumber(this)">
+        </div>
 
-        <!-- Activities -->
+        <!-- Activities Section -->
         <div class="form-group">
             <label>Activities:</label>
             <div id="activities-container">
                 <div class="activity-item">
-                    <input type="text" name="activities[0][name]" placeholder="Enter activity name" required>
-                    <div class="outcomes-container">
-                        <div class="outcome-item">
-                            <input type="text" name="activities[0][outcomes][]" placeholder="Enter outcome">
-                            <button type="button" class="remove-btn" onclick="removeOutcome(this)">Remove Outcome</button>
-                        </div>
-                    </div>
-                    <button type="button" class="add-btn" onclick="addOutcome(this)">+ Add Outcome</button>
+                    <input type="text" name="activities[]" placeholder="Enter activity name" required>
                     <button type="button" class="remove-btn" onclick="removeActivity(this)">Remove Activity</button>
                 </div>
             </div>
             <button type="button" class="add-btn" onclick="addActivity()">+ Add Activity</button>
+        </div>
+
+        <!-- Outcomes Section -->
+        <div class="form-group">
+            <label>Outcomes:</label>
+            <div id="outcomes-container">
+                <div class="outcome-item">
+                    <input type="text" name="outcomes[]" placeholder="Enter outcome" required>
+                    <button type="button" class="remove-btn" onclick="removeOutcome(this)">Remove Outcome</button>
+                </div>
+            </div>
+            <button type="button" class="add-btn" onclick="addOutcome()">+ Add Outcome</button>
         </div>
 
         <!-- Submit Button -->
@@ -245,46 +220,41 @@
 </div>
 
 <script>
-    let activityCounter = 1;
-
     function addActivity() {
         const container = document.getElementById('activities-container');
         const div = document.createElement('div');
         div.className = 'activity-item';
         div.innerHTML = `
-            <input type="text" name="activities[${activityCounter}][name]" placeholder="Enter activity name" required>
-            <div class="outcomes-container">
-                <div class="outcome-item">
-                    <input type="text" name="activities[${activityCounter}][outcomes][]" placeholder="Enter outcome">
-                    <button type="button" class="remove-btn" onclick="removeOutcome(this)">Remove Outcome</button>
-                </div>
-            </div>
-            <button type="button" class="add-btn" onclick="addOutcome(this)">+ Add Outcome</button>
+            <input type="text" name="activities[]" placeholder="Enter activity name" required>
             <button type="button" class="remove-btn" onclick="removeActivity(this)">Remove Activity</button>
         `;
         container.appendChild(div);
-        activityCounter++;
     }
 
     function removeActivity(button) {
         button.parentElement.remove();
     }
 
-    function addOutcome(button) {
-        const activityItem = button.parentElement;
-        const outcomesContainer = activityItem.querySelector('.outcomes-container');
-        const outcomeItem = document.createElement('div');
-        outcomeItem.className = 'outcome-item';
-        outcomeItem.innerHTML = `
-            <input type="text" name="${activityItem.querySelector('input').name.replace('[name]', '[outcomes][]')}" placeholder="Enter outcome">
+    function addOutcome() {
+        const container = document.getElementById('outcomes-container');
+        const div = document.createElement('div');
+        div.className = 'outcome-item';
+        div.innerHTML = `
+            <input type="text" name="outcomes[]" placeholder="Enter outcome" required>
             <button type="button" class="remove-btn" onclick="removeOutcome(this)">Remove Outcome</button>
         `;
-        outcomesContainer.appendChild(outcomeItem);
+        container.appendChild(div);
     }
 
     function removeOutcome(button) {
         button.parentElement.remove();
     }
+
+    function validatePositiveNumber(input) {
+    if (input.value < 1) {
+        input.value = "";
+    }
+}
 </script>
 </body>
 </html>

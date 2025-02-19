@@ -55,6 +55,26 @@
                 </div>
 
                 <div class="filter-group">
+                    <label for="outcome">Outcome:</label>
+                    <select name="outcome">
+                        <option value="" <%= !filters.outcome ? 'selected' : '' %>>All</option>
+                        <% uniqueOutcomes.forEach(outcome => { %>
+                            <option value="<%= outcome %>" <%= filters.outcome === outcome ? 'selected' : '' %>><%= outcome %></option>
+                        <% }) %>
+                    </select>
+                </div>
+
+                <div class="filter-group">
+                    <label for="activity">Activity:</label>
+                    <select name="activity">
+                        <option value="" <%= !filters.activity ? 'selected' : '' %>>All</option>
+                        <% uniqueActivities.forEach(activity => { %>
+                            <option value="<%= activity %>" <%= filters.activity === activity ? 'selected' : '' %>><%= activity %></option>
+                        <% }) %>
+                    </select>
+                </div>
+
+                <div class="filter-group">
                     <label for="sort">Sort By:</label>
                     <select name="sort">
                         <option value="desc" <%= filters.sort === 'desc' ? 'selected' : '' %>>Newest First</option>
@@ -63,6 +83,7 @@
                         <option value="lowest_attendee" <%= filters.sort === 'lowest_attendee' ? 'selected' : '' %>>Lowest Attendee</option>
                     </select>
                 </div>
+
 
                 <div class="filter-buttons">
                     <button type="submit" class="apply-button">Apply Filters</button>
@@ -89,6 +110,7 @@
                                     : 'N/A' 
                                 %>
                             </p>
+                            <p><span class="event-type"> <%= event.startDate.toDateString() %> </span></p>
                         </div>
                     </a>
                 <% }) %>
@@ -97,6 +119,7 @@
             <p class="no-events">No events found.</p>
         <% } %>
     </div>
+
 
     <script>
         function toggleFilters() {

@@ -1,6 +1,5 @@
 @import url('https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css');
 
-
 /* Container for the event list */
 .eventlist-container {
     max-width: 920px;
@@ -330,6 +329,60 @@ hr {
     position: absolute;
     width: 36%;
 }
+
+/* Graphical Representation Section */
+.graphical-representation {
+    margin-top: 30px;
+    padding: 20px;
+    background: #fff;
+    border-radius: 10px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.graphical-representation h2 {
+    text-align: center;
+    font-size: 22px;
+    color: #333;
+    margin-bottom: 20px;
+}
+
+/* Chart Grid */
+.chart-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 20px;
+    justify-content: center;
+}
+
+/* Chart Container */
+.chart-container {
+    background: #f8f9fa;
+    padding: 15px;
+    border-radius: 8px;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+    text-align: center;
+}
+
+.chart-container h4 {
+    font-size: 18px;
+    color: #007bff;
+    margin-bottom: 10px;
+}
+
+/* Chart Canvas */
+canvas {
+    width: 100% !important;
+    height: auto !important;
+    max-height: 250px;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .chart-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
 
 
 @media (max-width:980px) {

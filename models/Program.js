@@ -14,7 +14,7 @@ const programSchema = new mongoose.Schema({
   events: [{ 
     type: mongoose.Schema.Types.ObjectId, 
     ref: 'Event' 
-  }] // Optional: To store related events for the program
+  }] 
 });
 
 const Program = mongoose.model('Program', programSchema);

@@ -241,7 +241,7 @@
             data: {
                 labels: ['Male', 'Female'],
                 datasets: [{
-                    label: 'Gender Distribution',
+                    label: 'Gender',
                     data: [beneficiarySummary.totalMale, beneficiarySummary.totalFemale],
                     backgroundColor: ['#36A2EB', '#FF6384'],
                 }]
@@ -262,7 +262,7 @@
             data: {
                 labels: ['Upto 25 Years', '25-40 Years', '40+ Years'],
                 datasets: [{
-                    label: 'Age Group Distribution',
+                    label: 'Age Group',
                     data: [
                         beneficiarySummary.totalUpto25,
                         beneficiarySummary.total25To40,
@@ -275,7 +275,7 @@
                 responsive: true,
                 plugins: {
                     legend: { display: false },
-                    title: { display: true, text: 'Age Group Distribution' }
+                    title: { display: true, text: 'Age Group' }
                 },
                 scales: { y: { beginAtZero: true } }
             }
@@ -288,7 +288,7 @@
             data: {
                 labels: ['Dalit', 'Tharu', 'Janajati', 'Brahman/Chhetri', 'Madhesi', 'Others'],
                 datasets: [{
-                    label: 'Caste/Ethnicity Distribution',
+                    label: 'Caste/Ethnicity',
                     data: [
                         beneficiarySummary.totalDalit,
                         beneficiarySummary.totalTharu,
@@ -316,7 +316,7 @@
             data: {
                 labels: ['Poverty A', 'Poverty B', 'Poverty C', 'Poverty D'],
                 datasets: [{
-                    label: 'Poverty Status Distribution',
+                    label: 'Poverty Status',
                     data: [
                         beneficiarySummary.totalPovertyA,
                         beneficiarySummary.totalPovertyB,

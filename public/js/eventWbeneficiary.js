@@ -211,6 +211,7 @@ function addBeneficiary() {
 }
 
 function removeBeneficiary(button) {
+    beneficiaryCount--;
     button.parentElement.remove();
 }
 

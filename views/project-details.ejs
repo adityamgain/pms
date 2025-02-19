@@ -10,7 +10,7 @@
 <body>
     <div class="project-detail-container">
 
-   <!-- Status Badge in Top-Left Corner -->
+        <!-- Status Badge in Top-Left Corner -->
         <div class="status-badge <%= project.projectStatus.toLowerCase() %>">
             <%= project.projectStatus %>
         </div>
@@ -32,34 +32,57 @@
             <section class="counting">
                 <div class="layout">  
                     <div class="grid-3">
-                        <span class="count1 counter"><%= totalEvents %></span>
+                        <span class="counter"><%= totalEvents %> </span>
                         <p>Events Completed</p>
                     </div>
                     <div class="grid-3">
-                        <span class="count2 counter"><%= totalAttendees %></span>
-                        <p>Total Attendees</p>
+                        <span class="counter"><%= targetevent %></span>
+                        <p>Total Events</p>
                     </div>
                     <div class="grid-3">
-                        <span class="counter "><%= totalBenefitted %></span>
-                        <p>Total Benefitted</p>
+                        <span class="counter"><%= totalAttendees %></span>
+                        <p>Total Beneficiaries</p>
                     </div>
                     <div class="grid-3">
-                        <span class="counter "><%= benefittedRatio %> %</span>
-                        <p>Benefitted Ratio</p>
+                        <span class="counter"><%= EventsPercent %> %</span>
+                        <p>Completion Ratio</p>
                     </div>
                 </div>  
             </section>
+            
             <a href="/projects/<%= project._id %>/export" class="btn" id="exportBtn">Export Project Details</a>
 
-
             <% if (totalEvents > 0) { %>
-                <h2>Graphical Representation</h2>
-                <!-- Conditionally display the chart and heading -->
-                <div style="width: 650px; margin: 20px auto;">
-                    <h4>Event Distribution by Type</h4>
-                    <canvas id="eventTypeChart"></canvas>
+                <div class="graphical-representation">
+                    <h2>Graphical Representation</h2>
+                    <div class="chart-grid">
+                        <!-- Event by Type -->
+                        <div class="chart-container">
+                            <h4>Event Type</h4>
+                            <canvas id="eventTypeChart"></canvas>
+                        </div>
+
+                        <!-- Gender Distribution -->
+                        <div class="chart-container">
+                            <h4>Gender</h4>
+                            <canvas id="genderChart"></canvas>
+                        </div>
+
+                        <!-- Caste/Ethnicity Breakdown -->
+                        <div class="chart-container">
+                            <h4>Caste/Ethnicity</h4>
+                            <canvas id="casteChart"></canvas>
+                        </div>
+
+                        <!-- Age Group Distribution -->
+                        <div class="chart-container">
+                            <h4>Age Group </h4>
+                            <canvas id="ageChart"></canvas>
+                        </div>
+                    </div>
                 </div>
             <% } %>
+
         </div>
 
         <a href="/projects/<%= project._id %>/eventb" class="btn">Add Event</a>
@@ -70,73 +93,107 @@
 
     </div>
 
-    <!-- Conditionally initialize the chart -->
     <% if (eventTypes.length > 0) { %>
         <script>
-            // Get the event data passed from the server
+            // Get the event data from the server
             const eventTypes = <%- eventTypes %>;
             const eventCounts = <%- eventCounts %>;
 
-            // Create the chart
-            const ctx = document.getElementById('eventTypeChart').getContext('2d');
-            const eventTypeChart = new Chart(ctx, {
-                type: 'bar', // Use a bar chart
+            // Get the gender data
+            const totalMale = <%= totalMale %>;
+            const totalFemale = <%= totalFemale %>;
+            const totalOther = <%= totalOther %>;
+
+            // Get the caste/ethnicity data
+            const totalDalit = <%= totalDalit %>;
+            const totalJanajati = <%= totalJanajati %>;
+            const totalBrahminChhetri = <%= totalBrahminChhetri %>;
+            const totalTharu = <%= totalTharu %>;
+            const totalMadhesi = <%= totalMadhesi %>;
+            const totalOthers = <%= totalOthers %>;
+
+            // Get the age group data
+            const ageUnder25 = <%= ageUnder25 %>;
+            const age25to40 = <%= age25to40 %>;
+            const ageAbove40 = <%= ageAbove40 %>;
+
+            // Event Type Chart (Pie Chart)
+            new Chart(document.getElementById('eventTypeChart').getContext('2d'), {
+                type: 'pie',
                 data: {
-                    labels: eventTypes, // Event types on the x-axis
+                    labels: eventTypes,
                     datasets: [{
-                        label: 'Number of Events',
-                        data: eventCounts, // Event counts on the y-axis
-                        backgroundColor: '#d8d3d3b7',
-                        borderColor: '#cabebe',
-                        borderWidth: 1
+                        data: eventCounts,
+                        backgroundColor: ['#D3D6C2', '#b9be9d', '#9fa578', '#81875A', '#696E49', '#525639']
                     }]
-                },
-                options: {
-                    scales: {
-                        y: {
-                            beginAtZero: true
-                        }
-                    }
                 }
             });
+
+            // Gender Distribution Chart (Pie Chart)
+            new Chart(document.getElementById('genderChart').getContext('2d'), {
+                type: 'pie',
+                data: {
+                    labels: ['Male', 'Female', 'Other'],
+                    datasets: [{
+                        data: [totalMale, totalFemale, totalOther],
+                        backgroundColor: ['#D28A74', '#ebcbc1', '#6c3423']
+                    }]
+                }
+            });
+
+            // Caste/Ethnicity Breakdown Chart (Pie Chart)
+            new Chart(document.getElementById('casteChart').getContext('2d'), {
+                type: 'pie',
+                data: {
+                    labels: ['Dalit', 'Janajati', 'Brahman/Chhetri', 'Tharu', 'Madhesi', 'Others'],
+                    datasets: [{
+                        data: [totalDalit, totalJanajati, totalBrahminChhetri, totalTharu, totalMadhesi, totalOthers],
+                        backgroundColor: ['#D8E9E5', '#A4CCC2', '#7CB6A7', '#51907F', '#3B685C', '#2ecc71']
+                    }]
+                }
+            });
+
+            // Age Group Distribution Chart (Pie Chart)
+            new Chart(document.getElementById('ageChart').getContext('2d'), {
+                type: 'pie',
+                data: {
+                    labels: ['Under 25', '25-40', 'Above 40'],
+                    datasets: [{
+                        data: [ageUnder25, age25to40, ageAbove40],
+                        backgroundColor: ['#EDDEA4', '#E4CE77', '#ffe66d']
+                    }]
+                }
+            });
+
         </script>
     <% } %>
 
-    <!-- Countdown Timer Script -->
     <script>
-        // Get the project end date from the server
         const endDate = new Date("<%= project.endDate.toISOString() %>");
-
-        // Update the countdown every second
         const countdownElement = document.getElementById('countdown');
+
         const countdownInterval = setInterval(() => {
             const now = new Date();
-            const timeRemaining = endDate - now;
+            let timeRemaining = endDate - now;
 
-            // If the end date has passed, stop the countdown
             if (timeRemaining <= 0) {
                 clearInterval(countdownInterval);
                 countdownElement.textContent = "Project has ended";
                 return;
             }
 
-            // Calculate years, months, days, and hours
-            const years = Math.floor(timeRemaining / (1000 * 60 * 60 * 24 * 365));
-            const months = Math.floor((timeRemaining % (1000 * 60 * 60 * 24 * 365)) / (1000 * 60 * 60 * 24 * 30));
-            const days = Math.floor((timeRemaining % (1000 * 60 * 60 * 24 * 30)) / (1000 * 60 * 60 * 24));
-            const hours = Math.floor((timeRemaining % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+            // Convert remaining time to years, months, and days
+            const totalDays = Math.floor(timeRemaining / (1000 * 60 * 60 * 24));
 
-            // Display the countdown
-            let countdownText = "";
-            if (years > 0) countdownText += `${years}y `;
-            if (months > 0) countdownText += `${months}mo `;
-            if (days > 0) countdownText += `${days}d `;
-            countdownText += `${hours}h`;
+            const years = Math.floor(totalDays / 365);
+            const remainingDaysAfterYears = totalDays % 365;
 
-            countdownElement.textContent = countdownText.trim();
+            const months = Math.floor(remainingDaysAfterYears / 30);
+            const days = remainingDaysAfterYears % 30;
+
+            countdownElement.textContent = `${years} years, ${months} months, ${days} days remaining`;
         }, 1000);
-
     </script>
-    
+
 </body>
 </html>

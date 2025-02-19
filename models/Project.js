@@ -40,12 +40,9 @@ const ProjectSchema = new mongoose.Schema({
         default: 'Planning',
         required: true
     },
-    activities: [
-        {
-            name: { type: String, required: true },
-            outcomes: { type: [String], default: [] }
-        }
-    ]
+    target_events: { type: Number, required: true },
+    activities: [{ type: String, required: true }],  // Changed to an array of strings
+    outcomes: [{ type: String, required: true }]  
 });
 
 module.exports = mongoose.model('Project', ProjectSchema);
