@@ -6,10 +6,15 @@
     <title>Project Details</title>
     <link rel="stylesheet" href="/css/project-detail.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels"></script>
+    <!-- dhtmlxGantt CSS -->
+    <link rel="stylesheet" href="https://cdn.dhtmlx.com/gantt/edge/dhtmlxgantt.css">
+    <!-- dhtmlxGantt JS -->
+    <script src="https://cdn.dhtmlx.com/gantt/edge/dhtmlxgantt.js"></script>
 </head>
 <body>
     <div class="project-detail-container">
-
         <!-- Status Badge in Top-Left Corner -->
         <div class="status-badge <%= project.projectStatus.toLowerCase() %>">
             <%= project.projectStatus %>
@@ -21,8 +26,8 @@
             <p><strong>Name:</strong> <%= project.projectName %></p>
             <p><strong>Donor:</strong> <%= project.donor %></p>
             <p><strong>Stakeholders:</strong> <%= project.stakeholders.join(', ') %></p>
-            <p><strong>Start Date:</strong> <%= project.startDate.toDateString() %></p>
-            <p><strong>End Date:</strong> <%= project.endDate.toDateString() %></p>
+            <p><strong>Start Date:</strong> <%= new Date(project.startDate).toDateString() %></p>
+            <p><strong>End Date:</strong> <%= new Date(project.endDate).toDateString() %></p>
             <p><strong>Area of Action:</strong> <%= project.areaOfAction.join(', ') %></p>
             <p><strong>Reporting Period:</strong> <%= project.reportingPeriod %></p>
 
@@ -82,7 +87,10 @@
                     </div>
                 </div>
             <% } %>
-
+            <div class="chart-container-grantt">
+                <h4>Gantt Chart</h4>
+                <div id="gantt_here" style="width: 100%; height: 400px;"></div>
+            </div>
         </div>
 
         <a href="/projects/<%= project._id %>/eventb" class="btn">Add Event</a>
@@ -90,7 +98,6 @@
         <form action="/projects/<%= project._id %>?_method=DELETE" method="POST" onsubmit="return confirm('Are you sure you want to delete this project?');">
             <button type="submit" class="btn delete-btn">Delete Project</button>
         </form>
-
     </div>
 
     <% if (eventTypes.length > 0) { %>
@@ -164,7 +171,6 @@
                     }]
                 }
             });
-
         </script>
     <% } %>
 
@@ -194,6 +200,70 @@
             countdownElement.textContent = `${years} years, ${months} months, ${days} days remaining`;
         }, 1000);
     </script>
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    // Get reporting period from backend
+    const reportingPeriod = "<%= reportingPeriod %>";
+
+    // Get Gantt chart data from the server
+    const ganttData = <%- ganttData %>;
+
+    // Log data to console for debugging
+    console.log("Gantt Data:", ganttData);
+    console.log("Reporting Period:", reportingPeriod);
+
+    // Check if the Gantt chart container exists
+    const ganttContainer = document.getElementById("gantt_here");
+    if (!ganttContainer) {
+        console.error("Gantt chart container not found");
+        return; // Exit script if container is missing
+    }
+
+    // Set Gantt chart date format
+    gantt.config.date_format = "%Y-%m-%d";
+
+    // Function to dynamically set Gantt chart scales
+    function updateGanttScale(period) {
+        let scales = [{ unit: "day", step: 1, format: "%d %M" }]; // Default scale
+
+        if (period === "Monthly") {
+            scales = [
+                { unit: "month", step: 1, format: "%F %Y" },
+                { unit: "week", step: 1, format: "Week %W" }
+            ];
+        } else if (period === "Quarterly") {
+            scales = [
+                { unit: "quarter", step: 1, format: "Q%q %Y" }
+            ];
+        } else if (period === "Semi-Annually") {
+            scales = [
+                { unit: "half-year", step: 1, format: "H%h %Y" }
+            ];
+        } else if (period === "Annually") {
+            scales = [
+                { unit: "year", step: 1, format: "%Y" }
+            ];
+        }
+
+        gantt.config.scales = scales;
+    }
+
+    // Initialize Gantt chart
+    gantt.init("gantt_here");
+
+    // Apply the dynamic scale BEFORE loading data
+    updateGanttScale(reportingPeriod);
+
+    // Load Data into Gantt Chart
+    gantt.parse({ data: ganttData });
+
+    // Optional: Add error handling for Gantt chart initialization
+    if (!window.gantt) {
+        console.error("Gantt chart failed to initialize");
+    }
+});
+</script>
 
 </body>
 </html>

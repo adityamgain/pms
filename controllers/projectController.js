@@ -94,37 +94,107 @@ exports.viewProjects = async (req, res) => {
     }
 };
 
-// Display project details
+
+
+
+
+
 exports.getProjectDetails = async (req, res) => {
     try {
+        // Fetch the project by ID and populate events and beneficiaries
         const project = await Project.findById(req.params.id).populate({
             path: 'events',
             populate: { path: 'beneficiaries' }
         }).lean();
-        
+
+        // If project not found, return 404
         if (!project) {
             return res.status(404).send('Project not found');
         }
 
-        // ✅ Check project status and update if needed
+        // Check project status and update if needed
         const currentDate = new Date();
         if (new Date(project.endDate) < currentDate && project.projectStatus.toLowerCase() !== 'completed') {
             await Project.findByIdAndUpdate(project._id, { projectStatus: 'Completed' });
         }
 
+        // Calculate total events and completion percentage
         const totalEvents = project.events.length;
         const targetevent = project.target_events;
         const EventsPercent = project.target_events > 0 ? (totalEvents / project.target_events) * 100 : 0;
-        const eventTypeCounts = {};
+        const reportingPeriod = project.reportingPeriod;
 
+        // Initialize counters for event types, beneficiaries, and demographics
+        const eventTypeCounts = {};
+        const eventTitles = new Set(); // Use Set to prevent duplicates
+        const ganttData = []; // Initialize ganttData array
+
+
+    
+        // Group events by eventName
+        const eventsByName = project.events.reduce((acc, event) => {
+            if (!acc[event.eventName]) {
+                acc[event.eventName] = [];
+            }
+            acc[event.eventName].push(event);
+            return acc;
+        }, {});
+
+        // Prepare ganttData for each unique eventName
+// Prepare ganttData for each unique eventName
+let parentId = 1;
+Object.keys(eventsByName).forEach((eventName) => {
+    const events = eventsByName[eventName];
+
+    // Validate start and end dates for the parent event
+    const firstEventStart = events[0].startDate ? new Date(events[0].startDate) : null;
+    const lastEventEnd = events[events.length - 1].endDate ? new Date(events[events.length - 1].endDate) : null;
+
+    // Ensure the dates are valid
+    if (!firstEventStart || isNaN(firstEventStart.getTime()) || !lastEventEnd || isNaN(lastEventEnd.getTime())) {
+        console.warn(`Skipping event group ${eventName} due to invalid dates`);
+        return;
+    }
+
+    // Add a parent task for each eventName
+    const parentTask = {
+        id: `parent-${parentId}`, // Unique ID for the parent task
+        text: eventName, // Use eventName as the parent task name
+        start_date: firstEventStart.toISOString().split('T')[0], // Start date of the first event
+        end_date: lastEventEnd.toISOString().split('T')[0], // End date of the last event
+        open: true, // Ensure the parent task is open by default
+        type: 'project' // Mark as a project task
+    };
+    ganttData.push(parentTask);
+
+    // Add child tasks for each event under the parent
+    events.forEach((event, eventIndex) => {
+        const formatDate = (date) => {
+            return new Date(date).toISOString().split('T')[0]; // Ensures YYYY-MM-DD format
+        };
+
+
+        ganttData.push({
+            id: `child-${parentId}-${eventIndex + 1}`,
+            text: event.eventName,
+            start_date: formatDate(event.startDate), // Ensure correct format
+            end_date: formatDate(event.endDate),
+            parent: `parent-${parentId}`,
+            progress: 0.5
+        });
+    });
+    parentId++;
+});
+        console.log('Gantt Data:', ganttData); // Debugging: Log the Gantt data
+
+        // Initialize counters for beneficiary demographics
         let totalAttendees = 0;
         let totalBenefitted = 0;
-
         let totalMale = 0, totalFemale = 0, totalOther = 0;
         let totalDalit = 0, totalJanajati = 0, totalBrahminChhetri = 0, totalTharu = 0, totalMadhesi = 0, totalOthers = 0;
         let ageUnder25 = 0, age25to40 = 0, ageAbove40 = 0;
 
-        // ✅ Iterate through events
+        // Iterate through events to calculate beneficiary statistics
         project.events.forEach(event => {
             if (event.eventType) {
                 eventTypeCounts[event.eventType] = (eventTypeCounts[event.eventType] || 0) + 1;
@@ -156,15 +226,26 @@ exports.getProjectDetails = async (req, res) => {
                         case '25-40 years': age25to40++; break;
                         case '40 above years': ageAbove40++; break;
                     }
-
                 });
             }
         });
 
+        // Calculate benefitted ratio
         const benefittedRatio = totalAttendees > 0 ? (totalBenefitted / totalAttendees) * 100 : 0;
+
+        // Prepare event type data for charts
         const eventTypes = Object.keys(eventTypeCounts);
         const eventCounts = Object.values(eventTypeCounts);
 
+        // Get reporting period range
+        const reportingPeriodStart = new Date(project.startDate);
+        const reportingPeriodEnd = new Date(project.endDate);
+
+        if (isNaN(reportingPeriodStart.getTime()) || isNaN(reportingPeriodEnd.getTime())) {
+            return res.status(400).send('Invalid project start or end date');
+        }
+
+        // Render the project details page with all data
         res.render('project-details', {
             project,
             EventsPercent: EventsPercent.toFixed(1),
@@ -175,6 +256,11 @@ exports.getProjectDetails = async (req, res) => {
             benefittedRatio: benefittedRatio.toFixed(2),
             eventTypes: JSON.stringify(eventTypes),
             eventCounts: JSON.stringify(eventCounts),
+            eventTitles: JSON.stringify([...eventTitles]), // Convert Set to array
+            ganttData: JSON.stringify(ganttData), // Pass Gantt data to the template
+            reportingPeriodStart: reportingPeriodStart.toISOString(),
+            reportingPeriodEnd: reportingPeriodEnd.toISOString(),
+            reportingPeriod,
 
             // Gender distribution
             totalMale,
@@ -193,7 +279,6 @@ exports.getProjectDetails = async (req, res) => {
             ageUnder25,
             age25to40,
             ageAbove40
-
         });
 
     } catch (err) {
@@ -201,7 +286,6 @@ exports.getProjectDetails = async (req, res) => {
         res.status(500).send('Error fetching project');
     }
 };
-
 
 
 
