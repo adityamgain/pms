@@ -75,6 +75,16 @@
                 </div>
 
                 <div class="filter-group">
+                    <label for="municipality">Municipality:</label>
+                    <select name="municipality">
+                        <option value="" <%= !filters.municipality ? 'selected' : '' %>>All</option>
+                        <% uniquemunicipality.forEach(municipality => { %>
+                            <option value="<%= municipality %>" <%= filters.municipality === municipality ? 'selected' : '' %>><%= municipality %></option>
+                        <% }) %>
+                    </select>
+                </div>
+
+                <div class="filter-group">
                     <label for="sort">Sort By:</label>
                     <select name="sort">
                         <option value="desc" <%= filters.sort === 'desc' ? 'selected' : '' %>>Newest First</option>

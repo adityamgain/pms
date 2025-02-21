@@ -42,7 +42,7 @@
                     </div>
                     <div class="grid-3">
                         <span class="counter"><%= targetevent %></span>
-                        <p>Total Events</p>
+                        <p>Total Events To Be Held</p>
                     </div>
                     <div class="grid-3">
                         <span class="counter"><%= totalAttendees %></span>
@@ -203,29 +203,21 @@
 
 <script>
 document.addEventListener("DOMContentLoaded", function () {
-    // Get reporting period from backend
-    const reportingPeriod = "<%= reportingPeriod %>";
+    const reportingPeriod = "<%= reportingPeriod %>".trim();
+    const ganttData = <%- ganttData || "[]" %>;
 
-    // Get Gantt chart data from the server
-    const ganttData = <%- ganttData %>;
-
-    // Log data to console for debugging
     console.log("Gantt Data:", ganttData);
-    console.log("Reporting Period:", reportingPeriod);
 
-    // Check if the Gantt chart container exists
     const ganttContainer = document.getElementById("gantt_here");
     if (!ganttContainer) {
         console.error("Gantt chart container not found");
-        return; // Exit script if container is missing
+        return;
     }
 
-    // Set Gantt chart date format
     gantt.config.date_format = "%Y-%m-%d";
 
-    // Function to dynamically set Gantt chart scales
     function updateGanttScale(period) {
-        let scales = [{ unit: "day", step: 1, format: "%d %M" }]; // Default scale
+        let scales = [{ unit: "day", step: 1, format: "%d %M" }];
 
         if (period === "Monthly") {
             scales = [
@@ -234,31 +226,36 @@ document.addEventListener("DOMContentLoaded", function () {
             ];
         } else if (period === "Quarterly") {
             scales = [
-                { unit: "quarter", step: 1, format: "Q%q %Y" }
+                {
+                    unit: "quarter", step: 1,
+                    format: function (date) {
+                        return `Q${Math.ceil((date.getMonth() + 1) / 3)} ${date.getFullYear()}`;
+                    }
+                }
             ];
         } else if (period === "Semi-Annually") {
             scales = [
-                { unit: "half-year", step: 1, format: "H%h %Y" }
+                {
+                    unit: "half-year", step: 1,
+                    format: function (date) {
+                        return (date.getMonth() < 6 ? "H1" : "H2") + ` ${date.getFullYear()}`;
+                    }
+                }
             ];
         } else if (period === "Annually") {
-            scales = [
-                { unit: "year", step: 1, format: "%Y" }
-            ];
+            scales = [{ unit: "year", step: 1, format: "%Y" }];
         }
 
         gantt.config.scales = scales;
     }
 
-    // Initialize Gantt chart
-    gantt.init("gantt_here");
+    gantt.config.open_tree_initially = true; // Expand all tasks by default
+    gantt.config.order_branch = true; // Order tasks properly
 
-    // Apply the dynamic scale BEFORE loading data
     updateGanttScale(reportingPeriod);
-
-    // Load Data into Gantt Chart
+    gantt.init("gantt_here");
     gantt.parse({ data: ganttData });
 
-    // Optional: Add error handling for Gantt chart initialization
     if (!window.gantt) {
         console.error("Gantt chart failed to initialize");
     }

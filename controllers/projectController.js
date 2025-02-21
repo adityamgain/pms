@@ -22,27 +22,21 @@ exports.createProject = async (req, res) => {
     try {
         const { projectName, donor, stakeholders, startDate, endDate, areaOfAction, reportingPeriod, target_events, activities, outcomes } = req.body;
         console.log("Received request body:", req.body);
-
         // Validate required fields
         if (!projectName || !donor || !startDate || !endDate || !areaOfAction || !reportingPeriod) {
             return res.status(400).send('Missing required fields');
         }
-
         // Ensure start date is before end date
         if (new Date(startDate) > new Date(endDate)) {
             return res.status(400).send('End date must be greater than or equal to start date');
         }
-
         // Ensure activities and outcomes are arrays
         const activitiesArray = Array.isArray(activities) ? activities.map(a => a.trim()).filter(a => a) : [];
         const outcomesArray = Array.isArray(outcomes) ? outcomes.map(o => o.trim()).filter(o => o) : [];
-
         // Ensure areaOfAction is an array
         const areaOfActionArray = Array.isArray(areaOfAction) ? areaOfAction : [areaOfAction];
-
         // Ensure stakeholders is an array
         const stakeholdersArray = Array.isArray(stakeholders) ? stakeholders : stakeholders.split(',').map(s => s.trim());
-
         // Generate unique project code
         const codeName = generateCodeName();
 
@@ -60,8 +54,6 @@ exports.createProject = async (req, res) => {
             activities: activitiesArray,
             outcomes: outcomesArray
         });
-
-        // Save project
         await project.save();
         res.redirect(`/projects/${project._id}`);
     } catch (err) {
@@ -75,18 +67,15 @@ exports.viewProjects = async (req, res) => {
     try {
         // Fetch all projects
         const projects = await Project.find();
-
         // Add totalEvents to each project object
         const projectsWithEventCounts = projects.map(project => {
             // Ensure events is an array before calculating its length
             const totalEvents = Array.isArray(project.events) ? project.events.length : 0;
-
             return {
                 ...project.toObject(),
                 totalEvents: totalEvents
             };
         });
-
         res.render('viewProjects', { projects: projectsWithEventCounts });
     } catch (err) {
         console.error('Error fetching projects:', err);
@@ -96,135 +85,139 @@ exports.viewProjects = async (req, res) => {
 
 
 
-
-
-
 exports.getProjectDetails = async (req, res) => {
     try {
         // Fetch the project by ID and populate events and beneficiaries
         const project = await Project.findById(req.params.id).populate({
-            path: 'events',
-            populate: { path: 'beneficiaries' }
+            path: "events",
+            populate: { path: "beneficiaries" },
         }).lean();
 
-        // If project not found, return 404
         if (!project) {
-            return res.status(404).send('Project not found');
+            return res.status(404).send("Project not found");
         }
 
-        // Check project status and update if needed
+        // Check and update project status if needed
         const currentDate = new Date();
-        if (new Date(project.endDate) < currentDate && project.projectStatus.toLowerCase() !== 'completed') {
-            await Project.findByIdAndUpdate(project._id, { projectStatus: 'Completed' });
+        if (new Date(project.endDate) < currentDate && project.projectStatus.toLowerCase() !== "completed") {
+            await Project.findByIdAndUpdate(project._id, { projectStatus: "Completed" });
         }
 
-        // Calculate total events and completion percentage
+        // Initialize variables for project statistics
         const totalEvents = project.events.length;
         const targetevent = project.target_events;
         const EventsPercent = project.target_events > 0 ? (totalEvents / project.target_events) * 100 : 0;
         const reportingPeriod = project.reportingPeriod;
 
-        // Initialize counters for event types, beneficiaries, and demographics
+        // Initialize event tracking
         const eventTypeCounts = {};
-        const eventTitles = new Set(); // Use Set to prevent duplicates
-        const ganttData = []; // Initialize ganttData array
+        const eventTitles = new Set(); // Prevent duplicate event names in visualization
 
+        // Gantt Chart Data Structure
+        const ganttDataMap = new Map();
+        let eventCounter = 0;
+const eventNumbering = new Map();
 
-    
-        // Group events by eventName
-        const eventsByName = project.events.reduce((acc, event) => {
-            if (!acc[event.eventName]) {
-                acc[event.eventName] = [];
+        project.events.forEach(event => {
+            if (!eventNumbering.has(event.eventName)) {
+                eventCounter++;
+                eventNumbering.set(event.eventName, eventCounter);
             }
-            acc[event.eventName].push(event);
-            return acc;
-        }, {});
-
-        // Prepare ganttData for each unique eventName
-// Prepare ganttData for each unique eventName
-let parentId = 1;
-Object.keys(eventsByName).forEach((eventName) => {
-    const events = eventsByName[eventName];
-
-    // Validate start and end dates for the parent event
-    const firstEventStart = events[0].startDate ? new Date(events[0].startDate) : null;
-    const lastEventEnd = events[events.length - 1].endDate ? new Date(events[events.length - 1].endDate) : null;
-
-    // Ensure the dates are valid
-    if (!firstEventStart || isNaN(firstEventStart.getTime()) || !lastEventEnd || isNaN(lastEventEnd.getTime())) {
-        console.warn(`Skipping event group ${eventName} due to invalid dates`);
-        return;
-    }
-
-    // Add a parent task for each eventName
-    const parentTask = {
-        id: `parent-${parentId}`, // Unique ID for the parent task
-        text: eventName, // Use eventName as the parent task name
-        start_date: firstEventStart.toISOString().split('T')[0], // Start date of the first event
-        end_date: lastEventEnd.toISOString().split('T')[0], // End date of the last event
-        open: true, // Ensure the parent task is open by default
-        type: 'project' // Mark as a project task
-    };
-    ganttData.push(parentTask);
-
-    // Add child tasks for each event under the parent
-    events.forEach((event, eventIndex) => {
-        const formatDate = (date) => {
-            return new Date(date).toISOString().split('T')[0]; // Ensures YYYY-MM-DD format
-        };
-
-
-        ganttData.push({
-            id: `child-${parentId}-${eventIndex + 1}`,
-            text: event.eventName,
-            start_date: formatDate(event.startDate), // Ensure correct format
-            end_date: formatDate(event.endDate),
-            parent: `parent-${parentId}`,
-            progress: 0.5
+        
+            const parentTaskId = `event-${event.eventName}`;
+            const eventNumber = eventNumbering.get(event.eventName); // Get assigned event number
+        
+            const startDate = new Date(event.startDate);
+            const endDate = new Date(event.endDate);
+            const duration = Math.ceil((endDate - startDate) / (1000 * 60 * 60 * 24)) + 1;
+        
+            if (!ganttDataMap.has(parentTaskId)) {
+                ganttDataMap.set(parentTaskId, {
+                    id: parentTaskId,
+                    text: `${eventNumber}. ${event.eventName}`, // Add event number
+                    start_date: startDate.toISOString().split("T")[0],
+                    end_date: endDate.toISOString().split("T")[0],
+                    duration: duration,
+                    progress: 0.5,
+                    type: "project",
+                    open: true,
+                    childDurations: [],
+                    childCounter: 0 // Initialize child task counter
+                });
+            }
+        
+            // Get existing parent task
+            const parentTask = ganttDataMap.get(parentTaskId);
+        
+            // Update parent start and end dates
+            parentTask.start_date = new Date(Math.min(new Date(parentTask.start_date), startDate)).toISOString().split("T")[0];
+            parentTask.end_date = new Date(Math.max(new Date(parentTask.end_date), endDate)).toISOString().split("T")[0];
+        
+            // Track child duration
+            parentTask.childDurations.push(duration);
+        
+            // Assign child numbering (1.1, 1.2, ...)
+            parentTask.childCounter++; // Increment child count
+            const childTaskId = `task-${event._id}`;
+            ganttDataMap.set(childTaskId, {
+                id: childTaskId,
+                text: `${eventNumber}.${parentTask.childCounter} ${event.eventName}`, // Add child number
+                start_date: startDate.toISOString().split("T")[0],
+                end_date: endDate.toISOString().split("T")[0],
+                duration: duration,
+                parent: parentTaskId,
+                progress: Math.random().toFixed(2),
+                type: "task"
+            });
         });
-    });
-    parentId++;
-});
-        console.log('Gantt Data:', ganttData); // Debugging: Log the Gantt data
 
-        // Initialize counters for beneficiary demographics
+        // Update parent task durations based on summed child durations
+        ganttDataMap.forEach(task => {
+            if (task.childDurations) {
+                task.duration = task.childDurations.reduce((acc, val) => acc + val, 0);
+                delete task.childDurations;
+            }
+        });
+
+        const ganttData = Array.from(ganttDataMap.values());
+
+        // Initialize counters for beneficiaries and demographics
         let totalAttendees = 0;
         let totalBenefitted = 0;
         let totalMale = 0, totalFemale = 0, totalOther = 0;
         let totalDalit = 0, totalJanajati = 0, totalBrahminChhetri = 0, totalTharu = 0, totalMadhesi = 0, totalOthers = 0;
         let ageUnder25 = 0, age25to40 = 0, ageAbove40 = 0;
 
-        // Iterate through events to calculate beneficiary statistics
+        // Process event beneficiaries
         project.events.forEach(event => {
             if (event.eventType) {
                 eventTypeCounts[event.eventType] = (eventTypeCounts[event.eventType] || 0) + 1;
             }
-
             if (Array.isArray(event.beneficiaries)) {
                 totalAttendees += event.beneficiaries.length;
                 totalBenefitted += event.beneficiaries.filter(b => b.benefitsFromActivity).length;
 
                 event.beneficiaries.forEach(beneficiary => {
-                    // Gender count
-                    if (beneficiary.gender === 'Male') totalMale++;
-                    else if (beneficiary.gender === 'Female') totalFemale++;
-                    else if (beneficiary.gender === 'Other') totalOther++;
+                    // Gender distribution
+                    if (beneficiary.gender === "Male") totalMale++;
+                    else if (beneficiary.gender === "Female") totalFemale++;
+                    else if (beneficiary.gender === "Other") totalOther++;
 
-                    // Caste/Ethnicity count
+                    // Caste/Ethnicity classification
                     switch (beneficiary.casteEthnicity) {
-                        case 'Dalit': totalDalit++; break;
-                        case 'Janajati': totalJanajati++; break;
-                        case 'Brahman/Chhetri': totalBrahminChhetri++; break;
-                        case 'Tharu': totalTharu++; break;
-                        case 'Madhesi': totalMadhesi++; break;
-                        case 'Others': totalOthers++; break;
+                        case "Dalit": totalDalit++; break;
+                        case "Janajati": totalJanajati++; break;
+                        case "Brahman/Chhetri": totalBrahminChhetri++; break;
+                        case "Tharu": totalTharu++; break;
+                        case "Madhesi": totalMadhesi++; break;
+                        case "Others": totalOthers++; break;
                     }
 
-                    // Age group count
+                    // Age classification
                     switch (beneficiary.age) {
-                        case 'Upto 25 years': ageUnder25++; break;
-                        case '25-40 years': age25to40++; break;
-                        case '40 above years': ageAbove40++; break;
+                        case "Upto 25 years": ageUnder25++; break;
+                        case "25-40 years": age25to40++; break;
+                        case "40 above years": ageAbove40++; break;
                     }
                 });
             }
@@ -233,20 +226,20 @@ Object.keys(eventsByName).forEach((eventName) => {
         // Calculate benefitted ratio
         const benefittedRatio = totalAttendees > 0 ? (totalBenefitted / totalAttendees) * 100 : 0;
 
-        // Prepare event type data for charts
+        // Prepare event type data for visualization
         const eventTypes = Object.keys(eventTypeCounts);
         const eventCounts = Object.values(eventTypeCounts);
 
-        // Get reporting period range
+        // Determine reporting period range
         const reportingPeriodStart = new Date(project.startDate);
         const reportingPeriodEnd = new Date(project.endDate);
 
         if (isNaN(reportingPeriodStart.getTime()) || isNaN(reportingPeriodEnd.getTime())) {
-            return res.status(400).send('Invalid project start or end date');
+            return res.status(400).send("Invalid project start or end date");
         }
 
-        // Render the project details page with all data
-        res.render('project-details', {
+        // Render project details page
+        res.render("project-details", {
             project,
             EventsPercent: EventsPercent.toFixed(1),
             totalEvents,
@@ -257,17 +250,17 @@ Object.keys(eventsByName).forEach((eventName) => {
             eventTypes: JSON.stringify(eventTypes),
             eventCounts: JSON.stringify(eventCounts),
             eventTitles: JSON.stringify([...eventTitles]), // Convert Set to array
-            ganttData: JSON.stringify(ganttData), // Pass Gantt data to the template
+            ganttData: JSON.stringify(ganttData), // Pass Gantt chart data
             reportingPeriodStart: reportingPeriodStart.toISOString(),
             reportingPeriodEnd: reportingPeriodEnd.toISOString(),
             reportingPeriod,
 
-            // Gender distribution
+            // Gender statistics
             totalMale,
             totalFemale,
             totalOther,
 
-            // Caste/Ethnicity distribution
+            // Caste/Ethnicity statistics
             totalDalit,
             totalJanajati,
             totalBrahminChhetri,
@@ -275,17 +268,18 @@ Object.keys(eventsByName).forEach((eventName) => {
             totalMadhesi,
             totalOthers,
 
-            // Age group distribution
+            // Age group statistics
             ageUnder25,
             age25to40,
             ageAbove40
         });
 
     } catch (err) {
-        console.error('Error fetching project:', err);
-        res.status(500).send('Error fetching project');
+        console.error("Error fetching project:", err);
+        res.status(500).send("Error fetching project");
     }
 };
+
 
 
 
@@ -331,8 +325,6 @@ exports.deleteProject = async (req, res) => {
 };
 
 
-
-
 // Export project data to Excel
 exports.exportProjectDetails = async (req, res) => {
     try {
@@ -340,7 +332,6 @@ exports.exportProjectDetails = async (req, res) => {
         if (!project) {
             return res.status(404).send('Project not found');
         }
-
         const workbook = xlsx.utils.book_new();
         const projectSheetData = [
             ['Project Name', project.projectName],
@@ -354,7 +345,6 @@ exports.exportProjectDetails = async (req, res) => {
         ];
         const projectSheet = xlsx.utils.aoa_to_sheet(projectSheetData);
         xlsx.utils.book_append_sheet(workbook, projectSheet, 'Project Details');
-
         const beneficiariesSheetData = [
             [
                 'SN', 'Year', 'Month', 'Start Date (dd-mm-yyyy)', 'End Date (dd-mm-yyyy)', 
@@ -363,7 +353,6 @@ exports.exportProjectDetails = async (req, res) => {
                 'Organization Type', 'Gender', 'Age', 'Caste', 'Poverty Status', 'Disability'
             ]
         ];
-
         const eventSummaryData = [
             [
                 'SN', 'Year', 'Month', 'Start Date (dd-mm-yyyy)', 'End Date (dd-mm-yyyy)', 'Duration (days)', 'Events', 'Event Outcomes', 
@@ -372,7 +361,6 @@ exports.exportProjectDetails = async (req, res) => {
                 'Total Dalit', 'Total Tharu', 'Total Janajati', 'Total Brahman/Chhetri', 'Total Madhesi', 'Total Others Caste', 'Total Poverty A', 'Total Poverty B', 'Total Poverty C', 'Total Poverty D'
             ]
         ];
-
         let sn = 1;
         let eventSn = 1;
         const overview = {
@@ -396,7 +384,6 @@ exports.exportProjectDetails = async (req, res) => {
             totalPovertyC: 0,
             totalPovertyD: 0
         };
-
         for (const event of project.events) {
             const eventYear = event.startDate.getFullYear();
             const eventMonth = event.startDate.toLocaleString('default', { month: 'long' });
@@ -404,7 +391,6 @@ exports.exportProjectDetails = async (req, res) => {
             let totalMale = 0, totalFemale = 0, totalUpto25 = 0, total25To40 = 0, totalabove40 = 0, totalBenefitted = 0, totalDisability = 0;
             let totalDalit = 0, totalTharu = 0, totalJanajati = 0, totalBrahmanChhetri = 0, totalMadhesi = 0, totalOthersCaste = 0;
             let totalPovertyA = 0, totalPovertyB = 0, totalPovertyC = 0, totalPovertyD = 0;
-
             for (const beneficiary of event.beneficiaries) {
                 beneficiariesSheetData.push([
                     sn++,
@@ -533,13 +519,10 @@ exports.exportProjectDetails = async (req, res) => {
             ['Total Poverty C', overview.totalPovertyC],
             ['Total Poverty D', overview.totalPovertyD]
         ];
-
         const summarySheet = xlsx.utils.aoa_to_sheet(summarySheetData);
         xlsx.utils.book_append_sheet(workbook, summarySheet, 'Summary');
-
         const eventSummarySheet = xlsx.utils.aoa_to_sheet(eventSummaryData);
         xlsx.utils.book_append_sheet(workbook, eventSummarySheet, 'Event Summary');
-
         const excelBuffer = xlsx.write(workbook, { type: 'buffer' });
         res.setHeader('Content-Disposition', `attachment; filename=project_${project._id}.xlsx`);
         res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');

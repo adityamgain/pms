@@ -400,7 +400,7 @@ exports.updateEvent = async (req, res) => {
   exports.viewAllEventData = async (req, res) => {
     try {
         const { projectId } = req.params;
-        const { eventType, startDate, endDate, nationalLevel, sort, outcome, activity } = req.query;
+        const { eventType, startDate, endDate, nationalLevel, sort, outcome, activity, municipality } = req.query;
 
         const project = await Project.findById(projectId);
         if (!project) {
@@ -411,7 +411,8 @@ exports.updateEvent = async (req, res) => {
         if (eventType) query.eventType = eventType;
         if (nationalLevel) query.nationalLevel = nationalLevel;
         if (outcome) query.outcome = outcome;
-        if (activity) query.eventName = activity; // Fix: Match against eventName, not activity
+        if (activity) query.eventName = activity; 
+        if (municipality) query["venue.municipality"] = municipality; // Filtering by district
         if (startDate && endDate) {
             query.startDate = { $gte: new Date(startDate) };
             query.endDate = { $lte: new Date(endDate) };
@@ -419,10 +420,11 @@ exports.updateEvent = async (req, res) => {
 
         let events = await EventWbenificiary.find(query);
 
-        // Extract unique outcomes and event names (instead of 'activity')
+        // Extract unique outcomes, event names, and districts
         const allEvents = await EventWbenificiary.find({ _id: { $in: project.events } });
         const uniqueOutcomes = [...new Set(allEvents.map(e => e.outcome).filter(Boolean))];
-        const uniqueActivities = [...new Set(allEvents.map(e => e.eventName).filter(Boolean))]; // Fix: Extract eventName
+        const uniqueActivities = [...new Set(allEvents.map(e => e.eventName).filter(Boolean))];
+        const uniquemunicipality = [...new Set(allEvents.map(e => e.venue?.municipality).filter(Boolean))]; // Extract districts
 
         // Generate event overview
         const overview = events.map(event => {
@@ -457,9 +459,10 @@ exports.updateEvent = async (req, res) => {
             datas: events, 
             overview, 
             project, 
-            filters: { eventType, startDate, endDate, nationalLevel, sort, outcome, activity },
-            uniqueOutcomes, // Pass the unique outcomes
-            uniqueActivities // Pass the unique event names (activities)
+            filters: { eventType, startDate, endDate, nationalLevel, sort, outcome, activity, municipality },
+            uniqueOutcomes, 
+            uniqueActivities,
+            uniquemunicipality // Pass the unique districts to the template
         });
     } catch (err) {
         console.error(err);
