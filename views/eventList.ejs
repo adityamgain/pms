@@ -6,6 +6,9 @@
     <title>Event List</title>
     <link rel="stylesheet" href="/css/eventlist.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.3/dist/leaflet.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/pivottable/2.23.0/pivot.min.css">
+    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
 </head>
 <body>
     <div class="eventlist-container">
@@ -72,7 +75,7 @@
                             <option value="<%= activity %>" <%= filters.activity === activity ? 'selected' : '' %>><%= activity %></option>
                         <% }) %>
                     </select>
-                </div>
+                </div><br><p>
 
                 <div class="filter-group">
                     <label for="municipality">Municipality:</label>
@@ -85,6 +88,26 @@
                 </div>
 
                 <div class="filter-group">
+                    <label for="district">District:</label>
+                    <select name="district">
+                        <option value="" <%= !filters.district ? 'selected' : '' %>>All</option>
+                        <% uniqueDistricts.forEach(district => { %>
+                            <option value="<%= district %>" <%= filters.district === district ? 'selected' : '' %>><%= district %></option>
+                        <% }) %>
+                    </select>
+                </div>
+
+                <div class="filter-group">
+                    <label for="province">Province:</label>
+                    <select name="province">
+                        <option value="" <%= !filters.province ? 'selected' : '' %>>All</option>
+                        <% uniqueProvinces.forEach(province => { %>
+                            <option value="<%= province %>" <%= filters.province === province ? 'selected' : '' %>><%= province %></option>
+                        <% }) %>           
+                    </select>
+                </div><br>
+
+                <div class="filter-group">
                     <label for="sort">Sort By:</label>
                     <select name="sort">
                         <option value="desc" <%= filters.sort === 'desc' ? 'selected' : '' %>>Newest First</option>
@@ -93,7 +116,6 @@
                         <option value="lowest_attendee" <%= filters.sort === 'lowest_attendee' ? 'selected' : '' %>>Lowest Attendee</option>
                     </select>
                 </div>
-
 
                 <div class="filter-buttons">
                     <button type="submit" class="apply-button">Apply Filters</button>
@@ -130,6 +152,80 @@
         <% } %>
     </div>
 
+    <% if (datas && datas.length > 0) { %>
+    <h5>Event Analysis Graphs</h5>
+        <div class="graph-container">
+            <div class="chart-container">
+                <h4>Event Type</h4>
+                <canvas id="eventTypeChart"></canvas>
+            </div>
+            <div class="chart-container">
+                <h4>Gender</h4>
+                <canvas id="genderChart"></canvas>
+            </div>
+            <div class="chart-container">
+                <h4>Poverty</h4>
+                <canvas id="povertyChart"></canvas>
+            </div>
+            <div class="chart-container">
+                <h4>Caste/Ethnicity</h4>
+                <canvas id="casteChart"></canvas>
+            </div>   
+            <div class="chart-container">
+                <h4>Age Group</h4>
+                <canvas id="ageGroupChart"></canvas>
+            </div>                        
+        </div>
+
+
+        <!-- Heading for Map -->
+        <h5>Event Locations Map</h5>
+        <div id="map"></div>
+
+        <!-- Heading for Pivot Table -->
+        <h5>Report Table</h5>
+        <div id="pivot-table" style="margin: 30px;"></div>
+
+        <!-- Export to Excel Button -->
+        <a href="?exportToExcel=true&<%= Object.entries(filters).map(([key, value]) => `${key}=${value}`).join('&') %>&_=<%= new Date().getTime() %>" class="export-button" id="exportExcel">Export to Excel</a>
+
+
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.min.js"></script>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pivottable/2.23.0/pivot.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pivottable/2.23.0/plotly_renderers.min.js"></script>
+    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/pivottable@2.23.0/dist/plotly_renderers.min.js"></script>
+
+    <script src="https://unpkg.com/leaflet@1.9.3/dist/leaflet.js"></script>
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <script>
+            var map = L.map('map').setView([28.3949, 84.1240], 7); // Default to Nepal
+
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+            }).addTo(map);
+
+            var eventLocations = <%- JSON.stringify(eventLocations || []) %>;
+
+            if (eventLocations.length > 0) {
+                eventLocations.forEach(event => {
+                    if (event.coordinates && event.coordinates.length === 2) {
+                        L.marker([event.coordinates[1], event.coordinates[0]]).addTo(map)
+                            .bindPopup("<b>" + event.eventName + "</b><br>" + event.venue.municipality + ", " + event.venue.district);
+                    }
+                });
+
+                var bounds = eventLocations.map(event => [event.coordinates[1], event.coordinates[0]]);
+                if (bounds.length > 0) {
+                    map.fitBounds(bounds);
+                }
+            }
+        </script>
+    <% } %>
 
     <script>
         function toggleFilters() {
@@ -145,5 +241,166 @@
             window.location.href = window.location.pathname; // Reload the page without query parameters
         }
     </script>
+
+    <!-- Chart Data -->
+    <script>
+        const eventTypeData = <%- JSON.stringify(eventTypeCount || {}) %>;
+        const genderData = <%- JSON.stringify(genderCount || {}) %>;
+        const povertyData = <%- JSON.stringify(povertyStatusCount || {}) %>;
+        const casteData = <%- JSON.stringify(casteCount || {}) %>;
+        const ageGroupData = <%- JSON.stringify(ageGroupCount || {}) %>;
+
+        // Event Type Chart
+        const eventTypeChart = new Chart(document.getElementById('eventTypeChart'), {
+            type: 'doughnut',
+            data: {
+                labels: Object.keys(eventTypeData),
+                datasets: [{
+                    data: Object.values(eventTypeData),
+                    backgroundColor: ['#D3D6C2', '#b9be9d', '#9fa578', '#81875A', '#696E49', '#525639']
+                }]
+            },
+            options: { responsive: true }
+        });
+
+        // Gender Distribution Chart
+        const genderChart = new Chart(document.getElementById('genderChart'), {
+            type: 'doughnut',
+            data: {
+                labels: Object.keys(genderData),
+                datasets: [{
+                    data: Object.values(genderData),
+                    backgroundColor: ['#99CCFF','#FF9999'],
+                }]
+            },
+            options: { responsive: true }
+        });
+
+        // Poverty Status Chart
+        const povertyChart = new Chart(document.getElementById('povertyChart'), {
+            type: 'doughnut',
+            data: {
+                labels: Object.keys(povertyData),
+                datasets: [{
+                    label: 'Beneficiaries by Poverty Status',
+                    data: Object.values(povertyData),
+                    backgroundColor: ['#EDDEA4', '#E4CE77', '#ffe66d']
+                }]
+            },
+            options: { responsive: true, scales: { y: { beginAtZero: true } } }
+        });
+
+        // Caste Distribution Chart
+        new Chart(document.getElementById('casteChart'), {
+            type: 'doughnut',
+            data: {
+                labels: Object.keys(casteData),
+                datasets: [{
+                    label: 'Beneficiaries by Caste',
+                    data: Object.values(casteData),
+                    backgroundColor: ['#D8E9E5', '#A4CCC2', '#7CB6A7', '#51907F', '#3B685C', '#2ecc71']
+                }]
+            },
+            options: { responsive: true, scales: { y: { beginAtZero: true } } }
+        });
+
+        // Age Group Distribution Chart
+        new Chart(document.getElementById('ageGroupChart'), {
+            type: 'doughnut',
+            data: {
+                labels: Object.keys(ageGroupData),
+                datasets: [{
+                    data: Object.values(ageGroupData),
+                    backgroundColor: ['#ffcdc2', '#FF9B85', '#FF7A5C', '#FF481F'],
+                }]
+            },
+            options: { responsive: true }
+        });
+    </script>
+
+    <script>
+        document.getElementById('exportExcel').addEventListener('click', function (e) {
+            e.preventDefault(); // Prevent default link behavior
+            const exportUrl = this.href;
+
+            // Open the export URL in a new tab/window
+            window.open(exportUrl, '_blank');
+
+            // Optional: Show a confirmation message
+            alert('Export started. Please check your downloads.');
+
+            // Optional: Reload the page after a short delay
+            setTimeout(() => {
+                window.location.reload();
+            }, 2000); // Reload after 2 seconds
+        });
+
+        // Update export link on filter form submission
+        document.querySelector('.filter-form').addEventListener('submit', function () {
+            updateExportLink();
+        });
+
+        function updateExportLink() {
+            const filters = {
+                eventType: document.querySelector('select[name="eventType"]').value,
+                nationalLevel: document.querySelector('select[name="nationalLevel"]').value,
+                startDate: document.querySelector('input[name="startDate"]').value,
+                endDate: document.querySelector('input[name="endDate"]').value,
+                outcome: document.querySelector('select[name="outcome"]').value,
+                activity: document.querySelector('select[name="activity"]').value,
+                municipality: document.querySelector('select[name="municipality"]').value,
+                district: document.querySelector('select[name="district"]').value,
+                province: document.querySelector('select[name="province"]').value,
+                sort: document.querySelector('select[name="sort"]').value
+            };
+
+            // Remove undefined or empty parameters
+            const validFilters = Object.fromEntries(
+                Object.entries(filters).filter(([key, value]) => value !== undefined && value !== '')
+            );
+
+            // Construct the query string
+            const queryString = Object.entries(validFilters)
+                .map(([key, value]) => `${key}=${value}`)
+                .join('&');
+
+            // Update the export link
+            const exportLink = document.getElementById('exportExcel');
+            exportLink.href = `?exportToExcel=true&${queryString}&_=${new Date().getTime()}`;
+        }
+
+        // Initialize PivotTable.js
+$(function(){
+    try {
+        const eventSummaryData = <%- JSON.stringify(pivotData || []) %>; // Use pivotData from controller
+
+        console.log("Pivot Data (Browser):", eventSummaryData);
+
+        if (!eventSummaryData || eventSummaryData.length <= 1) { // **Reverted length check to 1, expecting header row**
+            console.error("No data available for PivotTable.");
+            $('#pivot-table').html("<p style='color: red;'>No data available for PivotTable.</p>");
+        } else {
+            // **Reinstated header row removal and object mapping**
+            const dataForPivot = eventSummaryData.slice(1).map(row => {
+                const obj = {};
+                eventSummaryData[0].forEach((header, index) => {
+                    obj[header] = row[index];
+                });
+                return obj;
+            });
+
+            $("#pivot-table").pivotUI(dataForPivot, {
+                rows: ["Events"], // Use "Events" as row (Header from eventSummaryData)
+                cols: ["Type.Category"], // Use "Type.Category" as cols (Header from eventSummaryData)
+                aggregatorName: "Count",
+                rendererName: "Table"
+            });
+        }
+    } catch (error) {
+        console.error("Error initializing PivotTable:", error);
+        $('#pivot-table').html("<p style='color: red;'>Error initializing PivotTable. Please check console.</p>");
+    }
+});     
+        </script>
 </body>
 </html>

@@ -21,6 +21,16 @@
     font-weight: 600;
 }
 
+h5 {
+    font-size: 1.4rem;
+    margin-bottom: 1rem;
+    font-weight: 600;
+    color: #2c3e50;
+    padding-bottom: 0.5rem;
+    display: inline-block; /* Makes the element fit the text width */
+    border-bottom: 2px solid #4CAF50;
+}
+
 /* Filter Form */
 .filter-form {
     display: grid;
@@ -171,6 +181,213 @@
 
 .filter-toggle i {
     margin-right: 8px;
+}
+
+/* Add these styles to your eventlist.css file - within or at the end */
+
+/* --- Graph Container Styling --- */
+.graph-container {
+    display: flex;
+    flex-wrap: wrap; /* Allows charts to wrap to the next line on smaller screens */
+    justify-content: space-around; /* Distribute space evenly between charts */
+    margin-top: 30px; /* Space above the graph container */
+    margin-bottom: 30px; /* Space below the graph container */
+    gap: 20px; /* Spacing between individual chart containers */
+}
+
+/* --- Chart Container Styling --- */
+.chart-container {
+    flex: 1 1 300px; /* Base size for each chart, allows grow and shrink */
+    min-width: 250px; /* Minimum width to prevent charts from becoming too narrow */
+    padding: 20px; /* Padding inside each chart container */
+    background-color: #fff; /* White background for chart containers */
+    border-radius: 8px; /* Rounded corners for chart containers */
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1); /* Subtle shadow for depth */
+    text-align: center; /* Center align content (title and chart) */
+    border: 1px solid #eee; /* Optional: Light border around chart container */
+}
+
+.chart-container h4 {
+    margin-top: 0;
+    margin-bottom: 15px; /* Space below chart title */
+    color: #555; /* Chart title color */
+    font-size: 1.1em; /* Chart title font size */
+    font-weight: bold; /* Make chart titles bold */
+}
+
+/* --- Chart Canvas Styling (Direct canvas styling is often less common, but you can adjust if needed) --- */
+.chart-container canvas {
+    max-width: 100%; /* Ensure canvas doesn't overflow container */
+    height: auto;     /* Maintain aspect ratio, adjust height based on width */
+    display: block;    /* Prevent extra space below canvas (inline-block default) */
+    margin: 0 auto;   /* Center the canvas horizontally within its container */
+}
+
+
+
+/* --- Responsive Adjustments for Graphs --- */
+@media (max-width: 768px) {
+    .graph-container {
+        flex-direction: column; /* Stack chart containers vertically on smaller screens */
+        align-items: center;      /* Center align chart containers when stacked */
+    }
+
+    .chart-container {
+        width: 95%; /* Make chart containers wider on smaller screens */
+        min-width: auto; /* Allow full width within stacked layout */
+        margin-left: auto; /* Center horizontally in stacked layout */
+        margin-right: auto; /* Center horizontally in stacked layout */
+    }
+
+    .chart-container h4 {
+        font-size: 1em; /* Slightly reduce chart title size on smaller screens */
+    }
+}
+#map {
+    width: 100%;
+    height: 400px;
+    margin-top: 20px;
+    border-radius: 8px;
+    box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+/* Add this to your eventlist.css or within a <style> block in the <head> */
+
+/* Pivot Table Container */
+#pivot-table {
+    margin: 20px 0;
+    overflow-x: auto;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+/* Pivot Table Styling */
+.pvtUi {
+    font-family: Arial, sans-serif;
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.pvtUi th,
+.pvtUi td {
+    padding: 12px;
+    text-align: left;
+    border: 1px solid #ddd;
+}
+
+.pvtUi th {
+    background-color: #f8f9fa;
+    font-weight: bold;
+    color: #333;
+}
+
+.pvtUi td {
+    background-color: #fff;
+    color: #555;
+}
+
+/* Hover Effect on Rows */
+.pvtUi tbody tr:hover {
+    background-color: #f1f1f1;
+}
+
+/* Pivot Table Header */
+.pvtUi thead th {
+    background-color: #696E49;
+    color: rgb(0, 0, 0);
+    font-size: 14px;
+}
+
+/* Pivot Table Filters */
+.pvtFilterBox {
+    background-color: #f8f9fa;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    padding: 10px;
+    margin-bottom: 10px;
+}
+
+.pvtFilterBox h4 {
+    margin: 0 0 10px 0;
+    font-size: 16px;
+    color: #333;
+}
+
+/* Pivot Table Aggregator Dropdown */
+.pvtAggregator {
+    margin-bottom: 10px;
+}
+
+.pvtAggregator label {
+    font-weight: bold;
+    margin-right: 10px;
+}
+
+/* Pivot Table Renderer Dropdown */
+.pvtRenderer {
+    margin-bottom: 10px;
+}
+
+.pvtRenderer label {
+    font-weight: bold;
+    margin-right: 10px;
+}
+
+/* Pivot Table Buttons */
+.pvtAxisContainer,
+.pvtVals {
+    margin-bottom: 10px;
+}
+
+.pvtAxisContainer button,
+.pvtVals button {
+    background-color: #696E49;
+    color: white;
+    border: none;
+    padding: 8px 12px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 14px;
+}
+
+.pvtAxisContainer button:hover,
+.pvtVals button:hover {
+    background-color: #525639;
+}
+
+/* Pivot Table Dropdowns */
+select.pvtRenderer,
+select.pvtAggregator {
+    padding: 6px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 14px;
+}
+
+/* Pivot Table Totals */
+.pvtTotal,
+.pvtTotalLabel,
+.pvtGrandTotal {
+    background-color: #f8f9fa;
+    font-weight: bold;
+}
+
+/* Pivot Table Export Button */
+.export-button {
+    display: inline-block;
+    margin-top: 20px;
+    padding: 10px 20px;
+    background-color: #696E49;
+    color: white;
+    text-decoration: none;
+    border-radius: 4px;
+    font-size: 14px;
+    cursor: pointer;
+}
+
+.export-button:hover {
+    background-color: #525639;
 }
 
 /* Responsive Design */

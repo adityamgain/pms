@@ -35,6 +35,8 @@
     "path": "^0.12.7",
     "pivottable": "^2.23.0",
     "uuid": "^11.0.5",
-    "xlsx": "https://cdn.sheetjs.com/xlsx-0.20.3/xlsx-0.20.3.tgz"
+    "xlsx": "https://cdn.sheetjs.com/xlsx-0.20.3/xlsx-0.20.3.tgz",
+    "xlsx-populate": "^1.21.0",
+    "xlsx-style": "^0.8.13"
   }
 }

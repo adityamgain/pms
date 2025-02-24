@@ -2,6 +2,9 @@ const fs = require('fs').promises;
 const Project = require('../models/Project');
 const EventWbenificiary = require('../models/EventWbenificiary');
 const xlsx = require('xlsx');
+const { exec } = require('child_process');
+const ExcelJS = require('exceljs');
+const XlsxPopulate = require('xlsx-populate');
 
 let projectCounter = 1; // Initialize a counter for project code names
 
@@ -116,21 +119,18 @@ exports.getProjectDetails = async (req, res) => {
         // Gantt Chart Data Structure
         const ganttDataMap = new Map();
         let eventCounter = 0;
-const eventNumbering = new Map();
+        const eventNumbering = new Map();
 
         project.events.forEach(event => {
             if (!eventNumbering.has(event.eventName)) {
                 eventCounter++;
                 eventNumbering.set(event.eventName, eventCounter);
             }
-        
             const parentTaskId = `event-${event.eventName}`;
             const eventNumber = eventNumbering.get(event.eventName); // Get assigned event number
-        
             const startDate = new Date(event.startDate);
             const endDate = new Date(event.endDate);
             const duration = Math.ceil((endDate - startDate) / (1000 * 60 * 60 * 24)) + 1;
-        
             if (!ganttDataMap.has(parentTaskId)) {
                 ganttDataMap.set(parentTaskId, {
                     id: parentTaskId,
@@ -148,14 +148,11 @@ const eventNumbering = new Map();
         
             // Get existing parent task
             const parentTask = ganttDataMap.get(parentTaskId);
-        
             // Update parent start and end dates
             parentTask.start_date = new Date(Math.min(new Date(parentTask.start_date), startDate)).toISOString().split("T")[0];
             parentTask.end_date = new Date(Math.max(new Date(parentTask.end_date), endDate)).toISOString().split("T")[0];
-        
             // Track child duration
             parentTask.childDurations.push(duration);
-        
             // Assign child numbering (1.1, 1.2, ...)
             parentTask.childCounter++; // Increment child count
             const childTaskId = `task-${event._id}`;
@@ -178,9 +175,7 @@ const eventNumbering = new Map();
                 delete task.childDurations;
             }
         });
-
         const ganttData = Array.from(ganttDataMap.values());
-
         // Initialize counters for beneficiaries and demographics
         let totalAttendees = 0;
         let totalBenefitted = 0;
@@ -196,13 +191,11 @@ const eventNumbering = new Map();
             if (Array.isArray(event.beneficiaries)) {
                 totalAttendees += event.beneficiaries.length;
                 totalBenefitted += event.beneficiaries.filter(b => b.benefitsFromActivity).length;
-
                 event.beneficiaries.forEach(beneficiary => {
                     // Gender distribution
                     if (beneficiary.gender === "Male") totalMale++;
                     else if (beneficiary.gender === "Female") totalFemale++;
                     else if (beneficiary.gender === "Other") totalOther++;
-
                     // Caste/Ethnicity classification
                     switch (beneficiary.casteEthnicity) {
                         case "Dalit": totalDalit++; break;
@@ -212,7 +205,6 @@ const eventNumbering = new Map();
                         case "Madhesi": totalMadhesi++; break;
                         case "Others": totalOthers++; break;
                     }
-
                     // Age classification
                     switch (beneficiary.age) {
                         case "Upto 25 years": ageUnder25++; break;
@@ -225,19 +217,15 @@ const eventNumbering = new Map();
 
         // Calculate benefitted ratio
         const benefittedRatio = totalAttendees > 0 ? (totalBenefitted / totalAttendees) * 100 : 0;
-
         // Prepare event type data for visualization
         const eventTypes = Object.keys(eventTypeCounts);
         const eventCounts = Object.values(eventTypeCounts);
-
         // Determine reporting period range
         const reportingPeriodStart = new Date(project.startDate);
         const reportingPeriodEnd = new Date(project.endDate);
-
         if (isNaN(reportingPeriodStart.getTime()) || isNaN(reportingPeriodEnd.getTime())) {
             return res.status(400).send("Invalid project start or end date");
         }
-
         // Render project details page
         res.render("project-details", {
             project,
@@ -326,12 +314,14 @@ exports.deleteProject = async (req, res) => {
 
 
 // Export project data to Excel
+// Export project data to Excel
 exports.exportProjectDetails = async (req, res) => {
     try {
         const project = await Project.findById(req.params.id).populate('events');
         if (!project) {
             return res.status(404).send('Project not found');
         }
+
         const workbook = xlsx.utils.book_new();
         const projectSheetData = [
             ['Project Name', project.projectName],
@@ -345,6 +335,7 @@ exports.exportProjectDetails = async (req, res) => {
         ];
         const projectSheet = xlsx.utils.aoa_to_sheet(projectSheetData);
         xlsx.utils.book_append_sheet(workbook, projectSheet, 'Project Details');
+
         const beneficiariesSheetData = [
             [
                 'SN', 'Year', 'Month', 'Start Date (dd-mm-yyyy)', 'End Date (dd-mm-yyyy)', 
@@ -353,6 +344,7 @@ exports.exportProjectDetails = async (req, res) => {
                 'Organization Type', 'Gender', 'Age', 'Caste', 'Poverty Status', 'Disability'
             ]
         ];
+
         const eventSummaryData = [
             [
                 'SN', 'Year', 'Month', 'Start Date (dd-mm-yyyy)', 'End Date (dd-mm-yyyy)', 'Duration (days)', 'Events', 'Event Outcomes', 
@@ -361,6 +353,7 @@ exports.exportProjectDetails = async (req, res) => {
                 'Total Dalit', 'Total Tharu', 'Total Janajati', 'Total Brahman/Chhetri', 'Total Madhesi', 'Total Others Caste', 'Total Poverty A', 'Total Poverty B', 'Total Poverty C', 'Total Poverty D'
             ]
         ];
+
         let sn = 1;
         let eventSn = 1;
         const overview = {
@@ -384,6 +377,7 @@ exports.exportProjectDetails = async (req, res) => {
             totalPovertyC: 0,
             totalPovertyD: 0
         };
+
         for (const event of project.events) {
             const eventYear = event.startDate.getFullYear();
             const eventMonth = event.startDate.toLocaleString('default', { month: 'long' });
@@ -391,6 +385,7 @@ exports.exportProjectDetails = async (req, res) => {
             let totalMale = 0, totalFemale = 0, totalUpto25 = 0, total25To40 = 0, totalabove40 = 0, totalBenefitted = 0, totalDisability = 0;
             let totalDalit = 0, totalTharu = 0, totalJanajati = 0, totalBrahmanChhetri = 0, totalMadhesi = 0, totalOthersCaste = 0;
             let totalPovertyA = 0, totalPovertyB = 0, totalPovertyC = 0, totalPovertyD = 0;
+
             for (const beneficiary of event.beneficiaries) {
                 beneficiariesSheetData.push([
                     sn++,

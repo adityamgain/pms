@@ -5,6 +5,8 @@ const mongoose = require('mongoose');
 const fs = require('fs').promises;
 const Joi = require('joi');
 const XLSX = require('xlsx');
+const ExcelJS = require('exceljs');
+
 const cloudinary = require('cloudinary').v2;
 const path = require('path');
 
@@ -239,10 +241,6 @@ const processJSONBeneficiaries = (beneficiaries) => {
 };
 
 
-
-
-
-
 // Show edit form for a specific event
 exports.showEditForm = async (req, res) => {
   try {
@@ -347,9 +345,6 @@ exports.updateEvent = async (req, res) => {
 };
 
 
-
-
-
   // deleting events with its associated photographs and reports
   exports.deleteEvent = async (req, res) => {
     try {
@@ -397,36 +392,57 @@ exports.updateEvent = async (req, res) => {
   };
       
 
+
   exports.viewAllEventData = async (req, res) => {
     try {
         const { projectId } = req.params;
-        const { eventType, startDate, endDate, nationalLevel, sort, outcome, activity, municipality } = req.query;
+        const { eventType, startDate, endDate, nationalLevel, sort, outcome, activity, municipality, district, province, exportToExcel } = req.query;
 
+        // Validate project
         const project = await Project.findById(projectId);
         if (!project) {
             return res.status(404).send('Project not found');
         }
 
+        // Build the query
         let query = { _id: { $in: project.events } };
-        if (eventType) query.eventType = eventType;
-        if (nationalLevel) query.nationalLevel = nationalLevel;
-        if (outcome) query.outcome = outcome;
-        if (activity) query.eventName = activity; 
-        if (municipality) query["venue.municipality"] = municipality; // Filtering by district
-        if (startDate && endDate) {
+
+        // Add filters only if they are defined and valid
+        if (eventType && eventType !== 'undefined') query.eventType = eventType;
+        if (nationalLevel && nationalLevel !== 'undefined') query.nationalLevel = nationalLevel;
+        if (outcome && outcome !== 'undefined') query.outcome = outcome;
+        if (activity && activity !== 'undefined') query.eventName = activity;
+        if (municipality && municipality !== 'undefined') query["venue.municipality"] = municipality;
+        if (district && district !== 'undefined') query["venue.district"] = district;
+        if (province && province !== 'undefined') query["venue.province"] = province;
+
+        // Validate and include startDate and endDate in the query
+        if (startDate && startDate !== 'undefined' && !isNaN(new Date(startDate).getTime())) {
             query.startDate = { $gte: new Date(startDate) };
+        }
+        if (endDate && endDate !== 'undefined' && !isNaN(new Date(endDate).getTime())) {
             query.endDate = { $lte: new Date(endDate) };
         }
 
+        console.log("MongoDB Query:", query); // Log the query
         let events = await EventWbenificiary.find(query);
+        console.log("Events Length:", events.length); // Log events length
 
-        // Extract unique outcomes, event names, and districts
+        const eventLocations = events
+            .filter(event => event.location && event.location.coordinates)
+            .map(event => ({
+                coordinates: event.location.coordinates,
+                venue: event.venue,
+                eventName: event.eventName
+            }));
+
         const allEvents = await EventWbenificiary.find({ _id: { $in: project.events } });
         const uniqueOutcomes = [...new Set(allEvents.map(e => e.outcome).filter(Boolean))];
         const uniqueActivities = [...new Set(allEvents.map(e => e.eventName).filter(Boolean))];
-        const uniquemunicipality = [...new Set(allEvents.map(e => e.venue?.municipality).filter(Boolean))]; // Extract districts
+        const uniquemunicipality = [...new Set(allEvents.map(e => e.venue?.municipality).filter(Boolean))];
+        const uniqueDistricts = [...new Set(allEvents.map(e => e.venue?.district).filter(Boolean))];
+        const uniqueProvinces = [...new Set(allEvents.map(e => e.venue?.province).filter(Boolean))];
 
-        // Generate event overview
         const overview = events.map(event => {
             const totalAttendees = event.beneficiaries.length;
             const totalBenefited = event.beneficiaries.filter(b => b.benefitsFromActivity).length;
@@ -438,7 +454,36 @@ exports.updateEvent = async (req, res) => {
             };
         });
 
-        // Sorting logic
+        const eventTypeCount = {};
+        const genderCount = { Male: 0, Female: 0, Other: 0 };
+        const povertyStatusCount = { A: 0, B: 0, C: 0, D: 0 };
+
+        const casteCategories = ['Dalit', 'Janajati', 'Brahman/Chhetri', 'Tharu', 'Madhesi', 'Others'];
+        const casteCount = { Dalit: 0, Janajati: 0, 'Brahman/Chhetri': 0, Tharu: 0, Madhesi: 0, Others: 0 };
+        const ageGroupCount = { 'Upto 25 years': 0, '25-40 years': 0, '40 above years': 0 };
+
+        events.forEach(event => {
+            eventTypeCount[event.eventType] = (eventTypeCount[event.eventType] || 0) + 1;
+            event.beneficiaries.forEach(beneficiary => {
+                genderCount[beneficiary.gender] = (genderCount[beneficiary.gender] || 0) + 1;
+                povertyStatusCount[beneficiary.povertyStatus] = (povertyStatusCount[beneficiary.povertyStatus] || 0) + 1;
+
+                if (casteCategories.includes(beneficiary.casteEthnicity)) {
+                    casteCount[beneficiary.casteEthnicity]++;
+                } else {
+                    casteCount['Others']++;
+                }
+
+                if (beneficiary.age === 'Upto 25 years') {
+                    ageGroupCount['Upto 25 years']++;
+                } else if (beneficiary.age === '25-40 years') {
+                    ageGroupCount['25-40 years']++;
+                } else if (beneficiary.age === '40 above years') {
+                    ageGroupCount['40 above years']++;
+                }
+            });
+        });
+
         if (sort === 'asc') {
             events = events.sort((a, b) => new Date(a.startDate) - new Date(b.startDate));
         } else if (sort === 'desc') {
@@ -455,20 +500,160 @@ exports.updateEvent = async (req, res) => {
             });
         }
 
-        res.render('eventList', { 
-            datas: events, 
-            overview, 
-            project, 
-            filters: { eventType, startDate, endDate, nationalLevel, sort, outcome, activity, municipality },
-            uniqueOutcomes, 
+        const beneficiariesSheetData = [
+            [
+                'SN', 'Year', 'Month', 'Start Date (dd-mm-yyyy)', 'End Date (dd-mm-yyyy)',
+                'Duration (days)', 'Events', 'Event Outcomes', 'Facilitators', 'National Level',
+                'Province', 'District', 'Municipality', 'Type.Category', 'Linked to Field of Action',
+                'Beneficiary Name', 'Organization', 'Organization Type', 'Gender', 'Age',
+                'Caste', 'Poverty Status', 'Disability'
+            ]
+        ];
+
+        const eventSummaryData = [
+            [
+                'SN', 'Year', 'Month', 'Start Date (dd-mm-yyyy)', 'End Date (dd-mm-yyyy)',
+                'Duration (days)', 'Events', 'Event Outcomes', 'Facilitators', 'National Level',
+                'Province', 'District', 'Municipality', 'Type.Category', 'Linked to Field of Action',
+                'Total Attendees', 'Total Male', 'Total Female', 'Total 25 Yrs', 'Total 25-40 Yrs',
+                'Total 40 Above', 'Total Benefitted', 'Total Disability', 'Total Dalit', 'Total Tharu',
+                'Total Janajati', 'Total Brahman/Chhetri', 'Total Madhesi', 'Total Others Caste',
+                'Total Poverty A', 'Total Poverty B', 'Total Poverty C', 'Total Poverty D'
+            ]
+        ];
+        console.log("Event Summary Data (before loop):", eventSummaryData); // Log before loop
+
+        let beneficiarySn = 1; // Separate counter for Beneficiaries sheet
+        let eventSn = 1;
+
+        events.forEach(event => {
+            console.log("Processing event:", event.eventName, event._id); // Log at start of loop
+            console.log("Event Beneficiaries:", event.beneficiaries); // Log beneficiaries
+
+            const year = event.startDate ? new Date(event.startDate).getFullYear() : '';
+            const month = event.startDate ? new Date(event.startDate).toLocaleString('default', { month: 'long' }) : '';
+            const startDate = event.startDate ? new Date(event.startDate).toLocaleDateString('en-GB') : '';
+            const endDate = event.endDate ? new Date(event.endDate).toLocaleDateString('en-GB') : '';
+            const duration = event.startDate && event.endDate ?
+                ((new Date(event.endDate) - new Date(event.startDate)) / (1000 * 60 * 60 * 24)).toFixed(2) : '';
+
+            // Add beneficiaries data
+            if (event.beneficiaries && event.beneficiaries.length > 0) {
+                event.beneficiaries.forEach(b => {
+                    beneficiariesSheetData.push([
+                        beneficiarySn,
+                        year,
+                        month,
+                        startDate,
+                        endDate,
+                        duration,
+                        event.eventName || '',
+                        event.outcome || '',
+                        event.facilitators ? event.facilitators.join(', ') : '',
+                        event.nationalLevel || '',
+                        event.venue?.province || '',
+                        event.venue?.district || '',
+                        event.venue?.municipality || '',
+                        event.eventType || '',
+                        event.linkedToFieldOfAction || '',
+                        b.name || '',
+                        b.organization || '',
+                        b.organizationType || '',
+                        b.gender || '',
+                        b.age || '',
+                        b.casteEthnicity || '',
+                        b.povertyStatus || '',
+                        b.disabilityStatus || ''
+                    ]);
+                    beneficiarySn++;
+                });
+            }
+
+            // Add event summary data
+            const totalAttendees = event.beneficiaries ? event.beneficiaries.length : 0;
+            const totalMale = event.beneficiaries ? event.beneficiaries.filter(b => b.gender === 'Male').length : 0;
+            const totalFemale = event.beneficiaries ? event.beneficiaries.filter(b => b.gender === 'Female').length : 0;
+            const total25Yrs = event.beneficiaries ? event.beneficiaries.filter(b => b.age === 'Upto 25 years').length : 0;
+            const total25_40Yrs = event.beneficiaries ? event.beneficiaries.filter(b => b.age === '25-40 years').length : 0;
+            const total40Above = event.beneficiaries ? event.beneficiaries.filter(b => b.age === '40 above years').length : 0;
+            const totalBenefitted = event.beneficiaries ? event.beneficiaries.filter(b => b.benefitsFromActivity).length : 0;
+            const totalDisability = event.beneficiaries ? event.beneficiaries.filter(b => b.disabilityStatus).length : 0;
+            const totalDalit = event.beneficiaries ? event.beneficiaries.filter(b => b.casteEthnicity === 'Dalit').length : 0;
+            const totalTharu = event.beneficiaries ? event.beneficiaries.filter(b => b.casteEthnicity === 'Tharu').length : 0;
+            const totalJanajati = event.beneficiaries ? event.beneficiaries.filter(b => b.casteEthnicity === 'Janajati').length : 0;
+            const totalBrahmanChhetri = event.beneficiaries ? event.beneficiaries.filter(b => b.casteEthnicity === 'Brahman/Chhetri').length : 0;
+            const totalMadhesi = event.beneficiaries ? event.beneficiaries.filter(b => b.casteEthnicity === 'Madhesi').length : 0;
+            const totalOthersCaste = event.beneficiaries ? event.beneficiaries.filter(b => b.casteEthnicity === 'Others').length : 0;
+            const totalPovertyA = event.beneficiaries ? event.beneficiaries.filter(b => b.povertyStatus === 'A').length : 0;
+            const totalPovertyB = event.beneficiaries ? event.beneficiaries.filter(b => b.povertyStatus === 'B').length : 0;
+            const totalPovertyC = event.beneficiaries ? event.beneficiaries.filter(b => b.povertyStatus === 'C').length : 0;
+            const totalPovertyD = event.beneficiaries ? event.beneficiaries.filter(b => b.povertyStatus === 'D').length : 0;
+
+
+            console.log("Total Attendees:", totalAttendees);
+            console.log("Total Male:", totalMale);
+
+            const dataRow = [ // Construct data row array
+                eventSn, year, month, startDate, endDate, duration, event.eventName || '', event.outcome || '',
+                event.facilitators ? event.facilitators.join(', ') : '', event.nationalLevel || '',
+                event.venue?.province || '', event.venue?.district || '', event.venue?.municipality || '',
+                event.eventType || '', event.linkedToFieldOfAction || '', totalAttendees, totalMale, totalFemale,
+                total25Yrs, total25_40Yrs, total40Above, totalBenefitted, totalDisability, totalDalit, totalTharu,
+                totalJanajati, totalBrahmanChhetri, totalMadhesi, totalOthersCaste, totalPovertyA, totalPovertyB,
+                totalPovertyC, totalPovertyD
+            ];
+            console.log("Data Row to Push:", dataRow); // Log data row before push
+            eventSummaryData.push(dataRow);
+            eventSn++;
+            console.log("Event Summary Data Length after push:", eventSummaryData.length); // Log length after push
+        });
+        console.log("Event Summary Data (after loop):", eventSummaryData); // Log after loop
+
+        if (exportToExcel === 'true') {
+            const workbook = new ExcelJS.Workbook();
+            const beneficiariesSheet = workbook.addWorksheet('Beneficiaries');
+            const eventSummarySheet = workbook.addWorksheet('Event Summary');
+
+
+            // Add data to sheets
+            beneficiariesSheet.addRows(beneficiariesSheetData);
+            eventSummarySheet.addRows(eventSummaryData);
+
+            // Set headers and send file
+            res.setHeader('Content-Disposition', `attachment; filename="Event_Data_${new Date().toISOString().split('T')[0]}.xlsx"`);
+            res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');            await workbook.xlsx.write(res);
+            res.end();
+            return;
+        }
+
+        const pivotData = eventSummaryData;
+
+
+        res.render('eventList', {
+            datas: events,
+            overview,
+            project,
+            eventLocations,
+            filters: { eventType, startDate, endDate, nationalLevel, sort, outcome, activity, municipality, district, province },
+            uniqueOutcomes,
             uniqueActivities,
-            uniquemunicipality // Pass the unique districts to the template
+            uniquemunicipality,
+            uniqueDistricts,
+            uniqueProvinces,
+            eventTypeCount,
+            genderCount,
+            povertyStatusCount,
+            casteCount,
+            ageGroupCount,
+            pivotData: pivotData
         });
     } catch (err) {
         console.error(err);
         res.status(500).send('Server error');
     }
 };
+
+
 
 
 
