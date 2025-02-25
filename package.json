@@ -24,6 +24,7 @@
     "express-ejs-layouts": "^2.5.1",
     "express-flash": "^0.0.2",
     "express-session": "^1.18.1",
+    "frappe-gantt": "^1.0.3",
     "fs": "^0.0.1-security",
     "joi": "^17.13.3",
     "luxon": "^3.5.0",

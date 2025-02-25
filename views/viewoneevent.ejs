@@ -196,12 +196,15 @@
                 <h3>Reports</h3>
                 <ul>
                     <% event.reports.forEach(report => { %>
-                        <li><i class="fas fa-file-alt"></i><a href="<%= report %>" target="_blank">View Report</a></li>
+                        <li>
+                            <i class="fas fa-file-alt"></i>
+                            <a href="<%= report %>" target="_blank" rel="noopener noreferrer">View Report</a>
+                        </li>
                     <% }) %>
                 </ul>
             </div>
         <% } %>
-    </div><br>
+
 
     <!-- Lightbox Section -->
     <div id="lightbox">
@@ -214,6 +217,64 @@
     <script src="/js/eventWbeneficiary.js"></script>
 
     <script>
+document.addEventListener("DOMContentLoaded", () => {
+    const lightbox = document.getElementById("lightbox");
+    const lightboxImg = document.getElementById("lightbox-img");
+    const closeLightbox = document.getElementById("close-lightbox");
+    const leftArrow = document.querySelector(".arrow-left");
+    const rightArrow = document.querySelector(".arrow-right");
+    
+    let images = [];
+    let currentImageIndex = 0;
+
+    // Function to open the lightbox
+    function openLightbox(imageSrc, index) {
+        images = Array.from(document.querySelectorAll(".photographs img")).map(img => img.src);
+        currentImageIndex = index;
+        lightboxImg.src = imageSrc;
+        lightbox.style.display = "flex";
+    }
+
+    // Function to change images when clicking arrows
+    function changeImage(step) {
+        if (images.length === 0) return;
+        currentImageIndex = (currentImageIndex + step + images.length) % images.length;
+        lightboxImg.src = images[currentImageIndex];
+    }
+
+    // Add event listeners to all images in the photographs section
+    document.querySelectorAll(".photographs img").forEach((img, index) => {
+        img.addEventListener("click", () => openLightbox(img.src, index));
+    });
+
+    // Close lightbox when clicking the close button
+    closeLightbox.addEventListener("click", () => {
+        lightbox.style.display = "none";
+    });
+
+    // Close when clicking outside the image
+    lightbox.addEventListener("click", (e) => {
+        if (e.target === lightbox) {
+            lightbox.style.display = "none";
+        }
+    });
+
+    // Add event listeners for navigation arrows
+    leftArrow.addEventListener("click", () => changeImage(-1));
+    rightArrow.addEventListener("click", () => changeImage(1));
+
+    // Keyboard navigation
+    document.addEventListener("keydown", (e) => {
+        if (lightbox.style.display === "flex") {
+            if (e.key === "ArrowRight") changeImage(1);
+            if (e.key === "ArrowLeft") changeImage(-1);
+            if (e.key === "Escape") lightbox.style.display = "none";
+        }
+    });
+});
+
+
+
         // Beneficiary Summary Data 
         const beneficiarySummary = {
             totalMale: <%= overview.totalMale %>,
@@ -356,6 +417,9 @@
 
         // Add event listener to the export button
         document.getElementById("export-btn").addEventListener("click", exportTableToExcel);
+
+
+
 
     </script>
 </body>

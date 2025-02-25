@@ -424,9 +424,7 @@ exports.updateEvent = async (req, res) => {
             query.endDate = { $lte: new Date(endDate) };
         }
 
-        console.log("MongoDB Query:", query); // Log the query
         let events = await EventWbenificiary.find(query);
-        console.log("Events Length:", events.length); // Log events length
 
         const eventLocations = events
             .filter(event => event.location && event.location.coordinates)
@@ -521,15 +519,11 @@ exports.updateEvent = async (req, res) => {
                 'Total Poverty A', 'Total Poverty B', 'Total Poverty C', 'Total Poverty D'
             ]
         ];
-        console.log("Event Summary Data (before loop):", eventSummaryData); // Log before loop
 
         let beneficiarySn = 1; // Separate counter for Beneficiaries sheet
         let eventSn = 1;
 
         events.forEach(event => {
-            console.log("Processing event:", event.eventName, event._id); // Log at start of loop
-            console.log("Event Beneficiaries:", event.beneficiaries); // Log beneficiaries
-
             const year = event.startDate ? new Date(event.startDate).getFullYear() : '';
             const month = event.startDate ? new Date(event.startDate).toLocaleString('default', { month: 'long' }) : '';
             const startDate = event.startDate ? new Date(event.startDate).toLocaleDateString('en-GB') : '';
@@ -590,9 +584,6 @@ exports.updateEvent = async (req, res) => {
             const totalPovertyD = event.beneficiaries ? event.beneficiaries.filter(b => b.povertyStatus === 'D').length : 0;
 
 
-            console.log("Total Attendees:", totalAttendees);
-            console.log("Total Male:", totalMale);
-
             const dataRow = [ // Construct data row array
                 eventSn, year, month, startDate, endDate, duration, event.eventName || '', event.outcome || '',
                 event.facilitators ? event.facilitators.join(', ') : '', event.nationalLevel || '',
@@ -602,12 +593,9 @@ exports.updateEvent = async (req, res) => {
                 totalJanajati, totalBrahmanChhetri, totalMadhesi, totalOthersCaste, totalPovertyA, totalPovertyB,
                 totalPovertyC, totalPovertyD
             ];
-            console.log("Data Row to Push:", dataRow); // Log data row before push
             eventSummaryData.push(dataRow);
             eventSn++;
-            console.log("Event Summary Data Length after push:", eventSummaryData.length); // Log length after push
         });
-        console.log("Event Summary Data (after loop):", eventSummaryData); // Log after loop
 
         if (exportToExcel === 'true') {
             const workbook = new ExcelJS.Workbook();
@@ -625,10 +613,7 @@ exports.updateEvent = async (req, res) => {
             res.end();
             return;
         }
-
         const pivotData = eventSummaryData;
-
-
         res.render('eventList', {
             datas: events,
             overview,

@@ -23,7 +23,7 @@ exports.renderCreateProjectForm = (req, res) => {
 // Handle form submission to create a new project
 exports.createProject = async (req, res) => {
     try {
-        const { projectName, donor, stakeholders, startDate, endDate, areaOfAction, reportingPeriod, target_events, activities, outcomes } = req.body;
+        const { projectName, donor, stakeholders, startDate, endDate, areaOfAction, reportingPeriod, target_events, activities, outcomes, ...ganttChartInputs } = req.body;
         console.log("Received request body:", req.body);
         // Validate required fields
         if (!projectName || !donor || !startDate || !endDate || !areaOfAction || !reportingPeriod) {
@@ -43,6 +43,20 @@ exports.createProject = async (req, res) => {
         // Generate unique project code
         const codeName = generateCodeName();
 
+        const ganttChartData = {};
+        // Iterate over the activities within ganttChartInputs.events
+        for (const activityName in ganttChartInputs.events) {
+            const timeUnitsData = ganttChartInputs.events[activityName]; // Get time unit data for this activity
+            ganttChartData[activityName] = {}; // Initialize nested object for the activity
+        
+            for (const timeUnit in timeUnitsData) {
+                const eventCount = timeUnitsData[timeUnit];
+                ganttChartData[activityName][timeUnit] = parseInt(eventCount, 10) || 0;
+            }
+        }
+        console.log("ganttChartInputs:", ganttChartInputs);
+console.log("ganttChartData:", ganttChartData);
+
         // Create project object
         const project = new Project({
             projectName,
@@ -55,7 +69,8 @@ exports.createProject = async (req, res) => {
             codeName,
             target_events,
             activities: activitiesArray,
-            outcomes: outcomesArray
+            outcomes: outcomesArray,
+            ganttChartData: ganttChartData
         });
         await project.save();
         res.redirect(`/projects/${project._id}`);
@@ -313,7 +328,6 @@ exports.deleteProject = async (req, res) => {
 };
 
 
-// Export project data to Excel
 // Export project data to Excel
 exports.exportProjectDetails = async (req, res) => {
     try {

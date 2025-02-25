@@ -42,7 +42,11 @@ const ProjectSchema = new mongoose.Schema({
     },
     target_events: { type: Number, required: true },
     activities: [{ type: String, required: true }],  // Changed to an array of strings
-    outcomes: [{ type: String, required: true }]  
+    outcomes: [{ type: String, required: true }],
+    ganttChartData: { // New field to store Gantt chart data
+        type: Object,
+        default: {} // Default to an empty object
+    }
 });
 
 module.exports = mongoose.model('Project', ProjectSchema);

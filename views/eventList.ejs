@@ -152,6 +152,10 @@
         <% } %>
     </div>
 
+            <!-- Export to Excel Button -->
+        <a href="?exportToExcel=true&<%= Object.entries(filters).map(([key, value]) => `${key}=${value}`).join('&') %>&_=<%= new Date().getTime() %>" class="export-button" id="exportExcel">Export to Excel</a>
+<br>
+
     <% if (datas && datas.length > 0) { %>
     <h5>Event Analysis Graphs</h5>
         <div class="graph-container">
@@ -186,8 +190,6 @@
         <h5>Report Table</h5>
         <div id="pivot-table" style="margin: 30px;"></div>
 
-        <!-- Export to Excel Button -->
-        <a href="?exportToExcel=true&<%= Object.entries(filters).map(([key, value]) => `${key}=${value}`).join('&') %>&_=<%= new Date().getTime() %>" class="export-button" id="exportExcel">Export to Excel</a>
 
 
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
@@ -372,15 +374,14 @@
         // Initialize PivotTable.js
 $(function(){
     try {
-        const eventSummaryData = <%- JSON.stringify(pivotData || []) %>; // Use pivotData from controller
+        const eventSummaryData = <%- JSON.stringify(pivotData || []) %>;
 
         console.log("Pivot Data (Browser):", eventSummaryData);
 
-        if (!eventSummaryData || eventSummaryData.length <= 1) { // **Reverted length check to 1, expecting header row**
+        if (!eventSummaryData || eventSummaryData.length <= 1) {
             console.error("No data available for PivotTable.");
             $('#pivot-table').html("<p style='color: red;'>No data available for PivotTable.</p>");
         } else {
-            // **Reinstated header row removal and object mapping**
             const dataForPivot = eventSummaryData.slice(1).map(row => {
                 const obj = {};
                 eventSummaryData[0].forEach((header, index) => {
@@ -390,8 +391,8 @@ $(function(){
             });
 
             $("#pivot-table").pivotUI(dataForPivot, {
-                rows: ["Events"], // Use "Events" as row (Header from eventSummaryData)
-                cols: ["Type.Category"], // Use "Type.Category" as cols (Header from eventSummaryData)
+                rows: ["Demographic Group", "Events"], // **Modified: "Demographic Group" first**
+                cols: ["Type.Category"],
                 aggregatorName: "Count",
                 rendererName: "Table"
             });
@@ -400,7 +401,9 @@ $(function(){
         console.error("Error initializing PivotTable:", error);
         $('#pivot-table').html("<p style='color: red;'>Error initializing PivotTable. Please check console.</p>");
     }
-});     
-        </script>
+});        
+
+
+</script>
 </body>
 </html>
