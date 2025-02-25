@@ -8,34 +8,152 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns"></script>
     <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels"></script>
-    <!-- dhtmlxGantt CSS -->
     <link rel="stylesheet" href="https://cdn.dhtmlx.com/gantt/edge/dhtmlxgantt.css">
-    <!-- dhtmlxGantt JS -->
     <script src="https://cdn.dhtmlx.com/gantt/edge/dhtmlxgantt.js"></script>
+    <style>
+        /* Reusing styles from create project form for tabular chart */
+        .gantt-chart-container {
+            margin-top: 1rem;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            overflow-x: auto;
+        }
+
+        .gantt-chart {
+            display: table;
+            width: 100%;
+            min-width: max-content;
+            border-collapse: collapse;
+        }
+
+        .chart-row {
+            display: table-row;
+        }
+
+        .chart-cell {
+            display: table-cell;
+            padding: 12px;
+            border: 1px solid #e2e8f0;
+            text-align: center;
+            vertical-align: middle;
+        }
+
+        .header-row {
+            background-color: #f8fafc;
+            font-weight: 600;
+        }
+
+        .header-cell {
+            min-width: 120px;
+        }
+
+        .activity-cell, .event-type-cell { /* Added event-type-cell */
+            background-color: #f8fafc;
+            text-align: left;
+            font-weight: 500;
+            width: 250px;
+            max-width: 250px;
+            min-width: 250px;
+            word-wrap: break-word;
+            word-break: break-word;
+            hyphens: auto;
+            line-height: 1.5;
+            padding: 12px 16px;
+            font-size: 0.95rem;
+            white-space: pre-wrap;
+            border-right: 2px solid #e2e8f0;
+        }
+
+        .activity-header, .event-type-header { /* Added event-type-header */
+            background-color: #f1f5f9;
+            width: 250px;
+            max-width: 250px;
+            min-width: 250px;
+            text-align: left;
+            font-weight: 600;
+            word-wrap: break-word;
+            word-break: break-word;
+            hyphens: auto;
+            line-height: 1.5;
+            padding: 12px 16px;
+            font-size: 1rem;
+            border-right: 2px solid #e2e8f0;
+        }
+
+        .event-cell {
+            padding: 4px;
+            width: 70px;
+            min-width: 70px;
+            vertical-align: middle;
+        }
+
+        .event-output {
+            width: 100%;
+            height: 30px;
+            padding: 2px 4px;
+            border: 1px solid #cbd5e1;
+            border-radius: 4px;
+            text-align: center;
+            font-size: 0.9rem;
+            box-sizing: border-box;
+            background-color: #ffffff; /* White background for output display */
+            display: flex; /* Use flexbox to center content */
+            align-items: center; /* Vertically center content */
+            justify-content: center; /* Horizontally center content */
+        }
+
+
+        .time-unit-header {
+            background-color: #f1f5f9;
+            width: 70px;
+            min-width: 70px;
+            padding: 8px 4px;
+        }
+
+        .event-output:focus {
+            border-color: #4CAF50;
+            outline: none;
+            box-shadow: 0 0 3px rgba(76, 175, 80, 0.2);
+        }
+
+        /* Responsive adjustments */
+        @media (max-width: 768px) {
+            .gantt-chart-container {
+                margin: 1rem -1rem;
+                border-radius: 0;
+            }
+
+            .header-cell {
+                min-width: 100px;
+            }
+
+            .activity-header, .event-type-header {
+                min-width: 150px;
+            }
+        }
+    </style>
 </head>
 <body>
     <div class="project-detail-container">
-        <!-- Status Badge in Top-Left Corner -->
         <div class="status-badge <%= project.projectStatus.toLowerCase() %>">
             <%= project.projectStatus %>
         </div>
-        
+
         <h1><%= project.projectName %></h1>
         <div class="section">
             <h2>Project Information</h2>
             <p><strong>Name:</strong> <%= project.projectName %></p>
-            <p><strong>Donor:</strong> <%= project.donor %></p>
+            <p><strong>Donor:</strong> <%= project.donor %>></p>
             <p><strong>Stakeholders:</strong> <%= project.stakeholders.join(', ') %></p>
             <p><strong>Start Date:</strong> <%= new Date(project.startDate).toDateString() %></p>
             <p><strong>End Date:</strong> <%= new Date(project.endDate).toDateString() %></p>
             <p><strong>Area of Action:</strong> <%= project.areaOfAction.join(', ') %></p>
             <p><strong>Reporting Period:</strong> <%= project.reportingPeriod %></p>
 
-            <!-- Countdown Timer -->
             <p><strong>Time Remaining:</strong> <span id="countdown"></span></p>
 
             <section class="counting">
-                <div class="layout">  
+                <div class="layout">
                     <div class="grid-3">
                         <span class="counter"><%= totalEvents %> </span>
                         <p>Events Completed</p>
@@ -52,40 +170,38 @@
                         <span class="counter"><%= EventsPercent %> %</span>
                         <p>Completion Ratio</p>
                     </div>
-                </div>  
+                </div>
             </section>
-            
+
             <a href="/projects/<%= project._id %>/export" class="btn" id="exportBtn">Export Project Details</a>
 
             <% if (totalEvents > 0) { %>
                 <div class="graphical-representation">
-                    <h2>Graphical Representation</h2>
 
-            <div class="chart-container-grantt">
-                <h4>Gantt Chart</h4>
-                <div id="gantt_here" style="width: 100%; height: 400px;"></div>
+            <div class="tabular-representation">  <h2>Event Completion Table</h2>
+                <div id="event-types-chart-container" class="gantt-chart-container">
+                </div>
             </div>
 
+                                <h2>Graphical Representation</h2>
+
+
                     <div class="chart-grid">
-                        <!-- Event by Type -->
                         <div class="chart-container">
                             <h4>Event Type</h4>
                             <canvas id="eventTypeChart"></canvas>
                         </div>
 
-                        <!-- Gender Distribution -->
                         <div class="chart-container">
                             <h4>Gender</h4>
                             <canvas id="genderChart"></canvas>
                         </div>
 
-                        <!-- Caste/Ethnicity Breakdown -->
                         <div class="chart-container">
                             <h4>Caste/Ethnicity</h4>
                             <canvas id="casteChart"></canvas>
                         </div>
 
-                        <!-- Age Group Distribution -->
                         <div class="chart-container">
                             <h4>Age Group </h4>
                             <canvas id="ageChart"></canvas>
@@ -93,6 +209,12 @@
                     </div>
                 </div>
             <% } %>
+
+            <div class="chart-container-grantt">
+                <h4>Gantt Chart</h4>
+                <div id="gantt_here" style="width: 100%; height: 400px;"></div>
+            </div>
+
         </div>
 
         <a href="/projects/<%= project._id %>/eventb" class="btn">Add Event</a>
@@ -177,12 +299,13 @@
     <% } %>
 
     <script>
+    document.addEventListener("DOMContentLoaded", function () {
         const endDate = new Date("<%= project.endDate.toISOString() %>");
         const countdownElement = document.getElementById('countdown');
 
-        const countdownInterval = setInterval(() => {
+        const updateCountdown = () => {
             const now = new Date();
-            let timeRemaining = endDate - now;
+            const timeRemaining = endDate - now;
 
             if (timeRemaining <= 0) {
                 clearInterval(countdownInterval);
@@ -190,29 +313,41 @@
                 return;
             }
 
-            // Convert remaining time to years, months, and days
             const totalDays = Math.floor(timeRemaining / (1000 * 60 * 60 * 24));
-
             const years = Math.floor(totalDays / 365);
             const remainingDaysAfterYears = totalDays % 365;
-
             const months = Math.floor(remainingDaysAfterYears / 30);
             const days = remainingDaysAfterYears % 30;
 
             countdownElement.textContent = `${years} years, ${months} months, ${days} days remaining`;
-        }, 1000);
+        };
+
+        updateCountdown();
+        const countdownInterval = setInterval(updateCountdown, 1000);
+    });
     </script>
 
 <script>
 document.addEventListener("DOMContentLoaded", function () {
     const reportingPeriod = "<%= reportingPeriod %>".trim();
     const ganttData = <%- ganttData || "[]" %>;
+    const projectEvents = <%- JSON.stringify(project.events) %>; // Pass project events data
+    const eventTypesList = <%- eventTypes %>; // Get event types list from server
 
     console.log("Gantt Data:", ganttData);
+    console.log("Project Events:", projectEvents); // Log project events data
+    console.log("Event Types List:", eventTypesList); // Log event types
 
     const ganttContainer = document.getElementById("gantt_here");
+    const eventTypesChartContainer = document.getElementById('event-types-chart-container'); // Get new chart container
+
+
     if (!ganttContainer) {
         console.error("Gantt chart container not found");
+        return;
+    }
+    if (!eventTypesChartContainer) {
+        console.error("Event Types chart container not found");
         return;
     }
 
@@ -261,6 +396,122 @@ document.addEventListener("DOMContentLoaded", function () {
     if (!window.gantt) {
         console.error("Gantt chart failed to initialize");
     }
+
+    // Function to get reporting period dates (reused from create project form)
+    function getReportingPeriodDates(startDate, endDate, reportingPeriod) {
+        let timeUnits = [];
+        let currentDate = new Date(startDate);
+
+        while (currentDate <= endDate) {
+            let timeUnitLabel = '';
+            let nextDate;
+            let periodStartDate = new Date(currentDate); // Start of the reporting period
+
+            if (reportingPeriod === 'Monthly') {
+                timeUnitLabel = currentDate.toLocaleString('default', { month: 'short', year: 'numeric' });
+                nextDate = new Date(currentDate);
+                nextDate.setMonth(currentDate.getMonth() + 1);
+            } else if (reportingPeriod === 'Quarterly') {
+                const quarter = Math.floor(currentDate.getMonth() / 3) + 1;
+                timeUnitLabel = `Q${quarter} ${currentDate.getFullYear()}`;
+                nextDate = new Date(currentDate);
+                nextDate.setMonth(currentDate.getMonth() + 3);
+            } else if (reportingPeriod === 'Semi-Annually') {
+                const semester = Math.floor(currentDate.getMonth() / 6) + 1;
+                timeUnitLabel = `Semester ${semester} ${currentDate.getFullYear()}`;
+                nextDate = new Date(currentDate);
+                nextDate.setMonth(currentDate.getMonth() + 6);
+            } else if (reportingPeriod === 'Annually') {
+                timeUnitLabel = `${currentDate.getFullYear()}`;
+                nextDate = new Date(currentDate);
+                nextDate.setFullYear(currentDate.getFullYear() + 1);
+            }
+
+            timeUnits.push({
+                label: timeUnitLabel,
+                startDate: new Date(periodStartDate), // Store start date
+                endDate: new Date(nextDate - 1)      // Store end date (end of period)
+            });
+            currentDate = nextDate;
+        }
+        return timeUnits;
+    }
+
+    // Function to generate Event Types Table Chart
+function generateEventNamesTableChart() {
+    eventTypesChartContainer.innerHTML = ''; // Clear existing chart
+
+    const reportingPeriodValue = "<%= reportingPeriod %>".trim();
+    const startDateInput = "<%= new Date(project.startDate).toISOString() %>"; // Get start date from project data
+    const endDateInput = "<%= new Date(project.endDate).toISOString() %>";     // Get end date from project data
+    const projectEvents = <%- JSON.stringify(project.events || []) %>; // Ensure projectEvents is defined
+
+    // Extract unique event names
+    const uniqueEventNames = [...new Set(projectEvents.map(event => event.eventName))];
+
+    if (!startDateInput || !endDateInput || !reportingPeriodValue || !uniqueEventNames || uniqueEventNames.length === 0) {
+        eventTypesChartContainer.innerHTML = '<p>Could not generate Event Names Chart due to missing project data.</p>';
+        return;
+    }
+
+    const startDate = new Date(startDateInput);
+    const endDate = new Date(endDateInput);
+
+    if (startDate >= endDate) {
+        eventTypesChartContainer.innerHTML = '<p>End Date must be after Start Date.</p>';
+        return;
+    }
+
+    const timeUnits = getReportingPeriodDates(startDate, endDate, reportingPeriodValue);
+
+    if (timeUnits.length === 0) {
+        eventTypesChartContainer.innerHTML = '<p>No time units to display within the given date range and reporting period.</p>';
+        return;
+    }
+
+    const chartDiv = document.createElement('div');
+    chartDiv.className = 'gantt-chart';
+
+    // Time Units Header
+    const headerRow = document.createElement('div');
+    headerRow.className = 'chart-row header-row';
+    headerRow.innerHTML = `<div class="chart-cell header-cell event-type-header">Event Names</div>`; // Changed header
+    timeUnits.forEach(unit => {
+        headerRow.innerHTML += `<div class="chart-cell header-cell time-unit-header">${unit.label}</div>`;
+    });
+    chartDiv.appendChild(headerRow);
+
+    // Event Name Rows
+    uniqueEventNames.forEach(eventName => { // Iterate through unique event names
+        if (eventName.trim() !== "") { // Only add row if event name is not empty
+            const eventNameRow = document.createElement('div');
+            eventNameRow.className = 'chart-row activity-row'; // Reusing activity-row class, can rename to event-name-row if needed
+            eventNameRow.innerHTML = `<div class="chart-cell event-type-cell">${eventName}</div>`; // Changed to event-type-cell
+            timeUnits.forEach(unit => {
+                const eventCount = countEventsForPeriodAndName(projectEvents, eventName, unit.startDate, unit.endDate); // Count events by name and period
+                eventNameRow.innerHTML += `<div class="chart-cell event-cell"><div class="event-output">${eventCount}</div></div>`;
+            });
+            chartDiv.appendChild(eventNameRow);
+        }
+    });
+
+    eventTypesChartContainer.appendChild(chartDiv);
+}
+
+// Function to count events for a specific period and event name
+function countEventsForPeriodAndName(events, eventName, periodStartDate, periodEndDate) {
+    let count = 0;
+    events.forEach(event => {
+        const eventDate = new Date(event.startDate);
+        if (event.eventName === eventName && eventDate >= periodStartDate && eventDate <= periodEndDate) { // use eventName instead of name
+            count++;
+        }
+    });
+    return count;
+}
+
+// Generate charts on page load
+generateEventNamesTableChart(); // Generate Event Names Table Chart/ Generate Event Types Table Chart
 });
 </script>
 

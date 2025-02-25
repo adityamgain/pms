@@ -253,7 +253,7 @@ exports.getProjectDetails = async (req, res) => {
             eventTypes: JSON.stringify(eventTypes),
             eventCounts: JSON.stringify(eventCounts),
             eventTitles: JSON.stringify([...eventTitles]), // Convert Set to array
-            ganttData: JSON.stringify(ganttData), // Pass Gantt chart data
+            ganttData: JSON.stringify(ganttData), 
             reportingPeriodStart: reportingPeriodStart.toISOString(),
             reportingPeriodEnd: reportingPeriodEnd.toISOString(),
             reportingPeriod,
