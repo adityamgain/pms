@@ -105,8 +105,11 @@ exports.viewProjects = async (req, res) => {
 
 exports.getProjectDetails = async (req, res) => {
     try {
+        const { id } = req.params;
+        const { eventType, startDate, endDate, outcome, activity, municipality, district, province } = req.query;
+
         // Fetch the project by ID and populate events and beneficiaries
-        const project = await Project.findById(req.params.id).populate({
+        const project = await Project.findById(id).populate({
             path: "events",
             populate: { path: "beneficiaries" },
         }).lean();
@@ -121,97 +124,67 @@ exports.getProjectDetails = async (req, res) => {
             await Project.findByIdAndUpdate(project._id, { projectStatus: "Completed" });
         }
 
-        // Initialize variables for project statistics
-        const totalEvents = project.events.length;
+        // --- Define allEvents HERE, right after fetching project ---
+        const allEvents = project.events;
+
+        // --- Apply Filters Server-Side ---
+        let filteredEvents = allEvents; // Start with all events, then filter
+        if (eventType) {
+            filteredEvents = filteredEvents.filter(event => event.eventType === eventType);
+        }
+        if (outcome) {
+            filteredEvents = filteredEvents.filter(event => event.outcome === outcome);
+        }
+        if (activity) {
+            filteredEvents = filteredEvents.filter(event => event.eventName === activity); // Assuming activity filter is on eventName
+        }
+        if (municipality) {
+            filteredEvents = filteredEvents.filter(event => event.venue?.municipality === municipality);
+        }
+        if (district) {
+            filteredEvents = filteredEvents.filter(event => event.venue?.district === district);
+        }
+        if (province) {
+            filteredEvents = filteredEvents.filter(event => event.venue?.province === province);
+        }
+        if (startDate) {
+            const filterStartDate = new Date(startDate);
+            filteredEvents = filteredEvents.filter(event => new Date(event.startDate) >= filterStartDate);
+        }
+        if (endDate) {
+            const filterEndDate = new Date(endDate);
+            filteredEvents = filteredEvents.filter(event => new Date(event.endDate) <= filterEndDate);
+        }
+
+
+        // Initialize variables for project statistics (using FILTERED events now)
+        const totalEvents = filteredEvents.length; // Use filteredEvents here
         const targetevent = project.target_events;
         const EventsPercent = project.target_events > 0 ? (totalEvents / project.target_events) * 100 : 0;
         const reportingPeriod = project.reportingPeriod;
 
-        // Initialize event tracking
+        // Initialize event tracking (using FILTERED events now)
         const eventTypeCounts = {};
-        const eventTitles = new Set(); // Prevent duplicate event names in visualization
-
-        // Gantt Chart Data Structure
-        const ganttDataMap = new Map();
-        let eventCounter = 0;
-        const eventNumbering = new Map();
-
-        project.events.forEach(event => {
-            if (!eventNumbering.has(event.eventName)) {
-                eventCounter++;
-                eventNumbering.set(event.eventName, eventCounter);
-            }
-            const parentTaskId = `event-${event.eventName}`;
-            const eventNumber = eventNumbering.get(event.eventName); // Get assigned event number
-            const startDate = new Date(event.startDate);
-            const endDate = new Date(event.endDate);
-            const duration = Math.ceil((endDate - startDate) / (1000 * 60 * 60 * 24)) + 1;
-            if (!ganttDataMap.has(parentTaskId)) {
-                ganttDataMap.set(parentTaskId, {
-                    id: parentTaskId,
-                    text: `${eventNumber}. ${event.eventName}`, // Add event number
-                    start_date: startDate.toISOString().split("T")[0],
-                    end_date: endDate.toISOString().split("T")[0],
-                    duration: duration,
-                    progress: 0.5,
-                    type: "project",
-                    open: true,
-                    childDurations: [],
-                    childCounter: 0 // Initialize child task counter
-                });
-            }
-        
-            // Get existing parent task
-            const parentTask = ganttDataMap.get(parentTaskId);
-            // Update parent start and end dates
-            parentTask.start_date = new Date(Math.min(new Date(parentTask.start_date), startDate)).toISOString().split("T")[0];
-            parentTask.end_date = new Date(Math.max(new Date(parentTask.end_date), endDate)).toISOString().split("T")[0];
-            // Track child duration
-            parentTask.childDurations.push(duration);
-            // Assign child numbering (1.1, 1.2, ...)
-            parentTask.childCounter++; // Increment child count
-            const childTaskId = `task-${event._id}`;
-            ganttDataMap.set(childTaskId, {
-                id: childTaskId,
-                text: `${eventNumber}.${parentTask.childCounter} ${event.eventName}`, // Add child number
-                start_date: startDate.toISOString().split("T")[0],
-                end_date: endDate.toISOString().split("T")[0],
-                duration: duration,
-                parent: parentTaskId,
-                progress: Math.random().toFixed(2),
-                type: "task"
-            });
-        });
-
-        // Update parent task durations based on summed child durations
-        ganttDataMap.forEach(task => {
-            if (task.childDurations) {
-                task.duration = task.childDurations.reduce((acc, val) => acc + val, 0);
-                delete task.childDurations;
-            }
-        });
-        const ganttData = Array.from(ganttDataMap.values());
-        // Initialize counters for beneficiaries and demographics
+        const eventTitles = new Set();
         let totalAttendees = 0;
         let totalBenefitted = 0;
         let totalMale = 0, totalFemale = 0, totalOther = 0;
         let totalDalit = 0, totalJanajati = 0, totalBrahminChhetri = 0, totalTharu = 0, totalMadhesi = 0, totalOthers = 0;
         let ageUnder25 = 0, age25to40 = 0, ageAbove40 = 0;
 
-        // Process event beneficiaries
-        project.events.forEach(event => {
+
+        filteredEvents.forEach(event => { // Use filteredEvents here for stats calculation
             if (event.eventType) {
                 eventTypeCounts[event.eventType] = (eventTypeCounts[event.eventType] || 0) + 1;
             }
+
             if (Array.isArray(event.beneficiaries)) {
                 totalAttendees += event.beneficiaries.length;
                 totalBenefitted += event.beneficiaries.filter(b => b.benefitsFromActivity).length;
                 event.beneficiaries.forEach(beneficiary => {
-                    // Gender distribution
                     if (beneficiary.gender === "Male") totalMale++;
                     else if (beneficiary.gender === "Female") totalFemale++;
                     else if (beneficiary.gender === "Other") totalOther++;
-                    // Caste/Ethnicity classification
                     switch (beneficiary.casteEthnicity) {
                         case "Dalit": totalDalit++; break;
                         case "Janajati": totalJanajati++; break;
@@ -220,7 +193,6 @@ exports.getProjectDetails = async (req, res) => {
                         case "Madhesi": totalMadhesi++; break;
                         case "Others": totalOthers++; break;
                     }
-                    // Age classification
                     switch (beneficiary.age) {
                         case "Upto 25 years": ageUnder25++; break;
                         case "25-40 years": age25to40++; break;
@@ -230,18 +202,35 @@ exports.getProjectDetails = async (req, res) => {
             }
         });
 
-        // Calculate benefitted ratio
+
         const benefittedRatio = totalAttendees > 0 ? (totalBenefitted / totalAttendees) * 100 : 0;
-        // Prepare event type data for visualization
         const eventTypes = Object.keys(eventTypeCounts);
         const eventCounts = Object.values(eventTypeCounts);
-        // Determine reporting period range
         const reportingPeriodStart = new Date(project.startDate);
         const reportingPeriodEnd = new Date(project.endDate);
         if (isNaN(reportingPeriodStart.getTime()) || isNaN(reportingPeriodEnd.getTime())) {
             return res.status(400).send("Invalid project start or end date");
         }
-        // Render project details page
+
+
+        const uniqueOutcomes = [...new Set(allEvents.map(e => e.outcome).filter(Boolean))]; // Use allEvents for unique lists
+        const uniqueActivities = [...new Set(allEvents.map(e => e.eventName).filter(Boolean))];
+        const uniquemunicipality = [...new Set(allEvents.map(e => e.venue?.municipality).filter(Boolean))];
+        const uniqueDistricts = [...new Set(allEvents.map(e => e.venue?.district).filter(Boolean))];
+        const uniqueProvinces = [...new Set(allEvents.map(e => e.venue?.province).filter(Boolean))];
+        const uniqueEventTypes = [...new Set(allEvents.map(e => e.eventType).filter(Boolean))]; // Add unique event types
+
+
+        // --- Prepare eventLocations based on FILTERED events ---
+        const eventLocations = filteredEvents
+        .filter(event => event.location && event.location.coordinates)
+        .map(event => ({
+            coordinates: event.location.coordinates,
+            venue: event.venue,
+            eventName: event.eventName
+        }));
+
+
         res.render("project-details", {
             project,
             EventsPercent: EventsPercent.toFixed(1),
@@ -252,18 +241,16 @@ exports.getProjectDetails = async (req, res) => {
             benefittedRatio: benefittedRatio.toFixed(2),
             eventTypes: JSON.stringify(eventTypes),
             eventCounts: JSON.stringify(eventCounts),
-            eventTitles: JSON.stringify([...eventTitles]), // Convert Set to array
-            ganttData: JSON.stringify(ganttData), 
+            eventTitles: JSON.stringify([...eventTitles]),
+            ganttData: JSON.stringify( /* ganttData - you might recalculate this on client if needed based on filters */ []), // Gantt is complex to filter client-side, leave for now or filter on client too
             reportingPeriodStart: reportingPeriodStart.toISOString(),
             reportingPeriodEnd: reportingPeriodEnd.toISOString(),
             reportingPeriod,
 
-            // Gender statistics
             totalMale,
             totalFemale,
             totalOther,
 
-            // Caste/Ethnicity statistics
             totalDalit,
             totalJanajati,
             totalBrahminChhetri,
@@ -271,10 +258,20 @@ exports.getProjectDetails = async (req, res) => {
             totalMadhesi,
             totalOthers,
 
-            // Age group statistics
             ageUnder25,
             age25to40,
-            ageAbove40
+            ageAbove40,
+
+            filters: { eventType, startDate, endDate, outcome, activity, municipality, district, province }, // Keep filters for other potential uses
+            uniqueOutcomes,
+            uniqueActivities,
+            uniquemunicipality,
+            uniqueDistricts,
+            uniqueProvinces,
+            uniqueEventTypes, // Pass unique event types for filter
+            eventLocations: eventLocations, // Pass FILTERED eventLocations
+            allEvents: JSON.stringify(allEvents), // Still pass all events for client-side chart filtering if you keep it
+            clientFilteredEvents: JSON.stringify(filteredEvents) // Pass filtered events for client-side if needed for charts
         });
 
     } catch (err) {
@@ -282,10 +279,6 @@ exports.getProjectDetails = async (req, res) => {
         res.status(500).send("Error fetching project");
     }
 };
-
-
-
-
 
 // Delete a project and its associated events
 exports.deleteProject = async (req, res) => {

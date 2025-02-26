@@ -9,296 +9,421 @@
     <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns"></script>
     <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels"></script>
     <link rel="stylesheet" href="https://cdn.dhtmlx.com/gantt/edge/dhtmlxgantt.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.3/dist/leaflet.css" />
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.3/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.3/dist/leaflet.js"></script>
     <script src="https://cdn.dhtmlx.com/gantt/edge/dhtmlxgantt.js"></script>
-    <style>
-        /* Reusing styles from create project form for tabular chart */
-        .gantt-chart-container {
-            margin-top: 1rem;
-            border: 1px solid #e2e8f0;
-            border-radius: 8px;
-            overflow-x: auto;
-        }
-
-        .gantt-chart {
-            display: table;
-            width: 100%;
-            min-width: max-content;
-            border-collapse: collapse;
-        }
-
-        .chart-row {
-            display: table-row;
-        }
-
-        .chart-cell {
-            display: table-cell;
-            padding: 12px;
-            border: 1px solid #e2e8f0;
-            text-align: center;
-            vertical-align: middle;
-        }
-
-        .header-row {
-            background-color: #f8fafc;
-            font-weight: 600;
-        }
-
-        .header-cell {
-            min-width: 120px;
-        }
-
-        .activity-cell, .event-type-cell { /* Added event-type-cell */
-            background-color: #f8fafc;
-            text-align: left;
-            font-weight: 500;
-            width: 250px;
-            max-width: 250px;
-            min-width: 250px;
-            word-wrap: break-word;
-            word-break: break-word;
-            hyphens: auto;
-            line-height: 1.5;
-            padding: 12px 16px;
-            font-size: 0.95rem;
-            white-space: pre-wrap;
-            border-right: 2px solid #e2e8f0;
-        }
-
-        .activity-header, .event-type-header { /* Added event-type-header */
-            background-color: #f1f5f9;
-            width: 250px;
-            max-width: 250px;
-            min-width: 250px;
-            text-align: left;
-            font-weight: 600;
-            word-wrap: break-word;
-            word-break: break-word;
-            hyphens: auto;
-            line-height: 1.5;
-            padding: 12px 16px;
-            font-size: 1rem;
-            border-right: 2px solid #e2e8f0;
-        }
-
-        .event-cell {
-            padding: 4px;
-            width: 70px;
-            min-width: 70px;
-            vertical-align: middle;
-        }
-
-        .event-output {
-            width: 100%;
-            height: 30px;
-            padding: 2px 4px;
-            border: 1px solid #cbd5e1;
-            border-radius: 4px;
-            text-align: center;
-            font-size: 0.9rem;
-            box-sizing: border-box;
-            background-color: #ffffff; /* White background for output display */
-            display: flex; /* Use flexbox to center content */
-            align-items: center; /* Vertically center content */
-            justify-content: center; /* Horizontally center content */
-        }
-
-
-        .time-unit-header {
-            background-color: #f1f5f9;
-            width: 70px;
-            min-width: 70px;
-            padding: 8px 4px;
-        }
-
-        .event-output:focus {
-            border-color: #4CAF50;
-            outline: none;
-            box-shadow: 0 0 3px rgba(76, 175, 80, 0.2);
-        }
-
-        /* Responsive adjustments */
-        @media (max-width: 768px) {
-            .gantt-chart-container {
-                margin: 1rem -1rem;
-                border-radius: 0;
-            }
-
-            .header-cell {
-                min-width: 100px;
-            }
-
-            .activity-header, .event-type-header {
-                min-width: 150px;
-            }
-        }
-    </style>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" integrity="sha512-9usAa10IRO0HhonpyAIVpjrylPvoDwiPUiKdWk5t3PyolY1cOd4DSE0Ga+ri4AuTroPR5aQvXU9xC6qOPnzFeg==" crossorigin="anonymous" referrerpolicy="no-referrer" />
 </head>
 <body>
-    <div class="project-detail-container">
-        <div class="status-badge <%= project.projectStatus.toLowerCase() %>">
-            <%= project.projectStatus %>
-        </div>
 
-        <h1><%= project.projectName %></h1>
-        <div class="section">
-            <h2>Project Information</h2>
-            <p><strong>Name:</strong> <%= project.projectName %></p>
-            <p><strong>Donor:</strong> <%= project.donor %>></p>
-            <p><strong>Stakeholders:</strong> <%= project.stakeholders.join(', ') %></p>
-            <p><strong>Start Date:</strong> <%= new Date(project.startDate).toDateString() %></p>
-            <p><strong>End Date:</strong> <%= new Date(project.endDate).toDateString() %></p>
-            <p><strong>Area of Action:</strong> <%= project.areaOfAction.join(', ') %></p>
-            <p><strong>Reporting Period:</strong> <%= project.reportingPeriod %></p>
+<div class="project-detail-container">
+    <div class="status-badge <%= project.projectStatus.toLowerCase() %>">
+        <%= project.projectStatus %>
+    </div>
 
-            <p><strong>Time Remaining:</strong> <span id="countdown"></span></p>
+    <h1><%= project.projectName %></h1>
 
-            <section class="counting">
-                <div class="layout">
-                    <div class="grid-3">
-                        <span class="counter"><%= totalEvents %> </span>
-                        <p>Events Completed</p>
-                    </div>
-                    <div class="grid-3">
-                        <span class="counter"><%= targetevent %></span>
-                        <p>Total Events To Be Held</p>
-                    </div>
-                    <div class="grid-3">
-                        <span class="counter"><%= totalAttendees %></span>
-                        <p>Total Beneficiaries</p>
-                    </div>
-                    <div class="grid-3">
-                        <span class="counter"><%= EventsPercent %> %</span>
-                        <p>Completion Ratio</p>
-                    </div>
+    <div class="section">
+        <h2>Project Information</h2>
+        <p><strong>Name:</strong> <%= project.projectName %></p>
+        <p><strong>Donor:</strong> <%= project.donor %>></p>
+        <p><strong>Stakeholders:</strong> <%= project.stakeholders.join(', ') %></p>
+        <p><strong>Start Date:</strong> <%= new Date(project.startDate).toDateString() %></p>
+        <p><strong>End Date:</strong> <%= new Date(project.endDate).toDateString() %></p>
+        <p><strong>Area of Action:</strong> <%= project.areaOfAction.join(', ') %></p>
+        <p><strong>Reporting Period:</strong> <%= project.reportingPeriod %></p>
+        <p><strong>Time Remaining:</strong> <span id="countdown"></span></p>
+
+        <section class="counting">
+            <div class="layout">
+                <div class="grid-3">
+                    <span class="counter"><%= totalEvents %>/<%= targetevent %> </span>
+                    <p>Events Completed</p>
                 </div>
-            </section>
+                <div class="grid-3">
+                    <span class="counter"><%= totalAttendees %></span>
+                    <p>Total Beneficiaries </p>
+                </div>
+                <div class="grid-3">
+                    <span class="counter">50 hec</span>
+                    <p>Area Covered (dummy)</p>
+                </div>
+                <div class="grid-3">
+                    <span class="counter">34.6L</span>
+                    <p>Total Revenue (dummy)</p>
+                </div>
+            </div>
+        </section>
 
-            <a href="/projects/<%= project._id %>/export" class="btn" id="exportBtn">Export Project Details</a>
+        <a href="/projects/<%= project._id %>/export" class="btn" id="exportBtn">Export Project Details</a>
 
-            <% if (totalEvents > 0) { %>
-                <div class="graphical-representation">
+        <% if (eventTypes.length > 0) { %>
+        <div class="graphical-representation">
 
-            <div class="tabular-representation">  <h2>Event Completion Table</h2>
+            <div class="tabular-representation">
+                <h2>Event Completion Table</h2>
                 <div id="event-types-chart-container" class="gantt-chart-container">
                 </div>
             </div>
 
-                                <h2>Graphical Representation</h2>
+            <h2>Graphical Representation</h2>
 
-
-                    <div class="chart-grid">
-                        <div class="chart-container">
-                            <h4>Event Type</h4>
-                            <canvas id="eventTypeChart"></canvas>
-                        </div>
-
-                        <div class="chart-container">
-                            <h4>Gender</h4>
-                            <canvas id="genderChart"></canvas>
-                        </div>
-
-                        <div class="chart-container">
-                            <h4>Caste/Ethnicity</h4>
-                            <canvas id="casteChart"></canvas>
-                        </div>
-
-                        <div class="chart-container">
-                            <h4>Age Group </h4>
-                            <canvas id="ageChart"></canvas>
-                        </div>
-                    </div>
-                </div>
-            <% } %>
-
-            <div class="chart-container-grantt">
-                <h4>Gantt Chart</h4>
-                <div id="gantt_here" style="width: 100%; height: 400px;"></div>
+            <div class="filter-toggle" onclick="toggleFilters()">
+                <i class="fas fa-filter"></i> Filter Charts
             </div>
 
-        </div>
+            <div class="filter-container" id="filter-container">
+                <form class="filter-form" action="" method="GET"> 
+                <div class="filter-group">
+                            <label for="eventTypeFilter">Event Type:</label>
+                            <select id="eventTypeFilter">
+                                <option value="">All</option>
+                                <% uniqueEventTypes.forEach(type => { %>
+                                    <option value="<%= type %>"><%= type %></option>
+                                <% }); %>
+                            </select>
+                        </div>
 
-        <a href="/projects/<%= project._id %>/eventb" class="btn">Add Event</a>
-        <a href="/projects/<%= project._id %>/event-list" class="btn">View Events</a>
-        <form action="/projects/<%= project._id %>?_method=DELETE" method="POST" onsubmit="return confirm('Are you sure you want to delete this project?');">
-            <button type="submit" class="btn delete-btn">Delete Project</button>
-        </form>
+                        <div class="filter-group">
+                            <label for="outcomeFilter">Outcome:</label>
+                            <select id="outcomeFilter">
+                                <option value="">All</option>
+                                <% uniqueOutcomes.forEach(outcome => { %>
+                                    <option value="<%= outcome %>"><%= outcome %></option>
+                                <% }); %>
+                            </select>
+                        </div>
+
+                        <div class="filter-group">
+                            <label for="activityFilter">Activity:</label>
+                            <select id="activityFilter">
+                                <option value="">All</option>
+                                <% uniqueActivities.forEach(activity => { %>
+                                    <option value="<%= activity %>"><%= activity %></option>
+                                <% }); %>
+                            </select>
+                        </div>
+
+                        <div class="filter-group">
+                            <label for="municipalityFilter">Municipality:</label>
+                            <select id="municipalityFilter">
+                                <option value="">All</option>
+                                <% uniquemunicipality.forEach(municipality => { %>
+                                    <option value="<%= municipality %>"><%= municipality %></option>
+                                <% }); %>
+                            </select>
+                        </div>
+                        <div class="filter-group">
+                            <label for="districtFilter">District:</label>
+                            <select id="districtFilter">
+                                <option value="">All</option>
+                                <% uniqueDistricts.forEach(district => { %>
+                                    <option value="<%= district %>"><%= district %></option>
+                                <% }); %>
+                            </select>
+                        </div>
+                        <div class="filter-group">
+                            <label for="provinceFilter">Province:</label>
+                            <select id="provinceFilter">
+                                <option value="">All</option>
+                                <% uniqueProvinces.forEach(province => { %>
+                                    <option value="<%= province %>"><%= province %></option>
+                                <% }); %>
+                            </select>
+                        </div>
+                        <div class="filter-group">
+                            <label for="startDateFilter">Start Date:</label>
+                            <input type="date" id="startDateFilter">
+                        </div>
+                        <div class="filter-group">
+                            <label for="endDateFilter">End Date:</label>
+                            <input type="date" id="endDateFilter">
+                        </div>
+
+                        <div class="filter-buttons">
+                            <button type="button" class="reset-button" onclick="resetFilters()">Reset</button>  </div>
+                    </form>
+                </div>
+            </div>
+
+            <div class="chart-grid">
+                <div class="chart-container">
+                    <h4>Event Type</h4>
+                    <canvas id="eventTypeChart"></canvas>
+                </div>
+
+                <div class="chart-container">
+                    <h4>Gender</h4>
+                    <canvas id="genderChart"></canvas>
+                </div>
+
+                <div class="chart-container">
+                    <h4>Caste/Ethnicity</h4>
+                    <canvas id="casteChart"></canvas>
+                </div>
+
+                <div class="chart-container">
+                    <h4>Age Group </h4>
+                    <canvas id="ageChart"></canvas>
+                </div>
+            </div>
+
+        <h2>Event Locations Map</h2>
+        <div id="map"></div>
+
+        <% } %>
     </div>
 
-    <% if (eventTypes.length > 0) { %>
-        <script>
-            // Get the event data from the server
-            const eventTypes = <%- eventTypes %>;
-            const eventCounts = <%- eventCounts %>;
+    <a href="/projects/<%= project._id %>/eventb" class="btn">Add Event</a>
+    <a href="/projects/<%= project._id %>/event-list" class="btn">View Events</a>
+    <form action="/projects/<%= project._id %>?_method=DELETE" method="POST"
+        onsubmit="return confirm('Are you sure you want to delete this project?');">
+        <button type="submit" class="btn delete-btn">Delete Project</button>
+    </form>
+</div>
 
-            // Get the gender data
-            const totalMale = <%= totalMale %>;
-            const totalFemale = <%= totalFemale %>;
-            const totalOther = <%= totalOther %>;
-
-            // Get the caste/ethnicity data
-            const totalDalit = <%= totalDalit %>;
-            const totalJanajati = <%= totalJanajati %>;
-            const totalBrahminChhetri = <%= totalBrahminChhetri %>;
-            const totalTharu = <%= totalTharu %>;
-            const totalMadhesi = <%= totalMadhesi %>;
-            const totalOthers = <%= totalOthers %>;
-
-            // Get the age group data
-            const ageUnder25 = <%= ageUnder25 %>;
-            const age25to40 = <%= age25to40 %>;
-            const ageAbove40 = <%= ageAbove40 %>;
-
-            // Event Type Chart (Pie Chart)
-            new Chart(document.getElementById('eventTypeChart').getContext('2d'), {
-                type: 'pie',
-                data: {
-                    labels: eventTypes,
-                    datasets: [{
-                        data: eventCounts,
-                        backgroundColor: ['#D3D6C2', '#b9be9d', '#9fa578', '#81875A', '#696E49', '#525639']
-                    }]
-                }
-            });
-
-            // Gender Distribution Chart (Pie Chart)
-            new Chart(document.getElementById('genderChart').getContext('2d'), {
-                type: 'pie',
-                data: {
-                    labels: ['Male', 'Female', 'Other'],
-                    datasets: [{
-                        data: [totalMale, totalFemale, totalOther],
-                        backgroundColor: ['#D28A74', '#ebcbc1', '#6c3423']
-                    }]
-                }
-            });
-
-            // Caste/Ethnicity Breakdown Chart (Pie Chart)
-            new Chart(document.getElementById('casteChart').getContext('2d'), {
-                type: 'pie',
-                data: {
-                    labels: ['Dalit', 'Janajati', 'Brahman/Chhetri', 'Tharu', 'Madhesi', 'Others'],
-                    datasets: [{
-                        data: [totalDalit, totalJanajati, totalBrahminChhetri, totalTharu, totalMadhesi, totalOthers],
-                        backgroundColor: ['#D8E9E5', '#A4CCC2', '#7CB6A7', '#51907F', '#3B685C', '#2ecc71']
-                    }]
-                }
-            });
-
-            // Age Group Distribution Chart (Pie Chart)
-            new Chart(document.getElementById('ageChart').getContext('2d'), {
-                type: 'pie',
-                data: {
-                    labels: ['Under 25', '25-40', 'Above 40'],
-                    datasets: [{
-                        data: [ageUnder25, age25to40, ageAbove40],
-                        backgroundColor: ['#EDDEA4', '#E4CE77', '#ffe66d']
-                    }]
-                }
-            });
-        </script>
-    <% } %>
+<% if (eventTypes.length > 0) { %>
+<script src="https://unpkg.com/leaflet@1.9.3/dist/leaflet.js"></script>
 
     <script>
+            var map = L.map('map').setView([28.3949, 84.1240], 7); // Default to Nepal
+
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+            }).addTo(map);
+
+            var eventLocations = <%- JSON.stringify(eventLocations || []) %>;
+
+            if (eventLocations.length > 0) {
+                eventLocations.forEach(event => {
+                    if (event.coordinates && event.coordinates.length === 2) {
+                        L.marker([event.coordinates[1], event.coordinates[0]]).addTo(map)
+                            .bindPopup("<b>" + event.eventName + "</b><br>" + event.venue.municipality + ", " + event.venue.district);
+                    }
+                });
+
+                var bounds = eventLocations.map(event => [event.coordinates[1], event.coordinates[0]]);
+                if (bounds.length > 0) {
+                    map.fitBounds(bounds);
+                }
+            }
+    </script>
+    <script>
+
+    // Get the initial event data from the server (ALL events now)
+    const allEvents = <%- allEvents %>;
+
+    // --- Chart Data Variables (initially unfiltered) ---
+    let eventTypesData = <%- eventTypes %>;
+    let eventCountsData = <%- eventCounts %>;
+    let totalMaleData = <%= totalMale %>;
+    let totalFemaleData = <%= totalFemale %>;
+    let totalOtherData = <%= totalOther %>;
+    let totalDalitData = <%= totalDalit %>;
+    let totalJanajatiData = <%= totalJanajati %>;
+    let totalBrahminChhetriData = <%= totalBrahminChhetri %>;
+    let totalTharuData = <%= totalTharu %>;
+    let totalMadhesiData = <%= totalMadhesi %>;
+    let totalOthersData = <%= totalOthers %>;
+    let ageUnder25Data = <%= ageUnder25 %>;
+    let age25to40Data = <%= age25to40 %>;
+    let ageAbove40Data = <%= ageAbove40 %>;
+
+
+    // --- Chart Instances (initialized globally) ---
+    const eventTypeChart = new Chart(document.getElementById('eventTypeChart').getContext('2d'), { type: 'pie', data: {} });
+    const genderChart = new Chart(document.getElementById('genderChart').getContext('2d'), { type: 'pie', data: {} });
+    const casteChart = new Chart(document.getElementById('casteChart').getContext('2d'), { type: 'pie', data: {} });
+    const ageChart = new Chart(document.getElementById('ageChart').getContext('2d'), { type: 'pie', data: {} });
+
+
+    // --- Function to Update Charts based on filters ---
+    function updateCharts() {
+        const eventTypeFilter = document.getElementById('eventTypeFilter').value;
+        const outcomeFilter = document.getElementById('outcomeFilter').value;
+        const activityFilter = document.getElementById('activityFilter').value;
+        const municipalityFilter = document.getElementById('municipalityFilter').value;
+        const districtFilter = document.getElementById('districtFilter').value;
+        const provinceFilter = document.getElementById('provinceFilter').value;
+        const startDateFilter = document.getElementById('startDateFilter').value;
+        const endDateFilter = document.getElementById('endDateFilter').value;
+
+        // ** Client-Side Filtering **
+        let filteredEventsClientSide = allEvents.filter(event => {
+            if (eventTypeFilter && event.eventType !== eventTypeFilter && eventTypeFilter !== "") return false; // Check event type
+            if (outcomeFilter && event.outcome !== outcomeFilter && outcomeFilter !== "") return false; // Check outcome
+            if (activityFilter && event.eventName !== activityFilter && activityFilter !== "") return false; // Check activity
+            if (municipalityFilter && event.venue?.municipality !== municipalityFilter && municipalityFilter !== "") return false; // Check municipality
+            if (districtFilter && event.venue?.district !== districtFilter && districtFilter !== "") return false; // Check district
+            if (provinceFilter && event.venue?.province !== provinceFilter && provinceFilter !== "") return false; // Check province
+
+            if (startDateFilter) { // Check start date
+                const filterStartDate = new Date(startDateFilter);
+                const eventStartDate = new Date(event.startDate);
+                if (eventStartDate < filterStartDate) return false;
+            }
+            if (endDateFilter) { // Check end date
+                const filterEndDate = new Date(endDateFilter);
+                const eventEndDate = new Date(event.endDate);
+                if (eventEndDate > filterEndDate) return false;
+            }
+
+            return true; // If all filters pass, keep the event
+        });
+
+
+        // ** Recalculate Chart Data based on filteredEventsClientSide **
+        const eventTypeCounts = {};
+        let totalMale = 0, totalFemale = 0, totalOther = 0;
+        let totalDalit = 0, totalJanajati = 0, totalBrahminChhetri = 0, totalTharu = 0, totalMadhesi = 0, totalOthers = 0;
+        let ageUnder25 = 0, age25to40 = 0, ageAbove40 = 0;
+
+
+        filteredEventsClientSide.forEach(event => {
+            if (event.eventType) {
+                eventTypeCounts[event.eventType] = (eventTypeCounts[event.eventType] || 0) + 1;
+            }
+            if (Array.isArray(event.beneficiaries)) {
+                event.beneficiaries.forEach(beneficiary => {
+                    if (beneficiary.gender === "Male") totalMale++;
+                    else if (beneficiary.gender === "Female") totalFemale++;
+                    else if (beneficiary.gender === "Other") totalOther++;
+                    switch (beneficiary.casteEthnicity) {
+                        case "Dalit": totalDalit++; break;
+                        case "Janajati": totalJanajati++; break;
+                        case "Brahman/Chhetri": totalBrahminChhetri++; break;
+                        case "Tharu": totalTharu++; break;
+                        case "Madhesi": totalMadhesi++; break;
+                        case "Others": totalOthers++; break;
+                    }
+                    switch (beneficiary.age) {
+                        case "Upto 25 years": ageUnder25++; break;
+                        case "25-40 years": age25to40++; break;
+                        case "40 above years": ageAbove40++; break;
+                    }
+                });
+            }
+        });
+
+
+        eventTypesData = Object.keys(eventTypeCounts);
+        eventCountsData = Object.values(eventTypeCounts);
+        totalMaleData = totalMale;
+        totalFemaleData = totalFemale;
+        totalOtherData = totalOther;
+        totalDalitData = totalDalit;
+        totalJanajatiData = totalJanajati;
+        totalBrahminChhetriData = totalBrahminChhetri;
+        totalTharuData = totalTharu;
+        totalMadhesiData = totalMadhesi;
+        totalOthersData = totalOthers;
+        ageUnder25Data = ageUnder25;
+        age25to40Data = age25to40;
+        ageAbove40Data = ageAbove40;
+
+
+        // ** Update Chart Data **
+        eventTypeChart.data = {
+            labels: eventTypesData,
+            datasets: [{
+                data: eventCountsData,
+                backgroundColor: ['#D3D6C2', '#b9be9d', '#9fa578', '#81875A', '#696E49', '#525639']
+            }]
+        };
+        genderChart.data = {
+            labels: ['Male', 'Female', 'Other'],
+            datasets: [{
+                data: [totalMaleData, totalFemaleData, totalOtherData],
+                backgroundColor: ['#D28A74', '#ebcbc1', '#6c3423']
+            }]
+        };
+        casteChart.data = {
+            labels: ['Dalit', 'Janajati', 'Brahman/Chhetri', 'Tharu', 'Madhesi', 'Others'],
+            datasets: [{
+                data: [totalDalitData, totalJanajatiData, totalBrahminChhetriData, totalTharuData, totalMadhesiData, totalOthersData],
+                backgroundColor: ['#D8E9E5', '#A4CCC2', '#7CB6A7', '#51907F', '#3B685C', '#2ecc71']
+            }]
+        };
+        ageChart.data = {
+            labels: ['Under 25', '25-40', 'Above 40'],
+            datasets: [{
+                data: [ageUnder25Data, age25to40Data, ageAbove40Data],
+                backgroundColor: ['#EDDEA4', '#E4CE77', '#ffe66d']
+            }]
+        };
+
+
+        eventTypeChart.update();
+        genderChart.update();
+        casteChart.update();
+        ageChart.update();
+
+    }
+
+    function resetFilters() { // Renamed to resetFilters for consistency
+        console.log("resetFilters() function called"); // Debugging line
+
+        document.getElementById('eventTypeFilter').value = '';
+        document.getElementById('outcomeFilter').value = '';
+        document.getElementById('activityFilter').value = '';
+        document.getElementById('municipalityFilter').value = '';
+        document.getElementById('districtFilter').value = '';
+        document.getElementById('provinceFilter').value = '';
+        document.getElementById('startDateFilter').value = '';
+        document.getElementById('endDateFilter').value = '';
+
+        console.log("Filter values reset:"); // Debugging lines
+        console.log("eventTypeFilter:", document.getElementById('eventTypeFilter').value);
+        console.log("outcomeFilter:", document.getElementById('outcomeFilter').value);
+        console.log("activityFilter:", document.getElementById('activityFilter').value);
+        console.log("municipalityFilter:", document.getElementById('municipalityFilter').value);
+        console.log("districtFilter:", document.getElementById('districtFilter').value);
+        console.log("provinceFilter:", document.getElementById('provinceFilter').value);
+        console.log("startDateFilter:", document.getElementById('startDateFilter').value);
+        console.log("endDateFilter:", document.getElementById('endDateFilter').value);
+
+
+        updateCharts(); // Re-render charts with no filters applied (all data)
+        console.log("updateCharts() called after reset"); // Debugging line
+    }
+
+
+function toggleFilters() {
+    var filterContainer = document.getElementById('filter-container');
+    if (filterContainer) {
+        if (filterContainer.style.display === 'none' || filterContainer.style.display === '') {
+            filterContainer.style.display = 'block'; // Or 'flex' or 'grid' if needed
+        } else {
+            filterContainer.style.display = 'none';
+        }
+    } else {
+        console.error("filterContainer element not found! Check your HTML for id='filter-container'.");
+    }
+}
+
+
+    // --- Initial Chart Setup (using unfiltered data initially) ---
+    updateCharts(); // Call initially to render charts with default (unfiltered) data
+
+
+    // --- Add Event Listeners to Filters ---
+    document.getElementById('eventTypeFilter').addEventListener('change', updateCharts);
+    document.getElementById('outcomeFilter').addEventListener('change', updateCharts);
+    document.getElementById('activityFilter').addEventListener('change', updateCharts);
+    document.getElementById('municipalityFilter').addEventListener('change', updateCharts);
+    document.getElementById('districtFilter').addEventListener('change', updateCharts);
+    document.getElementById('provinceFilter').addEventListener('change', updateCharts);
+    document.getElementById('startDateFilter').addEventListener('change', updateCharts);
+    document.getElementById('endDateFilter').addEventListener('change', updateCharts);
+
+
+</script>
+<% } %>
+
+
+<script>
     document.addEventListener("DOMContentLoaded", function () {
         const endDate = new Date("<%= project.endDate.toISOString() %>");
         const countdownElement = document.getElementById('countdown');
@@ -325,194 +450,130 @@
         updateCountdown();
         const countdownInterval = setInterval(updateCountdown, 1000);
     });
-    </script>
+</script>
 
 <script>
-document.addEventListener("DOMContentLoaded", function () {
-    const reportingPeriod = "<%= reportingPeriod %>".trim();
-    const ganttData = <%- ganttData || "[]" %>;
-    const projectEvents = <%- JSON.stringify(project.events) %>; // Pass project events data
-    const eventTypesList = <%- eventTypes %>; // Get event types list from server
+    document.addEventListener("DOMContentLoaded", function () {
+        const reportingPeriod = "<%= reportingPeriod %>".trim();
+        const projectEvents = <%- JSON.stringify(project.events) %>;
+        const eventTypesList = <%- eventTypes %>;
+        const eventTypesChartContainer = document.getElementById('event-types-chart-container');
 
-    console.log("Gantt Data:", ganttData);
-    console.log("Project Events:", projectEvents); // Log project events data
-    console.log("Event Types List:", eventTypesList); // Log event types
-
-    const ganttContainer = document.getElementById("gantt_here");
-    const eventTypesChartContainer = document.getElementById('event-types-chart-container'); // Get new chart container
-
-
-    if (!ganttContainer) {
-        console.error("Gantt chart container not found");
-        return;
-    }
-    if (!eventTypesChartContainer) {
-        console.error("Event Types chart container not found");
-        return;
-    }
-
-    gantt.config.date_format = "%Y-%m-%d";
-
-    function updateGanttScale(period) {
-        let scales = [{ unit: "day", step: 1, format: "%d %M" }];
-
-        if (period === "Monthly") {
-            scales = [
-                { unit: "month", step: 1, format: "%F %Y" },
-                { unit: "week", step: 1, format: "Week %W" }
-            ];
-        } else if (period === "Quarterly") {
-            scales = [
-                {
-                    unit: "quarter", step: 1,
-                    format: function (date) {
-                        return `Q${Math.ceil((date.getMonth() + 1) / 3)} ${date.getFullYear()}`;
-                    }
-                }
-            ];
-        } else if (period === "Semi-Annually") {
-            scales = [
-                {
-                    unit: "half-year", step: 1,
-                    format: function (date) {
-                        return (date.getMonth() < 6 ? "H1" : "H2") + ` ${date.getFullYear()}`;
-                    }
-                }
-            ];
-        } else if (period === "Annually") {
-            scales = [{ unit: "year", step: 1, format: "%Y" }];
+        if (!eventTypesChartContainer) {
+            console.error("Event Types chart container not found");
+            return;
         }
 
-        gantt.config.scales = scales;
-    }
+        function getReportingPeriodDates(startDate, endDate, reportingPeriod) {
+            let timeUnits = [];
+            let currentDate = new Date(startDate);
 
-    gantt.config.open_tree_initially = true; // Expand all tasks by default
-    gantt.config.order_branch = true; // Order tasks properly
+            while (currentDate <= endDate) {
+                let timeUnitLabel = '';
+                let nextDate;
+                let periodStartDate = new Date(currentDate);
 
-    updateGanttScale(reportingPeriod);
-    gantt.init("gantt_here");
-    gantt.parse({ data: ganttData });
+                if (reportingPeriod === 'Monthly') {
+                    timeUnitLabel = currentDate.toLocaleString('default', { month: 'short', year: 'numeric' });
+                    nextDate = new Date(currentDate);
+                    nextDate.setMonth(currentDate.getMonth() + 1);
+                } else if (reportingPeriod === 'Quarterly') {
+                    const quarter = Math.floor(currentDate.getMonth() / 3) + 1;
+                    timeUnitLabel = `Q${quarter} ${currentDate.getFullYear()}`;
+                    nextDate = new Date(currentDate);
+                    nextDate.setMonth(currentDate.getMonth() + 3);
+                } else if (reportingPeriod === 'Semi-Annually') {
+                    const semester = Math.floor(currentDate.getMonth() / 6) + 1;
+                    timeUnitLabel = `Semester ${semester} ${currentDate.getFullYear()}`;
+                    nextDate = new Date(currentDate);
+                    nextDate.setMonth(currentDate.getMonth() + 6);
+                } else if (reportingPeriod === 'Annually') {
+                    timeUnitLabel = `${currentDate.getFullYear()}`;
+                    nextDate = new Date(currentDate);
+                    nextDate.setFullYear(currentDate.getFullYear() + 1);
+                }
 
-    if (!window.gantt) {
-        console.error("Gantt chart failed to initialize");
-    }
+                timeUnits.push({
+                    label: timeUnitLabel,
+                    startDate: new Date(periodStartDate),
+                    endDate: new Date(nextDate - 1)
+                });
+                currentDate = nextDate;
+            }
+            return timeUnits;
+        }
 
-    // Function to get reporting period dates (reused from create project form)
-    function getReportingPeriodDates(startDate, endDate, reportingPeriod) {
-        let timeUnits = [];
-        let currentDate = new Date(startDate);
+        function generateEventNamesTableChart() {
+            eventTypesChartContainer.innerHTML = '';
 
-        while (currentDate <= endDate) {
-            let timeUnitLabel = '';
-            let nextDate;
-            let periodStartDate = new Date(currentDate); // Start of the reporting period
+            const reportingPeriodValue = reportingPeriod;
+            const startDateInput = "<%= new Date(project.startDate).toISOString() %>";
+            const endDateInput = "<%= new Date(project.endDate).toISOString() %>";
+            const projectEvents = <%- JSON.stringify(project.events || []) %>;
 
-            if (reportingPeriod === 'Monthly') {
-                timeUnitLabel = currentDate.toLocaleString('default', { month: 'short', year: 'numeric' });
-                nextDate = new Date(currentDate);
-                nextDate.setMonth(currentDate.getMonth() + 1);
-            } else if (reportingPeriod === 'Quarterly') {
-                const quarter = Math.floor(currentDate.getMonth() / 3) + 1;
-                timeUnitLabel = `Q${quarter} ${currentDate.getFullYear()}`;
-                nextDate = new Date(currentDate);
-                nextDate.setMonth(currentDate.getMonth() + 3);
-            } else if (reportingPeriod === 'Semi-Annually') {
-                const semester = Math.floor(currentDate.getMonth() / 6) + 1;
-                timeUnitLabel = `Semester ${semester} ${currentDate.getFullYear()}`;
-                nextDate = new Date(currentDate);
-                nextDate.setMonth(currentDate.getMonth() + 6);
-            } else if (reportingPeriod === 'Annually') {
-                timeUnitLabel = `${currentDate.getFullYear()}`;
-                nextDate = new Date(currentDate);
-                nextDate.setFullYear(currentDate.getFullYear() + 1);
+            const uniqueEventNames = [...new Set(projectEvents.map(event => event.eventName))];
+
+            if (!startDateInput || !endDateInput || !reportingPeriodValue || !uniqueEventNames || uniqueEventNames.length === 0) {
+                eventTypesChartContainer.innerHTML = '<p>Could not generate Event Names Chart due to missing project data.</p>';
+                return;
             }
 
-            timeUnits.push({
-                label: timeUnitLabel,
-                startDate: new Date(periodStartDate), // Store start date
-                endDate: new Date(nextDate - 1)      // Store end date (end of period)
-            });
-            currentDate = nextDate;
-        }
-        return timeUnits;
-    }
+            const startDate = new Date(startDateInput);
+            const endDate = new Date(endDateInput);
 
-    // Function to generate Event Types Table Chart
-function generateEventNamesTableChart() {
-    eventTypesChartContainer.innerHTML = ''; // Clear existing chart
+            if (startDate >= endDate) {
+                eventTypesChartContainer.innerHTML = '<p>End Date must be after Start Date.</p>';
+                return;
+            }
 
-    const reportingPeriodValue = "<%= reportingPeriod %>".trim();
-    const startDateInput = "<%= new Date(project.startDate).toISOString() %>"; // Get start date from project data
-    const endDateInput = "<%= new Date(project.endDate).toISOString() %>";     // Get end date from project data
-    const projectEvents = <%- JSON.stringify(project.events || []) %>; // Ensure projectEvents is defined
+            const timeUnits = getReportingPeriodDates(startDate, endDate, reportingPeriodValue);
 
-    // Extract unique event names
-    const uniqueEventNames = [...new Set(projectEvents.map(event => event.eventName))];
+            if (timeUnits.length === 0) {
+                eventTypesChartContainer.innerHTML = '<p>No time units to display within the given date range and reporting period.</p>';
+                return;
+            }
 
-    if (!startDateInput || !endDateInput || !reportingPeriodValue || !uniqueEventNames || uniqueEventNames.length === 0) {
-        eventTypesChartContainer.innerHTML = '<p>Could not generate Event Names Chart due to missing project data.</p>';
-        return;
-    }
+            const chartDiv = document.createElement('div');
+            chartDiv.className = 'gantt-chart';
 
-    const startDate = new Date(startDateInput);
-    const endDate = new Date(endDateInput);
-
-    if (startDate >= endDate) {
-        eventTypesChartContainer.innerHTML = '<p>End Date must be after Start Date.</p>';
-        return;
-    }
-
-    const timeUnits = getReportingPeriodDates(startDate, endDate, reportingPeriodValue);
-
-    if (timeUnits.length === 0) {
-        eventTypesChartContainer.innerHTML = '<p>No time units to display within the given date range and reporting period.</p>';
-        return;
-    }
-
-    const chartDiv = document.createElement('div');
-    chartDiv.className = 'gantt-chart';
-
-    // Time Units Header
-    const headerRow = document.createElement('div');
-    headerRow.className = 'chart-row header-row';
-    headerRow.innerHTML = `<div class="chart-cell header-cell event-type-header">Event Names</div>`; // Changed header
-    timeUnits.forEach(unit => {
-        headerRow.innerHTML += `<div class="chart-cell header-cell time-unit-header">${unit.label}</div>`;
-    });
-    chartDiv.appendChild(headerRow);
-
-    // Event Name Rows
-    uniqueEventNames.forEach(eventName => { // Iterate through unique event names
-        if (eventName.trim() !== "") { // Only add row if event name is not empty
-            const eventNameRow = document.createElement('div');
-            eventNameRow.className = 'chart-row activity-row'; // Reusing activity-row class, can rename to event-name-row if needed
-            eventNameRow.innerHTML = `<div class="chart-cell event-type-cell">${eventName}</div>`; // Changed to event-type-cell
+            const headerRow = document.createElement('div');
+            headerRow.className = 'chart-row header-row';
+            headerRow.innerHTML = `<div class="chart-cell header-cell event-type-header">Event Names</div>`;
             timeUnits.forEach(unit => {
-                const eventCount = countEventsForPeriodAndName(projectEvents, eventName, unit.startDate, unit.endDate); // Count events by name and period
-                eventNameRow.innerHTML += `<div class="chart-cell event-cell"><div class="event-output">${eventCount}</div></div>`;
+                headerRow.innerHTML += `<div class="chart-cell header-cell time-unit-header">${unit.label}</div>`;
             });
-            chartDiv.appendChild(eventNameRow);
+            chartDiv.appendChild(headerRow);
+
+            uniqueEventNames.forEach(eventName => {
+                if (eventName.trim() !== "") {
+                    const eventNameRow = document.createElement('div');
+                    eventNameRow.className = 'chart-row activity-row';
+                    eventNameRow.innerHTML = `<div class="chart-cell event-type-cell">${eventName}</div>`;
+                    timeUnits.forEach(unit => {
+                        const eventCount = countEventsForPeriodAndName(projectEvents, eventName, unit.startDate, unit.endDate);
+                        eventNameRow.innerHTML += `<div class="chart-cell event-cell"><div class="event-output">${eventCount}</div></div>`;
+                    });
+                    chartDiv.appendChild(eventNameRow);
+                }
+            });
+
+            eventTypesChartContainer.appendChild(chartDiv);
         }
-    });
 
-    eventTypesChartContainer.appendChild(chartDiv);
-}
 
-// Function to count events for a specific period and event name
-function countEventsForPeriodAndName(events, eventName, periodStartDate, periodEndDate) {
-    let count = 0;
-    events.forEach(event => {
-        const eventDate = new Date(event.startDate);
-        if (event.eventName === eventName && eventDate >= periodStartDate && eventDate <= periodEndDate) { // use eventName instead of name
-            count++;
+        function countEventsForPeriodAndName(events, eventName, periodStartDate, periodEndDate) {
+            let count = 0;
+            events.forEach(event => {
+                const eventDate = new Date(event.startDate);
+                if (event.eventName === eventName && eventDate >= periodStartDate && eventDate <= periodEndDate) {
+                    count++;
+                }
+            });
+            return count;
         }
-    });
-    return count;
-}
 
-// Generate charts on page load
-generateEventNamesTableChart(); // Generate Event Names Table Chart/ Generate Event Types Table Chart
-});
+        generateEventNamesTableChart();
+    });
 </script>
 
 </body>

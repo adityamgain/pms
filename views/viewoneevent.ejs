@@ -190,6 +190,7 @@
             </div>
         <% } %>
 
+
         <!-- Reports Section -->
         <% if (event.reports && event.reports.length > 0) { %>
             <div class="event-reports">
@@ -311,7 +312,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 responsive: true,
                 plugins: {
                     legend: { position: 'top' },
-                    title: { display: true, text: 'Gender Distribution' }
+                    title: { display: true, text: 'Gender' }
                 }
             }
         });
@@ -365,7 +366,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 responsive: true,
                 plugins: {
                     legend: { position: 'top' },
-                    title: { display: true, text: 'Caste/Ethnicity Distribution' }
+                    title: { display: true, text: 'Caste/Ethnicity' }
                 }
             }
         });
@@ -391,7 +392,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 responsive: true,
                 plugins: {
                     legend: { display: false },
-                    title: { display: true, text: 'Poverty Status Distribution' }
+                    title: { display: true, text: 'Poverty Status' }
                 },
                 scales: { y: { beginAtZero: true } }
             }
