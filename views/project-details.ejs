@@ -39,27 +39,27 @@
         <section class="counting">
             <div class="layout">
                 <div class="grid-3">
-                    <span class="counter"><%= totalEvents %>/<%= targetevent %> </span>
+                    <span class="counter"><output class="completed-event"><%= totalEvents %></output>/<output class="targeted-event"><%= targetedEvents %></output></span>
                     <p>Events Completed</p>
                 </div>
                 <div class="grid-3">
-                    <span class="counter"><%= totalAttendees %></span>
+                    <span class="counter"><output class="completed-event"><%= totalAttendees %></output>/<output class="targeted-event"><%= totalTargetBeneficiary %></output></span>
                     <p>Total Beneficiaries </p>
                 </div>
                 <div class="grid-3">
-                    <span class="counter">50 hec</span>
-                    <p>Area Covered (dummy)</p>
+                    <span class="counter"><output class="completed-event">0</output>/<output class="targeted-event"><%= totalTargetArea %></output></span>
+                    <p>Area Covered (hectare/people)</p>
                 </div>
                 <div class="grid-3">
-                    <span class="counter">34.6L</span>
-                    <p>Total Revenue (dummy)</p>
+                    <span class="counter"><output class="completed-event">0</output>/<output class="targeted-event"><%= totalTargetRevenue %></output></span>
+                    <p>Total Revenue (`000 NRS)</p>
                 </div>
             </div>
         </section>
 
         <a href="/projects/<%= project._id %>/export" class="btn" id="exportBtn">Export Project Details</a>
 
-        <% if (eventTypes.length > 0) { %>
+        <% if (totalEvents > 0) { %>
         <div class="graphical-representation">
 
             <div class="tabular-representation">
@@ -464,9 +464,14 @@ function toggleFilters() {
             return;
         }
 
-        function getReportingPeriodDates(startDate, endDate, reportingPeriod) {
+ function getReportingPeriodDates(startDate, endDate, reportingPeriod) {
             let timeUnits = [];
             let currentDate = new Date(startDate);
+
+            // Adjust the start date to the beginning of the calendar year for all periods
+            if (['Monthly', 'Quarterly', 'Semi-Annually', 'Annually'].includes(reportingPeriod)) {
+                currentDate = new Date(currentDate.getFullYear(), 0, 1); // Start from January 1st of the current year
+            }
 
             while (currentDate <= endDate) {
                 let timeUnitLabel = '';
@@ -493,15 +498,20 @@ function toggleFilters() {
                     nextDate.setFullYear(currentDate.getFullYear() + 1);
                 }
 
-                timeUnits.push({
-                    label: timeUnitLabel,
-                    startDate: new Date(periodStartDate),
-                    endDate: new Date(nextDate - 1)
-                });
-                currentDate = nextDate;
+                if (periodStartDate <= endDate) { // Ensure period start is not after project end
+                    timeUnits.push({
+                        label: timeUnitLabel,
+                        startDate: new Date(periodStartDate),
+                        endDate: new Date(Math.min(nextDate - 1, endDate)) // Cap period end at project end date
+                    });
+                    currentDate = nextDate;
+                } else {
+                    break; // Stop if period start exceeds project end
+                }
             }
             return timeUnits;
         }
+
 
         function generateEventNamesTableChart() {
             eventTypesChartContainer.innerHTML = '';
@@ -559,7 +569,6 @@ function toggleFilters() {
 
             eventTypesChartContainer.appendChild(chartDiv);
         }
-
 
         function countEventsForPeriodAndName(events, eventName, periodStartDate, periodEndDate) {
             let count = 0;

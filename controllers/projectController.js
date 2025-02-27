@@ -23,7 +23,7 @@ exports.renderCreateProjectForm = (req, res) => {
 // Handle form submission to create a new project
 exports.createProject = async (req, res) => {
     try {
-        const { projectName, donor, stakeholders, startDate, endDate, areaOfAction, reportingPeriod, target_events, activities, outcomes, ...ganttChartInputs } = req.body;
+        const { projectName, donor, stakeholders, startDate, endDate, areaOfAction, reportingPeriod, activities, outcomes, ...ganttChartInputs } = req.body;
         console.log("Received request body:", req.body);
         // Validate required fields
         if (!projectName || !donor || !startDate || !endDate || !areaOfAction || !reportingPeriod) {
@@ -48,14 +48,23 @@ exports.createProject = async (req, res) => {
         for (const activityName in ganttChartInputs.events) {
             const timeUnitsData = ganttChartInputs.events[activityName]; // Get time unit data for this activity
             ganttChartData[activityName] = {}; // Initialize nested object for the activity
-        
+
+            const targetValue = ganttChartInputs.targets?.[activityName] || ""; // Get target for the entire activity
+            const unitValue = ganttChartInputs.units?.[activityName] || "person";     // Get unit for the entire activity
+
+            ganttChartData[activityName] = {
+                target: targetValue,
+                unit: unitValue,
+                timeUnits: {} // Nested object for time unit event counts
+            };
+
             for (const timeUnit in timeUnitsData) {
                 const eventCount = timeUnitsData[timeUnit];
-                ganttChartData[activityName][timeUnit] = parseInt(eventCount, 10) || 0;
+                ganttChartData[activityName].timeUnits[timeUnit] = parseInt(eventCount, 10) || 0; // Store event counts under timeUnits
             }
         }
         console.log("ganttChartInputs:", ganttChartInputs);
-console.log("ganttChartData:", ganttChartData);
+        console.log("ganttChartData:", ganttChartData);
 
         // Create project object
         const project = new Project({
@@ -67,7 +76,6 @@ console.log("ganttChartData:", ganttChartData);
             areaOfAction: areaOfActionArray,
             reportingPeriod,
             codeName,
-            target_events,
             activities: activitiesArray,
             outcomes: outcomesArray,
             ganttChartData: ganttChartData
@@ -79,6 +87,8 @@ console.log("ganttChartData:", ganttChartData);
         res.status(500).send(err.message || 'Error saving project');
     }
 };
+
+
 
 // Display all projects
 exports.viewProjects = async (req, res) => {
@@ -156,10 +166,61 @@ exports.getProjectDetails = async (req, res) => {
             filteredEvents = filteredEvents.filter(event => new Date(event.endDate) <= filterEndDate);
         }
 
+// Calculate targeted events from ganttChartData
+const ganttChartData = project.ganttChartData;
+let targetedEvents = 0;
+
+for (const activity in ganttChartData) {
+    // Access timeUnits nested object
+    const timeUnitsData = ganttChartData[activity].timeUnits;
+    if (timeUnitsData) { // Check if timeUnitsData exists to avoid errors
+        for (const timeUnit in timeUnitsData) {
+            targetedEvents += timeUnitsData[timeUnit] || 0; // Sum events from timeUnitsData
+        }
+    }
+}
+
+function calculateTargetBeneficiary(project) {
+    // Calculate target beneficiaries, revenue, and area from ganttChartData
+    const ganttChartData = project.ganttChartData;
+    let targetBeneficiary = 0;
+    let targetRevenue = 0;
+    let targetArea = 0;
+
+    for (const activity in ganttChartData) {
+        const activityData = ganttChartData[activity];
+        const unit = activityData.unit;
+        const target = activityData.target;
+
+        if (unit === 'person') {
+            // Parse target to integer, default to 0 if parsing fails or target is empty
+            const targetValue = parseInt(target, 10) || 0;
+            targetBeneficiary += targetValue;
+        } else if (unit === 'revenue') {
+            // Parse target to integer, default to 0 if parsing fails or target is empty
+            const targetValue = parseInt(target, 10) || 0;
+            targetRevenue += targetValue;
+        } else if (unit === 'area') {
+            // Parse target to integer, default to 0 if parsing fails or target is empty
+            const targetValue = parseInt(target, 10) || 0;
+            targetArea += targetValue;
+        }
+    }
+
+    return {
+        targetBeneficiary: targetBeneficiary,
+        targetRevenue: targetRevenue,
+        targetArea: targetArea
+    };
+}
+
+    const targets = calculateTargetBeneficiary(project);
+    const totalTargetBeneficiary = targets.targetBeneficiary;
+    const totalTargetRevenue = targets.targetRevenue;
+    const totalTargetArea = targets.targetArea;
 
         // Initialize variables for project statistics (using FILTERED events now)
         const totalEvents = filteredEvents.length; // Use filteredEvents here
-        const targetevent = project.target_events;
         const EventsPercent = project.target_events > 0 ? (totalEvents / project.target_events) * 100 : 0;
         const reportingPeriod = project.reportingPeriod;
 
@@ -235,9 +296,12 @@ exports.getProjectDetails = async (req, res) => {
             project,
             EventsPercent: EventsPercent.toFixed(1),
             totalEvents,
-            targetevent,
             totalAttendees,
             totalBenefitted,
+            targetedEvents,
+            totalTargetBeneficiary,
+            totalTargetRevenue,
+            totalTargetArea,
             benefittedRatio: benefittedRatio.toFixed(2),
             eventTypes: JSON.stringify(eventTypes),
             eventCounts: JSON.stringify(eventCounts),
@@ -279,6 +343,10 @@ exports.getProjectDetails = async (req, res) => {
         res.status(500).send("Error fetching project");
     }
 };
+
+
+
+
 
 // Delete a project and its associated events
 exports.deleteProject = async (req, res) => {

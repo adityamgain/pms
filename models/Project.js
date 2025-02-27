@@ -40,7 +40,6 @@ const ProjectSchema = new mongoose.Schema({
         default: 'Planning',
         required: true
     },
-    target_events: { type: Number, required: true },
     activities: [{ type: String, required: true }],  // Changed to an array of strings
     outcomes: [{ type: String, required: true }],
     ganttChartData: { // New field to store Gantt chart data

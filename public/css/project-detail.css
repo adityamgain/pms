@@ -153,28 +153,33 @@
 
 
 * {
-	box-sizing: border-box;
-	list-style: none;
-	text-decoration: none;
+    box-sizing: border-box;
+    list-style: none;
+    text-decoration: none;
 }
-
 
 .layout {
-	margin: 0 auto;
-	max-width: 1170px;
-	width: 100%;
-	padding: 0 15px;
+    margin: 0 auto;
+    max-width: 1170px;
+    width: 100%;
+    padding: 0 15px;
 }
-/********Grid Widht *******/
-.grid-3 {	width: 25%;	float: left;	min-height: 1px;	padding-left: 15px;	padding-right: 15px;
-	position: relative;}
-/********Grid Widht *******/	
+
+/********Grid Width *******/
+.grid-3 {
+    width: 25%;
+    float: left;
+    min-height: 1px;
+    padding-left: 15px;
+    padding-right: 15px;
+    position: relative;
+}
+/********Grid Width *******/
 
 /***Section Css******/
 .counting {
-    background: #cabebe none repeat scroll 0 0;
-
-    color: #fff;
+    background: #C7BFB5 none repeat scroll 0 0; /* Reverted to original background color */
+    color: #fff; /* Reverted to original text color */
     overflow: hidden;
     padding: 36px 0;
 }
@@ -183,8 +188,8 @@
     font-size: 35px;
     font-weight: 700;
     position: relative;
-	text-align:center;
-	display:block;
+    text-align:center;
+    display:block;
 }
 .counting p {
     font-size: 12px;
@@ -193,11 +198,11 @@
     letter-spacing: 2px;
     padding-top: 30px;
     text-transform: uppercase;
-	text-align:center;
+    text-align:center;
 }
 
 .counting span::before {
-    background: #aa7878  none repeat scroll 0 0;
+    background: #977D5E  none repeat scroll 0 0; /* Reverted to original accent line color */
     bottom: -10px;
     content: " ";
     height: 4px;
@@ -205,6 +210,17 @@
     position: absolute;
     width: 36%;
 }
+
+
+.completed-event {
+    color: #2e86c1; /* Vibrant blue for completed events - KEPT */
+}
+
+.targeted-event {
+    color: #e74c3c; /* Clearer contrasting color for targeted events (red-orange) - KEPT */
+    margin-left: 5px; /* Kept margin-left for spacing if inline */
+}
+
 
 /* Graphical Representation Section */
 .graphical-representation {
