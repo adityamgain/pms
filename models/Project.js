@@ -1,51 +1,79 @@
-const mongoose = require('mongoose');
-const { v4: uuidv4 } = require('uuid');
-const EventWbenificiary = require('./EventWbenificiary');
+const { DataTypes } = require('sequelize');
 
-const ProjectSchema = new mongoose.Schema({
-    projectName: { type: String, required: true },
-    donor: { type: String, required: true },
-    stakeholders: [{ type: String }],
-    startDate: { type: Date, required: true },
-    endDate: { 
-        type: Date, 
-        required: true,
+module.exports = (sequelize) => {
+  const Project = sequelize.define('Project', {
+    id: {
+      type: DataTypes.UUID,
+      defaultValue: DataTypes.UUIDV4,
+      primaryKey: true,
+    },
+    projectName: {
+      type: DataTypes.STRING,
+      allowNull: false,
+    },
+    donor: {
+      type: DataTypes.STRING,
+      allowNull: false,
+    },
+    stakeholders: {
+      type: DataTypes.ARRAY(DataTypes.STRING),
+    },
+    startDate: {
+      type: DataTypes.DATE,
+      allowNull: false,
+    },
+    endDate: {
+      type: DataTypes.DATE,
+      allowNull: false,
+      validate: {
+        isAfterStartDate(value) {
+          if (this.startDate > value) {
+            throw new Error('End date must be greater than or equal to start date.');
+          }
+        },
+      },
+    },
+    areaOfAction: {
+        type: DataTypes.ARRAY(DataTypes.STRING),
+        allowNull: false,
         validate: {
-            validator: function (value) {
-                return this.startDate <= value;
-            },
-            message: 'End date must be greater than or equal to start date.'
-        }
+          areValidActions(value) {
+            const validActions = ['Nature-based commercial agriculture', 'Sustainable Forest Management', 'Water', 'Climate Change'];
+            value.forEach(action => {
+              if (!validActions.includes(action)) {
+                throw new Error('Invalid area of action');
+              }
+            });
+          },
+        },
+      },
+    reportingPeriod: {
+      type: DataTypes.ENUM('Monthly', 'Quarterly', 'Semi-Annually', 'Annually'),
+      allowNull: false,
     },
-    areaOfAction: [{
-        type: String,
-        enum: [
-            'Nature-based commercial agriculture',
-            'Sustainable Forest Management',
-            'Water',
-            'Climate Change'
-        ],
-        required: true
-    }],
-    reportingPeriod: { 
-        type: String, 
-        enum: ['Monthly', 'Quarterly', 'Semi-Annually','Annually'], 
-        required: true 
+    codeName: {
+      type: DataTypes.STRING,
+      unique: true,
+      allowNull: false,
     },
-    events: [{ type: mongoose.Schema.Types.ObjectId, ref: 'EventWbenificiary' }],
-    codeName: { type: String, unique: true, required: true },
     projectStatus: {
-        type: String,
-        enum: ['Planning', 'Active', 'Completed'],
-        default: 'Planning',
-        required: true
+      type: DataTypes.ENUM('Planning', 'Active', 'Completed'),
+      defaultValue: 'Planning',
+      allowNull: false,
     },
-    activities: [{ type: String, required: true }],  // Changed to an array of strings
-    outcomes: [{ type: String, required: true }],
-    ganttChartData: { // New field to store Gantt chart data
-        type: Object,
-        default: {} // Default to an empty object
-    }
-});
+    activities: {
+      type: DataTypes.ARRAY(DataTypes.STRING),
+      allowNull: false,
+    },
+    outcomes: {
+      type: DataTypes.ARRAY(DataTypes.STRING),
+      allowNull: false,
+    },
+    ganttChartData: {
+      type: DataTypes.JSONB,
+      defaultValue: {},
+    },
+  });
 
-module.exports = mongoose.model('Project', ProjectSchema);
+  return Project;
+};

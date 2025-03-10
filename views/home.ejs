@@ -29,11 +29,36 @@
         <a href="/employee" class="button">View All Employees</a>
         <a href="/employee/add" class="button">Add New Employee</a>
       </div>
-    </section>
-  </main>
-</div>
 
+<h1>Download Timesheet</h1>
 
-<script src="/script/home.js"></script>
+    <label for="monthSelect">Select Month:</label>
+    <select id="monthSelect" name="month">
+        <option value="1">January</option>
+        <option value="2">February</option>
+        <option value="3">March</option>
+        <option value="4">April</option>
+        <option value="5">May</option>
+        <option value="6">June</option>
+        <option value="7">July</option>
+        <option value="8">August</option>
+        <option value="9">September</option>
+        <option value="10">October</option>
+        <option value="11">November</option>
+        <option value="12">December</option>
+    </select>
+    <button onclick="downloadTimesheet()">Download Timesheet</button>
 
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Set default selected month to current month
+            const currentMonth = new Date().getMonth() + 1;
+            document.getElementById('monthSelect').value = currentMonth;
+        });
 
+        function downloadTimesheet() {
+            const selectedMonth = document.getElementById('monthSelect').value;
+            const downloadUrl = `/download-timesheet?month=${selectedMonth}`; // Correct path: /download-timesheet
+            window.location.href = downloadUrl; // Redirect to trigger download
+        }
+    </script>

@@ -213,11 +213,11 @@
 
 
 .completed-event {
-    color: #2e86c1; /* Vibrant blue for completed events - KEPT */
+    color: #371A74; /* Vibrant blue for completed events - KEPT */
 }
 
 .targeted-event {
-    color: #e74c3c; /* Clearer contrasting color for targeted events (red-orange) - KEPT */
+    color: #930532; /* Clearer contrasting color for targeted events (red-orange) - KEPT */
     margin-left: 5px; /* Kept margin-left for spacing if inline */
 }
 

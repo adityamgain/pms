@@ -1,109 +1,183 @@
 const fs = require('fs').promises;
-const Project = require('../models/Project');
-const EventWbenificiary = require('../models/EventWbenificiary');
+const { Project, EventWbenificiary, Beneficiary } = require('../models');
 const xlsx = require('xlsx');
-const { exec } = require('child_process');
+const bcrypt = require('bcrypt');
 const ExcelJS = require('exceljs');
 const XlsxPopulate = require('xlsx-populate');
+// Export project data to Excel
 
-let projectCounter = 1; // Initialize a counter for project code names
 
-// Function to generate a short and easy-to-remember code name
-function generateCodeName() {
-    const prefix = 'PC';
-    const uniqueNumber = projectCounter++;
-    return `${prefix}-${uniqueNumber}`;
-}
 
 // Render the form to create a new project
 exports.renderCreateProjectForm = (req, res) => {
     res.render('create-project');
 };
 
+
+// Generate a unique project code
+function generateCodeName() {
+  return 'PRJ' + Math.random().toString(36).substr(2, 9).toUpperCase();
+}
+
 // Handle form submission to create a new project
 exports.createProject = async (req, res) => {
     try {
-        const { projectName, donor, stakeholders, startDate, endDate, areaOfAction, reportingPeriod, activities, outcomes, ...ganttChartInputs } = req.body;
-        console.log("Received request body:", req.body);
-        // Validate required fields
-        if (!projectName || !donor || !startDate || !endDate || !areaOfAction || !reportingPeriod) {
-            return res.status(400).send('Missing required fields');
+      const { projectName, donor, stakeholders, startDate, endDate, areaOfAction, reportingPeriod, activities, outcomes, ...ganttChartInputs } = req.body;
+      console.log("Received request body:", req.body);
+  
+      // Validate required fields
+      if (!projectName || !donor || !startDate || !endDate || !areaOfAction || !reportingPeriod) {
+        return res.status(400).send('Missing required fields');
+      }
+  
+      // Ensure start date is before end date
+      if (new Date(startDate) > new Date(endDate)) {
+        return res.status(400).send('End date must be greater than or equal to start date');
+      }
+  
+      // Ensure activities and outcomes are arrays
+      const activitiesArray = Array.isArray(activities) ? activities.map(a => a.trim()).filter(a => a) : [];
+      const outcomesArray = Array.isArray(outcomes) ? outcomes.map(o => o.trim()).filter(o => o) : [];
+  
+      // Ensure areaOfAction is an array and matches the validation
+      const validAreaOfActions = [
+        'Nature-based commercial agriculture',
+        'Sustainable Forest Management',
+        'Water',
+        'Climate Change',
+      ];
+      const areaOfActionArray = Array.isArray(areaOfAction) ? areaOfAction : [areaOfAction];
+      for (const action of areaOfActionArray) {
+        if (!validAreaOfActions.includes(action)) {
+          return res.status(400).send(`Invalid area of action: ${action}`);
         }
-        // Ensure start date is before end date
-        if (new Date(startDate) > new Date(endDate)) {
-            return res.status(400).send('End date must be greater than or equal to start date');
+      }
+  
+      // Ensure stakeholders is an array
+      const stakeholdersArray = Array.isArray(stakeholders) ? stakeholders : stakeholders.split(',').map(s => s.trim());
+  
+      // Generate unique project code
+      const codeName = generateCodeName();
+  
+      const ganttChartData = {};
+      // Iterate over the activities within ganttChartInputs.events
+      for (const activityName in ganttChartInputs.events) {
+        const timeUnitsData = ganttChartInputs.events[activityName]; // Get time unit data for this activity
+        ganttChartData[activityName] = {}; // Initialize nested object for the activity
+  
+        const targetValue = ganttChartInputs.targets?.[activityName] || ""; // Get target for the entire activity
+        const unitValue = ganttChartInputs.units?.[activityName] || "person"; // Get unit for the entire activity
+  
+        ganttChartData[activityName] = {
+          target: targetValue,
+          unit: unitValue,
+          timeUnits: {} // Nested object for time unit event counts
+        };
+  
+        for (const timeUnit in timeUnitsData) {
+          const eventCount = timeUnitsData[timeUnit];
+          ganttChartData[activityName].timeUnits[timeUnit] = parseInt(eventCount, 10) || 0; // Store event counts under timeUnits
         }
-        // Ensure activities and outcomes are arrays
-        const activitiesArray = Array.isArray(activities) ? activities.map(a => a.trim()).filter(a => a) : [];
-        const outcomesArray = Array.isArray(outcomes) ? outcomes.map(o => o.trim()).filter(o => o) : [];
-        // Ensure areaOfAction is an array
-        const areaOfActionArray = Array.isArray(areaOfAction) ? areaOfAction : [areaOfAction];
-        // Ensure stakeholders is an array
-        const stakeholdersArray = Array.isArray(stakeholders) ? stakeholders : stakeholders.split(',').map(s => s.trim());
-        // Generate unique project code
-        const codeName = generateCodeName();
-
-        const ganttChartData = {};
-        // Iterate over the activities within ganttChartInputs.events
-        for (const activityName in ganttChartInputs.events) {
-            const timeUnitsData = ganttChartInputs.events[activityName]; // Get time unit data for this activity
-            ganttChartData[activityName] = {}; // Initialize nested object for the activity
-
-            const targetValue = ganttChartInputs.targets?.[activityName] || ""; // Get target for the entire activity
-            const unitValue = ganttChartInputs.units?.[activityName] || "person";     // Get unit for the entire activity
-
-            ganttChartData[activityName] = {
-                target: targetValue,
-                unit: unitValue,
-                timeUnits: {} // Nested object for time unit event counts
-            };
-
-            for (const timeUnit in timeUnitsData) {
-                const eventCount = timeUnitsData[timeUnit];
-                ganttChartData[activityName].timeUnits[timeUnit] = parseInt(eventCount, 10) || 0; // Store event counts under timeUnits
-            }
-        }
-        console.log("ganttChartInputs:", ganttChartInputs);
-        console.log("ganttChartData:", ganttChartData);
-
-        // Create project object
-        const project = new Project({
-            projectName,
-            donor,
-            stakeholders: stakeholdersArray,
-            startDate,
-            endDate,
-            areaOfAction: areaOfActionArray,
-            reportingPeriod,
-            codeName,
-            activities: activitiesArray,
-            outcomes: outcomesArray,
-            ganttChartData: ganttChartData
-        });
-        await project.save();
-        res.redirect(`/projects/${project._id}`);
+      }
+      console.log("ganttChartInputs:", ganttChartInputs);
+      console.log("ganttChartData:", ganttChartData);
+  
+      // Create project object
+      const project = await Project.create({
+        projectName,
+        donor,
+        stakeholders: stakeholdersArray,
+        startDate,
+        endDate,
+        areaOfAction: areaOfActionArray,
+        reportingPeriod,
+        codeName,
+        activities: activitiesArray,
+        outcomes: outcomesArray,
+        ganttChartData: ganttChartData
+      });
+  
+      res.redirect(`/projects/${project.id}`);
     } catch (err) {
-        console.error('Error saving project:', err.message);
-        res.status(500).send(err.message || 'Error saving project');
+      console.error('Error saving project:', err.message);
+      res.status(500).send(err.message || 'Error saving project');
     }
+  };
+
+
+
+
+// Fetch project details including events and beneficiaries
+exports.getProjectDetails = async (req, res) => {
+  try {
+    const { projectId } = req.params;
+
+    const project = await Project.findByPk(projectId, {
+      include: {
+        model: EventWbenificiary,
+        as: 'events',
+        include: {
+          model: Beneficiary,
+          as: 'beneficiaries'
+        }
+      }
+    });
+
+    if (!project) {
+      return res.status(404).send('Project not found');
+    }
+
+    res.json(project);
+  } catch (err) {
+    console.error('Error fetching project:', err.message);
+    res.status(500).send(err.message || 'Error fetching project');
+  }
 };
 
 
+
+// Fetch project details including events and beneficiaries
+exports.getProjectDetails = async (req, res) => {
+    try {
+        const { projectId } = req.params;
+
+        const project = await Project.findByPk(projectId, {
+            include: {
+                model: EventWbenificiary,
+                as: 'events',
+                include: {
+                    model: Beneficiary,
+                    as: 'beneficiaries'
+                }
+            }
+        });
+
+        if (!project) {
+            return res.status(404).send('Project not found');
+        }
+
+        res.json(project);
+    } catch (err) {
+        console.error('Error fetching project:', err.message);
+        res.status(500).send(err.message || 'Error fetching project');
+    }
+};
 
 // Display all projects
 exports.viewProjects = async (req, res) => {
     try {
         // Fetch all projects
-        const projects = await Project.find();
+        const projects = await Project.findAll();
+
         // Add totalEvents to each project object
-        const projectsWithEventCounts = projects.map(project => {
-            // Ensure events is an array before calculating its length
-            const totalEvents = Array.isArray(project.events) ? project.events.length : 0;
+        const projectsWithEventCounts = await Promise.all(projects.map(async project => {
+            const totalEvents = await EventWbenificiary.count({ where: { projectId: project.id } });
             return {
-                ...project.toObject(),
-                totalEvents: totalEvents
+                ...project.toJSON(),
+                totalEvents
             };
-        });
+        }));
+
         res.render('viewProjects', { projects: projectsWithEventCounts });
     } catch (err) {
         console.error('Error fetching projects:', err);
@@ -111,18 +185,20 @@ exports.viewProjects = async (req, res) => {
     }
 };
 
-
-
+// Get project details
 exports.getProjectDetails = async (req, res) => {
     try {
         const { id } = req.params;
         const { eventType, startDate, endDate, outcome, activity, municipality, district, province } = req.query;
 
-        // Fetch the project by ID and populate events and beneficiaries
-        const project = await Project.findById(id).populate({
-            path: "events",
-            populate: { path: "beneficiaries" },
-        }).lean();
+        // Fetch the project by ID and include events and beneficiaries
+        const project = await Project.findByPk(id, {
+            include: {
+                model: EventWbenificiary,
+                as: 'events',
+                include: { model: Beneficiary, as: 'beneficiaries' }
+            }
+        });
 
         if (!project) {
             return res.status(404).send("Project not found");
@@ -131,7 +207,7 @@ exports.getProjectDetails = async (req, res) => {
         // Check and update project status if needed
         const currentDate = new Date();
         if (new Date(project.endDate) < currentDate && project.projectStatus.toLowerCase() !== "completed") {
-            await Project.findByIdAndUpdate(project._id, { projectStatus: "Completed" });
+            await project.update({ projectStatus: "Completed" });
         }
 
         // --- Define allEvents HERE, right after fetching project ---
@@ -143,7 +219,7 @@ exports.getProjectDetails = async (req, res) => {
             filteredEvents = filteredEvents.filter(event => event.eventType === eventType);
         }
         if (outcome) {
-            filteredEvents = filteredEvents.filter(event => event.outcome === outcome);
+            filteredEvents = filteredEvents.filter(event => event.outcome === outcome); // Corrected outcome filter
         }
         if (activity) {
             filteredEvents = filteredEvents.filter(event => event.eventName === activity); // Assuming activity filter is on eventName
@@ -166,58 +242,58 @@ exports.getProjectDetails = async (req, res) => {
             filteredEvents = filteredEvents.filter(event => new Date(event.endDate) <= filterEndDate);
         }
 
-// Calculate targeted events from ganttChartData
-const ganttChartData = project.ganttChartData;
-let targetedEvents = 0;
+        // Calculate targeted events from ganttChartData
+        const ganttChartData = project.ganttChartData;
+        let targetedEvents = 0;
 
-for (const activity in ganttChartData) {
-    // Access timeUnits nested object
-    const timeUnitsData = ganttChartData[activity].timeUnits;
-    if (timeUnitsData) { // Check if timeUnitsData exists to avoid errors
-        for (const timeUnit in timeUnitsData) {
-            targetedEvents += timeUnitsData[timeUnit] || 0; // Sum events from timeUnitsData
+        for (const activity in ganttChartData) {
+            // Access timeUnits nested object
+            const timeUnitsData = ganttChartData[activity].timeUnits;
+            if (timeUnitsData) { // Check if timeUnitsData exists to avoid errors
+                for (const timeUnit in timeUnitsData) {
+                    targetedEvents += timeUnitsData[timeUnit] || 0; // Sum events from timeUnitsData
+                }
+            }
         }
-    }
-}
 
-function calculateTargetBeneficiary(project) {
-    // Calculate target beneficiaries, revenue, and area from ganttChartData
-    const ganttChartData = project.ganttChartData;
-    let targetBeneficiary = 0;
-    let targetRevenue = 0;
-    let targetArea = 0;
+        function calculateTargetBeneficiary(project) {
+            // Calculate target beneficiaries, revenue, and area from ganttChartData
+            const ganttChartData = project.ganttChartData;
+            let targetBeneficiary = 0;
+            let targetRevenue = 0;
+            let targetArea = 0;
 
-    for (const activity in ganttChartData) {
-        const activityData = ganttChartData[activity];
-        const unit = activityData.unit;
-        const target = activityData.target;
+            for (const activity in ganttChartData) {
+                const activityData = ganttChartData[activity];
+                const unit = activityData.unit;
+                const target = activityData.target;
 
-        if (unit === 'person') {
-            // Parse target to integer, default to 0 if parsing fails or target is empty
-            const targetValue = parseInt(target, 10) || 0;
-            targetBeneficiary += targetValue;
-        } else if (unit === 'revenue') {
-            // Parse target to integer, default to 0 if parsing fails or target is empty
-            const targetValue = parseInt(target, 10) || 0;
-            targetRevenue += targetValue;
-        } else if (unit === 'area') {
-            // Parse target to integer, default to 0 if parsing fails or target is empty
-            const targetValue = parseInt(target, 10) || 0;
-            targetArea += targetValue;
+                if (unit === 'person') {
+                    // Parse target to integer, default to 0 if parsing fails or target is empty
+                    const targetValue = parseInt(target, 10) || 0;
+                    targetBeneficiary += targetValue;
+                } else if (unit === 'revenue') {
+                    // Parse target to integer, default to 0 if parsing fails or target is empty
+                    const targetValue = parseInt(target, 10) || 0;
+                    targetRevenue += targetValue;
+                } else if (unit === 'area') {
+                    // Parse target to integer, default to 0 if parsing fails or target is empty
+                    const targetValue = parseInt(target, 10) || 0;
+                    targetArea += targetValue;
+                }
+            }
+
+            return {
+                targetBeneficiary: targetBeneficiary,
+                targetRevenue: targetRevenue,
+                targetArea: targetArea
+            };
         }
-    }
 
-    return {
-        targetBeneficiary: targetBeneficiary,
-        targetRevenue: targetRevenue,
-        targetArea: targetArea
-    };
-}
-
-    const targets = calculateTargetBeneficiary(project);
-    const totalTargetBeneficiary = targets.targetBeneficiary;
-    const totalTargetRevenue = targets.targetRevenue;
-    const totalTargetArea = targets.targetArea;
+        const targets = calculateTargetBeneficiary(project);
+        const totalTargetBeneficiary = targets.targetBeneficiary;
+        const totalTargetRevenue = targets.targetRevenue;
+        const totalTargetArea = targets.targetArea;
 
         // Initialize variables for project statistics (using FILTERED events now)
         const totalEvents = filteredEvents.length; // Use filteredEvents here
@@ -233,12 +309,10 @@ function calculateTargetBeneficiary(project) {
         let totalDalit = 0, totalJanajati = 0, totalBrahminChhetri = 0, totalTharu = 0, totalMadhesi = 0, totalOthers = 0;
         let ageUnder25 = 0, age25to40 = 0, ageAbove40 = 0;
 
-
         filteredEvents.forEach(event => { // Use filteredEvents here for stats calculation
             if (event.eventType) {
                 eventTypeCounts[event.eventType] = (eventTypeCounts[event.eventType] || 0) + 1;
             }
-
             if (Array.isArray(event.beneficiaries)) {
                 totalAttendees += event.beneficiaries.length;
                 totalBenefitted += event.beneficiaries.filter(b => b.benefitsFromActivity).length;
@@ -263,7 +337,6 @@ function calculateTargetBeneficiary(project) {
             }
         });
 
-
         const benefittedRatio = totalAttendees > 0 ? (totalBenefitted / totalAttendees) * 100 : 0;
         const eventTypes = Object.keys(eventTypeCounts);
         const eventCounts = Object.values(eventTypeCounts);
@@ -273,24 +346,21 @@ function calculateTargetBeneficiary(project) {
             return res.status(400).send("Invalid project start or end date");
         }
 
-
-        const uniqueOutcomes = [...new Set(allEvents.map(e => e.outcome).filter(Boolean))]; // Use allEvents for unique lists
+        const uniqueOutcomes = [...new Set(allEvents.flatMap(event => event.outcome || []))];
         const uniqueActivities = [...new Set(allEvents.map(e => e.eventName).filter(Boolean))];
         const uniquemunicipality = [...new Set(allEvents.map(e => e.venue?.municipality).filter(Boolean))];
         const uniqueDistricts = [...new Set(allEvents.map(e => e.venue?.district).filter(Boolean))];
         const uniqueProvinces = [...new Set(allEvents.map(e => e.venue?.province).filter(Boolean))];
         const uniqueEventTypes = [...new Set(allEvents.map(e => e.eventType).filter(Boolean))]; // Add unique event types
 
-
         // --- Prepare eventLocations based on FILTERED events ---
         const eventLocations = filteredEvents
-        .filter(event => event.location && event.location.coordinates)
-        .map(event => ({
-            coordinates: event.location.coordinates,
-            venue: event.venue,
-            eventName: event.eventName
-        }));
-
+            .filter(event => event.location && event.location.coordinates)
+            .map(event => ({
+                coordinates: event.location.coordinates,
+                venue: event.venue,
+                eventName: event.eventName
+            }));
 
         res.render("project-details", {
             project,
@@ -337,26 +407,21 @@ function calculateTargetBeneficiary(project) {
             allEvents: JSON.stringify(allEvents), // Still pass all events for client-side chart filtering if you keep it
             clientFilteredEvents: JSON.stringify(filteredEvents) // Pass filtered events for client-side if needed for charts
         });
-
     } catch (err) {
         console.error("Error fetching project:", err);
         res.status(500).send("Error fetching project");
     }
 };
 
-
-
-
-
 // Delete a project and its associated events
 exports.deleteProject = async (req, res) => {
     try {
         const projectId = req.params.id;
-        const project = await Project.findById(projectId);
+        const project = await Project.findByPk(projectId);
         if (!project) {
             return res.status(404).send('Project not found.');
         }
-        const events = await EventWbenificiary.find({ _id: { $in: project.events } });
+        const events = await EventWbenificiary.findAll({ where: { projectId: project.id } });
         if (events.length > 0) {
             for (const event of events) {
                 if (event.photographs?.length) {
@@ -378,9 +443,9 @@ exports.deleteProject = async (req, res) => {
                     }));
                 }
             }
-            await EventWbenificiary.deleteMany({ _id: { $in: project.events } });
+            await EventWbenificiary.destroy({ where: { projectId: project.id } });
         }
-        await Project.findByIdAndDelete(projectId);
+        await Project.destroy({ where: { id: projectId } });
         res.redirect('/projects/view-projects');
     } catch (err) {
         console.error('Error deleting project and events:', err.message);
@@ -389,15 +454,26 @@ exports.deleteProject = async (req, res) => {
 };
 
 
+
+
 // Export project data to Excel
 exports.exportProjectDetails = async (req, res) => {
     try {
-        const project = await Project.findById(req.params.id).populate('events');
+        const project = await Project.findByPk(req.params.id, {
+            include: {
+                model: EventWbenificiary,
+                as: 'events',
+                include: { model: Beneficiary, as: 'beneficiaries' }
+            }
+        });
+
         if (!project) {
             return res.status(404).send('Project not found');
         }
 
         const workbook = xlsx.utils.book_new();
+
+        // Project Details Sheet
         const projectSheetData = [
             ['Project Name', project.projectName],
             ['Donor', project.donor],
@@ -411,6 +487,7 @@ exports.exportProjectDetails = async (req, res) => {
         const projectSheet = xlsx.utils.aoa_to_sheet(projectSheetData);
         xlsx.utils.book_append_sheet(workbook, projectSheet, 'Project Details');
 
+        // Beneficiaries Sheet
         const beneficiariesSheetData = [
             [
                 'SN', 'Year', 'Month', 'Start Date (dd-mm-yyyy)', 'End Date (dd-mm-yyyy)', 
@@ -594,7 +671,7 @@ exports.exportProjectDetails = async (req, res) => {
         const eventSummarySheet = xlsx.utils.aoa_to_sheet(eventSummaryData);
         xlsx.utils.book_append_sheet(workbook, eventSummarySheet, 'Event Summary');
         const excelBuffer = xlsx.write(workbook, { type: 'buffer' });
-        res.setHeader('Content-Disposition', `attachment; filename=project_${project._id}.xlsx`);
+        res.setHeader('Content-Disposition', `attachment; filename=project_${project.id}.xlsx`);
         res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
         res.send(excelBuffer);
     } catch (err) {

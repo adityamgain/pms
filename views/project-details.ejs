@@ -47,7 +47,7 @@
                     <p>Total Beneficiaries </p>
                 </div>
                 <div class="grid-3">
-                    <span class="counter"><output class="completed-event">0</output>/<output class="targeted-event"><%= totalTargetArea %></output></span>
+                    <span class="counter"><output class="completed-event"><%= totalTargetArea %></output>/<output class="targeted-event">0</output></span>
                     <p>Area Covered (hectare/people)</p>
                 </div>
                 <div class="grid-3">
@@ -57,7 +57,7 @@
             </div>
         </section>
 
-        <a href="/projects/<%= project._id %>/export" class="btn" id="exportBtn">Export Project Details</a>
+        <a href="/projects/<%= project.id %>/export" class="btn" id="exportBtn">Export Project Details</a>
 
         <% if (totalEvents > 0) { %>
         <div class="graphical-representation">
@@ -176,9 +176,9 @@
         <% } %>
     </div>
 
-    <a href="/projects/<%= project._id %>/eventb" class="btn">Add Event</a>
-    <a href="/projects/<%= project._id %>/event-list" class="btn">View Events</a>
-    <form action="/projects/<%= project._id %>?_method=DELETE" method="POST"
+    <a href="/projects/<%= project.id %>/eventb" class="btn">Add Event</a>
+    <a href="/projects/<%= project.id %>/event-list" class="btn">View Events</a>
+    <form action="/projects/<%= project.id %>?_method=DELETE" method="POST"
         onsubmit="return confirm('Are you sure you want to delete this project?');">
         <button type="submit" class="btn delete-btn">Delete Project</button>
     </form>
@@ -253,8 +253,7 @@
         // ** Client-Side Filtering **
         let filteredEventsClientSide = allEvents.filter(event => {
             if (eventTypeFilter && event.eventType !== eventTypeFilter && eventTypeFilter !== "") return false; // Check event type
-            if (outcomeFilter && event.outcome !== outcomeFilter && outcomeFilter !== "") return false; // Check outcome
-            if (activityFilter && event.eventName !== activityFilter && activityFilter !== "") return false; // Check activity
+            if (outcomeFilter && (!Array.isArray(event.outcome) || !event.outcome.includes(outcomeFilter)) && outcomeFilter !== "") return false;            if (activityFilter && event.eventName !== activityFilter && activityFilter !== "") return false; // Check activity
             if (municipalityFilter && event.venue?.municipality !== municipalityFilter && municipalityFilter !== "") return false; // Check municipality
             if (districtFilter && event.venue?.district !== districtFilter && districtFilter !== "") return false; // Check district
             if (provinceFilter && event.venue?.province !== provinceFilter && provinceFilter !== "") return false; // Check province

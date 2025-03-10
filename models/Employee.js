@@ -1,64 +1,70 @@
-const mongoose = require('mongoose');
+const { DataTypes } = require('sequelize');
+const bcrypt = require('bcrypt');
 
-// Define employee schema
-const employeeSchema = new mongoose.Schema({
-  name: {
-    type: String,
-    required: true,
-    trim: true
-  },
-  address: {
-    type: String,
-    required: true,
-    trim: true
-  },
-  email: {
-    type: String,
-    required: true,
-    unique: true,
-    trim: true
-  },
-  designation: {
-    type: String,
-    required: true,
-    trim: true
-  },
-  authorizationLevel: {
-    type: String,
-    enum: ['A', 'S', 'U'], // A = Admin, S = Supervisor, U = User
-    required: true
-  },
-  dateOfJoining: {
-    type: Date,
-    required: true
-  },
-  employeeId: {
-    type: String,
-    unique: true
-  },
-  password: {
-    type: String,  // Store hashed password
-    required: true
-  }
-}, { timestamps: true });
+module.exports = (sequelize) => {
+  const Employee = sequelize.define('Employee', {
+    id: {
+      type: DataTypes.UUID,
+      defaultValue: DataTypes.UUIDV4,
+      primaryKey: true,
+    },
+    name: {
+      type: DataTypes.STRING,
+      allowNull: false,
+      trim: true,
+    },
+    address: {
+      type: DataTypes.STRING,
+      allowNull: false,
+      trim: true,
+    },
+    email: {
+      type: DataTypes.STRING,
+      allowNull: false,
+      unique: true,
+      trim: true,
+    },
+    designation: {
+      type: DataTypes.STRING,
+      allowNull: false,
+      trim: true,
+    },
+    authorizationLevel: {
+      type: DataTypes.ENUM('A', 'S', 'U'), // A = Admin, S = Supervisor, U = User
+      allowNull: false,
+    },
+    dateOfJoining: {
+      type: DataTypes.DATE,
+      allowNull: false,
+    },
+    employeeId: {
+      type: DataTypes.STRING,
+      unique: true,
+    },
+    password: {
+      type: DataTypes.STRING,  // Store hashed password
+      allowNull: false,
+    },
+  }, { timestamps: true });
 
-// Middleware to generate employeeId and password
-employeeSchema.pre('save', async function (next) {
-  if (!this.employeeId) {
-    const count = await mongoose.model('Employee').countDocuments();
-    this.employeeId = `EMP${(count + 1).toString().padStart(5, '0')}`;
-  }
+  // Middleware to generate employeeId and password
+  Employee.beforeCreate(async (employee, options) => {
+    const count = await Employee.count();
+    employee.employeeId = `EMP${(count + 1).toString().padStart(5, '0')}`;
 
-  if (!this.password) {
-    // Generate and hash the password if not provided
-    const newPassword = generatePassword();
-    this.password = await bcrypt.hash(newPassword, 10);
+    if (!employee.password) {
+      // Generate and hash the password if not provided
+      const newPassword = generatePassword();
+      employee.password = await bcrypt.hash(newPassword, 10);
 
-    // Optionally send the password to the user's email here if desired
-  }
+      // Optionally send the password to the user's email here if desired
+    }
+  });
 
-  next();
-});
+  return Employee;
+};
 
-// Export the model
-module.exports = mongoose.model('Employee', employeeSchema);
+function generatePassword() {
+  // Implement password generation logic here
+  return 'defaultPassword123';
+}

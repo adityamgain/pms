@@ -1,6 +1,5 @@
-const crypto = require('crypto');
 const bcrypt = require('bcrypt');
-const Employee = require('../models/Employee'); 
+const { Employee } = require('../models'); 
 const { sendPasswordToEmail } = require('../util/emailUtil'); 
 
 // Generate a random password
@@ -12,7 +11,7 @@ function generatePassword(length = 8) {
 // Get all employees
 exports.getAllEmployees = async (req, res) => {
   try {
-    const employees = await Employee.find();
+    const employees = await Employee.findAll();
     res.render('viewEmployees', { employees });
   } catch (err) {
     res.status(500).send(err);
@@ -37,7 +36,7 @@ exports.addEmployee = async (req, res) => {
     const hashedPassword = await bcrypt.hash(newPassword, salt);
 
     // Create a new employee with the hashed password
-    const newEmployee = new Employee({
+    const newEmployee = await Employee.create({
       name,
       address,
       email,
@@ -46,9 +45,6 @@ exports.addEmployee = async (req, res) => {
       dateOfJoining,
       password: hashedPassword,
     });
-
-    // Save the new employee to the database
-    await newEmployee.save();
 
     // Send the generated password to the employee's email
     await sendPasswordToEmail(email, newPassword);
@@ -63,7 +59,7 @@ exports.addEmployee = async (req, res) => {
 // Show edit employee form
 exports.showEditEmployeeForm = async (req, res) => {
   try {
-    const employee = await Employee.findById(req.params.id);
+    const employee = await Employee.findByPk(req.params.id);
     res.render('editEmployee', { employee });
   } catch (err) {
     res.status(500).send(err);
@@ -74,7 +70,10 @@ exports.showEditEmployeeForm = async (req, res) => {
 exports.editEmployee = async (req, res) => {
   try {
     const { name, address, email, designation, authorizationLevel, dateOfJoining } = req.body;
-    await Employee.findByIdAndUpdate(req.params.id, { name, address, email, designation, authorizationLevel, dateOfJoining });
+    await Employee.update(
+      { name, address, email, designation, authorizationLevel, dateOfJoining },
+      { where: { id: req.params.id } }
+    );
     res.redirect('/employee');
   } catch (err) {
     res.status(500).send(err);
@@ -84,7 +83,7 @@ exports.editEmployee = async (req, res) => {
 // Delete employee
 exports.deleteEmployee = async (req, res) => {
   try {
-    await Employee.findByIdAndDelete(req.params.id);
+    await Employee.destroy({ where: { id: req.params.id } });
     res.redirect('/employee');
   } catch (err) {
     res.status(500).send(err);
@@ -96,7 +95,7 @@ exports.resetPassword = async (req, res) => {
     const { email } = req.body; // Extract email from request body
 
     // Find the employee by email
-    const employee = await Employee.findOne({ email });
+    const employee = await Employee.findOne({ where: { email } });
     if (!employee) {
       return res.status(404).json({ message: 'Employee not found' });
     }

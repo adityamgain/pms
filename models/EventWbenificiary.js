@@ -1,88 +1,74 @@
-const mongoose = require('mongoose');
-const { v4: uuidv4 } = require('uuid');
+const { DataTypes } = require('sequelize');
 
-// Define Beneficiary Schema
-const BeneficiarySchema = new mongoose.Schema({
-    name: { type: String, required: true },
-    gender: { type: String, enum: ['Male', 'Female', 'Other'], required: true },
-    age: { type: String, enum: ['Upto 25 years', '25-40 years', '40 above years'], required: true },
-    casteEthnicity: { type: String, enum: ['Dalit', 'Janajati', 'Brahman/Chhetri', 'Tharu', 'Madhesi', 'Others'] },
-    associatedOrganization: {
-        name: { 
-            type: String, 
-            required: true 
-        },
-        main: { 
-            type: String, 
-            enum: ['Community', 'Market', 'Government', 'CSO'], 
-            required: true 
-        },
-        subType: { 
-            type: String, 
-            required: false, 
-            default: null
-        }
+module.exports = (sequelize) => {
+  const EventWbenificiary = sequelize.define('EventWbenificiary', {
+    id: {
+      type: DataTypes.UUID,
+      defaultValue: DataTypes.UUIDV4,
+      primaryKey: true,
     },
-    disability: { type: Boolean, default: false },
-    povertyStatus: { type: String, enum: ['A', 'B', 'C', 'D'], required: true },
-    benefitsFromActivity: { type: Boolean, default: false }
-});
-
-
-// Define Event Schema
-const EventWbenificiarySchema = new mongoose.Schema({
-    eventName: { type: String, required: true },
-    outcome: { type: [String], required: true },
-    eventType: { 
-        type: String, 
-        enum: ['Workshop', 'Meeting', 'Training', 'Dialogues', 'Facilities', 'Inputs', 'Infrastructures'], 
-        required: true 
+    eventName: {
+      type: DataTypes.STRING,
+      allowNull: false,
     },
-    startDate: { type: Date, required: true },
-    endDate: { 
-        type: Date, 
-        required: true,
-        validate: {
-            validator: function (value) {
-                return this.startDate <= value;
-            },
-            message: 'End date must be greater than or equal to start date.'
-        }
+    outcome: {
+      type: DataTypes.ARRAY(DataTypes.STRING),
+      allowNull: false,
+    },
+    eventType: {
+      type: DataTypes.ENUM('Workshop', 'Meeting', 'Training', 'Dialogues', 'Facilities', 'Inputs', 'Infrastructures'),
+      allowNull: false,
+    },
+    startDate: {
+      type: DataTypes.DATE,
+      allowNull: false,
+    },
+    endDate: {
+      type: DataTypes.DATE,
+      allowNull: false,
+      validate: {
+        isAfterStartDate(value) {
+          if (this.startDate > value) {
+            throw new Error('End date must be greater than or equal to start date.');
+          }
+        },
+      },
     },
     location: {
-        type: {
-          type: String,
-          enum: ['Point'], // Restricts the type to "Point"
-          required: true,
-        },
-        coordinates: {
-          type: [Number], // Array of numbers [longitude, latitude]
-          required: true,
-          validate: {
-            validator: function (value) {
-              return value.length === 2; // Ensure it contains exactly [longitude, latitude]
-            },
-            message: 'Location coordinates must include exactly [longitude, latitude].',
-          },
-        },
-      },      
+        type: DataTypes.GEOMETRY('POINT', 4326), // Explicitly set SRID
+        allowNull: false,
+      },
     venue: {
-        municipality: { type: String, required: true },
-        district: { type: String, required: true },
-        province: { type: String, required: true },
+        type: DataTypes.JSONB,
+        allowNull: true,
     },
-    nationalLevel: { 
-        type: String, 
-        enum: ['National', 'Provincial', 'District', 'Municipal'], 
-        required: true 
-    }, 
-    facilitators: [{ type: String }], // List of facilitators
-    beneficiaries: [BeneficiarySchema], // Embedded array of beneficiaries
-    photographs: [{ type: String }], // Paths to uploaded photographs
-    reports: [{ type: String }] // Paths to uploaded reports
+    nationalLevel: {
+      type: DataTypes.ENUM('National', 'Provincial', 'Local'), // Adjust values as needed
+      allowNull: true, // or false, based on your requirement
+    },
+    facilitators: {
+        type: DataTypes.ARRAY(DataTypes.STRING),
+    },
+    photographs: {
+        type: DataTypes.ARRAY(DataTypes.STRING),
+    },
+    reports: {
+        type: DataTypes.ARRAY(DataTypes.STRING),
+    },
+    location: {
+      type: DataTypes.GEOMETRY('POINT', 4326), // Explicitly set SRID 4326 (WGS 84)
+      allowNull: false,
+    },
+    projectId: {
+        type: DataTypes.UUID,
+        references: {
+          model: 'Projects',
+          key: 'id',
+        },
+        onDelete: 'CASCADE',
+        onUpdate: 'CASCADE',
+    },
 });
-
-// Define and Export Model
-const EventWbenificiary = mongoose.model('EventWbenificiary', EventWbenificiarySchema);
-
-module.exports = EventWbenificiary;
+  
+    return EventWbenificiary;
+  };

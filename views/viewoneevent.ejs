@@ -6,8 +6,8 @@
     <title>Event Details</title>
     <link rel="stylesheet" href="/css/viewoneevent.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" />
-    <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
-    <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.3/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.3/dist/leaflet.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.16.9/xlsx.full.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
@@ -15,47 +15,36 @@
     <div class="viewone-container">
         <h1><%= event.eventName %> - <%= event.eventType %></h1>
 
-        <!-- Event Details Section -->
         <div class="event-details">
             <p>
-                <stong><b>Event Outcome:</b></strong> <%= event.outcome %>
+                <strong>Event Outcome:</strong> <%= event.outcome %>
             </p>
-            <!-- Start Date with Icon -->
             <p>
-                <i class="fas fa-calendar-alt"></i>   <!-- Font Awesome calendar icon -->
-                <strong>Start Date:</strong> <%= event.startDate.toISOString().slice(0, 10) %>
+                <i class="fas fa-calendar-alt"></i> <strong>Start Date:</strong> <%= event.startDate.toISOString().slice(0, 10) %>
             </p>
-
-            <!-- End Date with Icon -->
             <p>
-                <i class="fas fa-calendar-alt"></i>   <!-- Font Awesome calendar icon -->
-                <strong>End Date:</strong> <%= event.endDate.toISOString().slice(0, 10) %>
+                <i class="fas fa-calendar-alt"></i> <strong>End Date:</strong> <%= event.endDate.toISOString().slice(0, 10) %>
             </p>
-
-            <!-- Venue with Icon -->
             <p>
-                <i class="fas fa-map-marker-alt"></i>   <!-- Font Awesome map marker icon -->
-                <%= event.venue 
-                    ? event.venue.municipality + ', ' + event.venue.district + ', ' + event.venue.province 
-                    : 'N/A' 
+                <i class="fas fa-map-marker-alt"></i> <%= event.venue
+                    ? event.venue.municipality + ', ' + event.venue.district + ', ' + event.venue.province
+                    : 'N/A'
                 %>
             </p>
         </div>
 
         <div class="facilitators">
-            <h3>Facilitators</h3>
+            <legend>Facilitators</legend>
             <ul>
                 <% event.facilitators.forEach(facilitator => { %>
                     <li>
-                        <i class="fas fa-user"></i> <!-- Font Awesome user icon -->
-                        <%= facilitator %>
+                        <i class="fas fa-user"></i> <%= facilitator %>
                     </li>
                 <% }) %>
             </ul>
         </div>
 
-        <!-- Beneficiary Summary Table -->
-        <h3>Beneficiary Summary</h3>
+        <legend>Beneficiary Summary</legend>
         <div class="summary-table-wrapper">
             <table class="summary-table">
                 <thead>
@@ -74,7 +63,7 @@
                         <th>Janajati</th>
                         <th>Brahman/Chhetri</th>
                         <th>Madhesi</th>
-                        <th>OthersCaste</th>
+                        <th>Others Caste</th>
                         <th>Poverty A</th>
                         <th>Poverty B</th>
                         <th>Poverty C</th>
@@ -107,34 +96,26 @@
             </table>
         </div>
 
-<!-- Graphical Representations -->
-<h3>Event Analysis Graph</h3>
-<div class="graph-wrapper">
+        <legend>Event Analysis Graph</legend>
+        <div class="graph-wrapper">
+            <div class="graph-item">
+                <canvas id="genderPieChart"></canvas>
+            </div>
 
-    <!-- Gender Distribution Pie Chart -->
-    <div class="graph-item">
-        <canvas id="genderPieChart"></canvas>
-    </div>
+            <div class="graph-item">
+                <canvas id="ageBarChart"></canvas>
+            </div>
 
-    <!-- Age Group Distribution Bar Graph -->
-    <div class="graph-item">
-        <canvas id="ageBarChart"></canvas>
-    </div>
+            <div class="graph-item">
+                <canvas id="castePieChart"></canvas>
+            </div>
 
-    <!-- Caste/Ethnicity Distribution Pie Chart -->
-    <div class="graph-item">
-        <canvas id="castePieChart"></canvas>
-    </div>
+            <div class="graph-item">
+                <canvas id="povertyBarChart"></canvas>
+            </div>
+        </div>
 
-    <!-- Poverty Status Distribution Bar Graph -->
-    <div class="graph-item">
-        <canvas id="povertyBarChart"></canvas>
-    </div>
-
-</div>
-
-        <!-- Beneficiaries Table -->
-        <h3>Beneficiaries</h3>            
+        <legend>Beneficiaries</legend>
         <button type="button" onclick="addBeneficiary()">Add Beneficiary</button>
         <table id="beneficiary-table" class="beneficiary-table">
             <thead>
@@ -169,259 +150,274 @@
             </tbody>
         </table>
 
-        <!-- Export Button -->
-        <a href="/viewevent/<%= event._id %>?export=excel" class="export-link">Export to Excel</a>
+        <a href="/viewevent/<%= event.id %>?export=excel" class="export-link">Export to Excel</a>
 
-        <!-- Map Section -->
-        <h3>Location</h3>
+        <legend>Location</legend>
         <div id="map" style="height: 380px; width: 100%;"></div>
 
-        <!-- Edit and Delete Buttons -->
-        <a href="/events/<%= event._id %>/edit">Edit</a>
-        <a href="/events/delete/<%= event._id %>">Delete</a>
+        <a href="/events/<%= event.id %>/edit">Edit</a>
+        <a href="/events/delete/<%= event.id %>">Delete</a>
 
-        <!-- Photographs Section -->
         <% if (event.photographs && event.photographs.length > 0) { %>
             <div class="photographs">
                 <h3>Photographs</h3>
                 <% event.photographs.forEach(photo => { %>
-                    <img src="<%= photo %>" alt="Photograph" onclick="openLightbox('/<%= photo %>')">
+                    <img src="<%= photo %>" alt="Photograph" onclick="openLightbox('<%= photo %>')">
                 <% }) %>
             </div>
         <% } %>
 
-
-        <!-- Reports Section -->
         <% if (event.reports && event.reports.length > 0) { %>
-            <div class="event-reports">
-                <h3>Reports</h3>
-                <ul>
-                    <% event.reports.forEach(report => { %>
-                        <li>
-                            <i class="fas fa-file-alt"></i>
-                            <a href="<%= report %>" target="_blank" rel="noopener noreferrer">View Report</a>
-                        </li>
-                    <% }) %>
-                </ul>
-            </div>
+        <div class="event-reports">
+            <h3>Reports</h3>
+            <ul>
+            <% event.reports.forEach(report => { %>
+                <li>
+                <a href="<%= report %>" target="_blank" rel="noopener noreferrer">View Report</a>
+                </li>
+            <% }) %>
+            </ul>
+        </div>
         <% } %>
 
-
-    <!-- Lightbox Section -->
-    <div id="lightbox">
-        <span id="close-lightbox">&times;</span>
-        <span class="arrow arrow-left" onclick="changeImage(-1)">&#10094;</span>
-        <span class="arrow arrow-right" onclick="changeImage(1)">&#10095;</span>
-        <img id="lightbox-img" src="" alt="Full Screen Image">
+        <div id="lightbox">
+            <span id="close-lightbox">&times;</span>
+            <span class="arrow arrow-left" onclick="changeImage(-1)">&#10094;</span>
+            <span class="arrow arrow-right" onclick="changeImage(1)">&#10095;</span>
+            <img id="lightbox-img" src="" alt="Full Screen Image">
+        </div>
     </div>
 
-    <script src="/js/eventWbeneficiary.js"></script>
-
     <script>
-document.addEventListener("DOMContentLoaded", () => {
-    const lightbox = document.getElementById("lightbox");
-    const lightboxImg = document.getElementById("lightbox-img");
-    const closeLightbox = document.getElementById("close-lightbox");
-    const leftArrow = document.querySelector(".arrow-left");
-    const rightArrow = document.querySelector(".arrow-right");
-    
-    let images = [];
-    let currentImageIndex = 0;
+        document.addEventListener("DOMContentLoaded", () => {
+            const lightbox = document.getElementById("lightbox");
+            const lightboxImg = document.getElementById("lightbox-img");
+            const closeLightbox = document.getElementById("close-lightbox");
+            const leftArrow = document.querySelector(".arrow-left");
+            const rightArrow = document.querySelector(".arrow-right");
 
-    // Function to open the lightbox
-    function openLightbox(imageSrc, index) {
-        images = Array.from(document.querySelectorAll(".photographs img")).map(img => img.src);
-        currentImageIndex = index;
-        lightboxImg.src = imageSrc;
-        lightbox.style.display = "flex";
-    }
+            let images = [];
+            let currentImageIndex = 0;
 
-    // Function to change images when clicking arrows
-    function changeImage(step) {
-        if (images.length === 0) return;
-        currentImageIndex = (currentImageIndex + step + images.length) % images.length;
-        lightboxImg.src = images[currentImageIndex];
-    }
+            // Function to open the lightbox
+            function openLightbox(imageSrc, index) {
+                images = Array.from(document.querySelectorAll(".photographs img")).map(img => img.src);
+                currentImageIndex = index;
+                lightboxImg.src = imageSrc;
+                lightbox.style.display = "flex";
+            }
 
-    // Add event listeners to all images in the photographs section
-    document.querySelectorAll(".photographs img").forEach((img, index) => {
-        img.addEventListener("click", () => openLightbox(img.src, index));
-    });
+            // Function to change images when clicking arrows
+            function changeImage(step) {
+                if (images.length === 0) return;
+                currentImageIndex = (currentImageIndex + step + images.length) % images.length;
+                lightboxImg.src = images[currentImageIndex];
+            }
 
-    // Close lightbox when clicking the close button
-    closeLightbox.addEventListener("click", () => {
-        lightbox.style.display = "none";
-    });
+            // Add event listeners to all images in the photographs section
+            document.querySelectorAll(".photographs img").forEach((img, index) => {
+                img.addEventListener("click", () => openLightbox(img.src, index));
+            });
 
-    // Close when clicking outside the image
-    lightbox.addEventListener("click", (e) => {
-        if (e.target === lightbox) {
-            lightbox.style.display = "none";
-        }
-    });
+            // Close lightbox when clicking the close button
+            closeLightbox.addEventListener("click", () => {
+                lightbox.style.display = "none";
+            });
 
-    // Add event listeners for navigation arrows
-    leftArrow.addEventListener("click", () => changeImage(-1));
-    rightArrow.addEventListener("click", () => changeImage(1));
-
-    // Keyboard navigation
-    document.addEventListener("keydown", (e) => {
-        if (lightbox.style.display === "flex") {
-            if (e.key === "ArrowRight") changeImage(1);
-            if (e.key === "ArrowLeft") changeImage(-1);
-            if (e.key === "Escape") lightbox.style.display = "none";
-        }
-    });
-});
-
-
-
-        // Beneficiary Summary Data 
-        const beneficiarySummary = {
-            totalMale: <%= overview.totalMale %>,
-            totalFemale: <%= overview.totalFemale %>,
-            totalUpto25: <%= overview.totalUpto25 %>,
-            total25To40: <%= overview.total25To40 %>,
-            totalabove40: <%= overview.totalabove40 %>,
-            totalDisability: <%= overview.totalDisability %>,
-            totalDalit: <%= overview.totalDalit %>,
-            totalTharu: <%= overview.totalTharu %>,
-            totalJanajati: <%= overview.totalJanajati %>,
-            totalBrahmanChhetri: <%= overview.totalBrahmanChhetri %>,
-            totalMadhesi: <%= overview.totalMadhesi %>,
-            totalOthersCaste: <%= overview.totalOthersCaste %>,
-            totalPovertyA: <%= overview.totalPovertyA %>,
-            totalPovertyB: <%= overview.totalPovertyB %>,
-            totalPovertyC: <%= overview.totalPovertyC %>,
-            totalPovertyD: <%= overview.totalPovertyD %>
-        };
-
-        // Pie Chart for Gender Distribution
-        const genderPieChartCtx = document.getElementById('genderPieChart').getContext('2d');
-        new Chart(genderPieChartCtx, {
-            type: 'pie',
-            data: {
-                labels: ['Male', 'Female'],
-                datasets: [{
-                    label: 'Gender',
-                    data: [beneficiarySummary.totalMale, beneficiarySummary.totalFemale],
-                    backgroundColor: ['#36A2EB', '#FF6384'],
-                }]
-            },
-            options: {
-                responsive: true,
-                plugins: {
-                    legend: { position: 'top' },
-                    title: { display: true, text: 'Gender' }
+            // Close when clicking outside the image
+            lightbox.addEventListener("click", (e) => {
+                if (e.target === lightbox) {
+                    lightbox.style.display = "none";
                 }
-            }
-        });
+            });
 
-        // Bar Graph for Age Group Distribution
-        const ageBarChartCtx = document.getElementById('ageBarChart').getContext('2d');
-        new Chart(ageBarChartCtx, {
-            type: 'bar',
-            data: {
-                labels: ['Upto 25 Years', '25-40 Years', '40+ Years'],
-                datasets: [{
-                    label: 'Age Group',
-                    data: [
-                        beneficiarySummary.totalUpto25,
-                        beneficiarySummary.total25To40,
-                        beneficiarySummary.totalabove40
-                    ],
-                    backgroundColor: ['#FF6384', '#36A2EB', '#FFCE56'],
-                }]
-            },
-            options: {
-                responsive: true,
-                plugins: {
-                    legend: { display: false },
-                    title: { display: true, text: 'Age Group' }
-                },
-                scales: { y: { beginAtZero: true } }
-            }
-        });
+            // Add event listeners for navigation arrows
+            leftArrow.addEventListener("click", () => changeImage(-1));
+            rightArrow.addEventListener("click", () => changeImage(1));
 
-        // Pie Chart for Caste/Ethnicity Distribution
-        const castePieChartCtx = document.getElementById('castePieChart').getContext('2d');
-        new Chart(castePieChartCtx, {
-            type: 'pie',
-            data: {
-                labels: ['Dalit', 'Tharu', 'Janajati', 'Brahman/Chhetri', 'Madhesi', 'Others'],
-                datasets: [{
-                    label: 'Caste/Ethnicity',
-                    data: [
-                        beneficiarySummary.totalDalit,
-                        beneficiarySummary.totalTharu,
-                        beneficiarySummary.totalJanajati,
-                        beneficiarySummary.totalBrahmanChhetri,
-                        beneficiarySummary.totalMadhesi,
-                        beneficiarySummary.totalOthersCaste
-                    ],
-                    backgroundColor: ['#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0', '#9966FF', '#FF9F40'],
-                }]
-            },
-            options: {
-                responsive: true,
-                plugins: {
-                    legend: { position: 'top' },
-                    title: { display: true, text: 'Caste/Ethnicity' }
+            // Keyboard navigation
+            document.addEventListener("keydown", (e) => {
+                if (lightbox.style.display === "flex") {
+                    if (e.key === "ArrowRight") changeImage(1);
+                    if (e.key === "ArrowLeft") changeImage(-1);
+                    if (e.key === "Escape") lightbox.style.display = "none";
                 }
-            }
-        });
+            });
 
-        // Bar Graph for Poverty Status Distribution
-        const povertyBarChartCtx = document.getElementById('povertyBarChart').getContext('2d');
-        new Chart(povertyBarChartCtx, {
-            type: 'bar',
-            data: {
-                labels: ['Poverty A', 'Poverty B', 'Poverty C', 'Poverty D'],
-                datasets: [{
-                    label: 'Poverty Status',
-                    data: [
-                        beneficiarySummary.totalPovertyA,
-                        beneficiarySummary.totalPovertyB,
-                        beneficiarySummary.totalPovertyC,
-                        beneficiarySummary.totalPovertyD
-                    ],
-                    backgroundColor: ['#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0'],
-                }]
-            },
-            options: {
-                responsive: true,
-                plugins: {
-                    legend: { display: false },
-                    title: { display: true, text: 'Poverty Status' }
+            // Beneficiary Summary Data
+            const beneficiarySummary = {
+                totalMale: <%= overview.totalMale %>,
+                totalFemale: <%= overview.totalFemale %>,
+                totalUpto25: <%= overview.totalUpto25 %>,
+                total25To40: <%= overview.total25To40 %>,
+                totalabove40: <%= overview.totalabove40 %>,
+                totalDisability: <%= overview.totalDisability %>,
+                totalDalit: <%= overview.totalDalit %>,
+                totalTharu: <%= overview.totalTharu %>,
+                totalJanajati: <%= overview.totalJanajati %>,
+                totalBrahmanChhetri: <%= overview.totalBrahmanChhetri %>,
+                totalMadhesi: <%= overview.totalMadhesi %>,
+                totalOthersCaste: <%= overview.totalOthersCaste %>,
+                totalPovertyA: <%= overview.totalPovertyA %>,
+                totalPovertyB: <%= overview.totalPovertyB %>,
+                totalPovertyC: <%= overview.totalPovertyC %>,
+                totalPovertyD: <%= overview.totalPovertyD %>
+            };
+
+            // Pie Chart for Gender Distribution
+            const genderPieChartCtx = document.getElementById('genderPieChart').getContext('2d');
+            new Chart(genderPieChartCtx, {
+                type: 'pie',
+                data: {
+                    labels: ['Male', 'Female'],
+                    datasets: [{
+                        label: 'Gender',
+                        data: [beneficiarySummary.totalMale, beneficiarySummary.totalFemale],
+                        backgroundColor: ['#36A2EB', '#FF6384'],
+                    }]
                 },
-                scales: { y: { beginAtZero: true } }
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: { position: 'top' },
+                        title: { display: true, text: 'Gender' }
+                    }
+                }
+            });
+
+            // Bar Graph for Age Group Distribution
+            const ageBarChartCtx = document.getElementById('ageBarChart').getContext('2d');
+            new Chart(ageBarChartCtx, {
+                type: 'bar',
+                data: {
+                    labels: ['Upto 25 Years', '25-40 Years', '40+ Years'],
+                    datasets: [{
+                        label: 'Age Group',
+                        data: [
+                            beneficiarySummary.totalUpto25,
+                            beneficiarySummary.total25To40,
+                            beneficiarySummary.totalabove40
+                        ],
+                        backgroundColor: ['#FF6384', '#36A2EB', '#FFCE56'],
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: { display: false },
+                        title: { display: true, text: 'Age Group' }
+                    },
+                    scales: { y: { beginAtZero: true } }
+                }
+            });
+
+            // Pie Chart for Caste/Ethnicity Distribution
+            const castePieChartCtx = document.getElementById('castePieChart').getContext('2d');
+            new Chart(castePieChartCtx, {
+                type: 'pie',
+                data: {
+                    labels: ['Dalit', 'Tharu', 'Janajati', 'Brahman/Chhetri', 'Madhesi', 'Others'],
+                    datasets: [{
+                        label: 'Caste/Ethnicity',
+                        data: [
+                            beneficiarySummary.totalDalit,
+                            beneficiarySummary.totalTharu,
+                            beneficiarySummary.totalJanajati,
+                            beneficiarySummary.totalBrahmanChhetri,
+                            beneficiarySummary.totalMadhesi,
+                            beneficiarySummary.totalOthersCaste
+                        ],
+                        backgroundColor: ['#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0', '#9966FF', '#FF9F40'],
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: { position: 'top' },
+                        title: { display: true, text: 'Caste/Ethnicity' }
+                    }
+                }
+            });
+
+            // Bar Graph for Poverty Status Distribution
+            const povertyBarChartCtx = document.getElementById('povertyBarChart').getContext('2d');
+            new Chart(povertyBarChartCtx, {
+                type: 'bar',
+                data: {
+                    labels: ['Poverty A', 'Poverty B', 'Poverty C', 'Poverty D'],
+                    datasets: [{
+                        label: 'Poverty Status',
+                        data: [
+                            beneficiarySummary.totalPovertyA,
+                            beneficiarySummary.totalPovertyB,
+                            beneficiarySummary.totalPovertyC,
+                            beneficiarySummary.totalPovertyD
+                        ],
+                        backgroundColor: ['#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0'],
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: { display: false },
+                        title: { display: true, text: 'Poverty Status' }
+                    },
+                    scales: { y: { beginAtZero: true } }
+                }
+            });
+
+            // --- MAP SECTION - FIXED ---
+            const wkbLocationHex = '<%= event.location_wkb_hex %>'; // Get WKB hex from server
+            console.log(wkbLocationHex);
+
+            let map = L.map('map').setView([28.3949, 84.1240], 8); // Default view: Nepal Centered (Lat, Lng), Zoom 8
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+            }).addTo(map);
+
+            if (wkbLocationHex) {
+                try {
+                    const wktParser = new Wkt.Wkt(); // Create Wkt parser instance
+                    wktParser.readHexWKB(wkbLocationHex); // Parse Hex-WKB
+                    const latLng = wktParser.toLatLng(); // Get LatLng object
+
+                    if (latLng) {
+                        map.setView(latLng, 15); // Center map on event location, Zoom 15
+                        L.marker(latLng).addTo(map)
+                            .bindPopup("<b>Event Location</b><br>" + "<%= event.venue ? event.venue.municipality + ', ' + event.venue.district : 'Venue N/A' %>") // Handle venue being potentially null
+                            .openPopup();
+                    } else {
+                        console.error("Parsed WKB, but could not get LatLng:", wkbLocationHex);
+                        // Optionally display a message on the page indicating location data issue.
+                    }
+
+                } catch (error) {
+                    console.error("Error parsing WKB Hex:", error);
+                    console.error("WKB Hex Data:", wkbLocationHex);
+                    // Optionally display an error message on the page about location data.
+                }
+            } else {
+                console.log("No location data (WKB Hex) available for this event.");
+                // Optionally display a message on the page indicating no location data.
             }
+            // --- MAP SECTION - FIXED END ---
+
+
+            // Export table to Excel
+            function exportTableToExcel() {
+                var wb = XLSX.utils.book_new();
+                var ws = XLSX.utils.table_to_sheet(document.getElementById('beneficiary-table'));
+                XLSX.utils.book_append_sheet(wb, ws, 'Beneficiaries');
+                XLSX.writeFile(wb, 'Beneficiaries.xlsx');
+            }
+
+            // Add event listener to the export button
+            document.querySelector(".export-link").addEventListener("click", exportTableToExcel);
         });
 
-        // Initialize the map with coordinates from event data
-        var eventLocation = <%= JSON.stringify(event.location.coordinates) %>;
-        var map = L.map('map').setView([eventLocation[1], eventLocation[0]], 13); // Lat, Lng
-        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-        }).addTo(map);
-        L.marker([eventLocation[1], eventLocation[0]]).addTo(map)
-            .bindPopup("<b>Event Location</b><br>" + event.venue.municipality + ", " + event.venue.district)
-            .openPopup();
-
-        // Export table to Excel
-        function exportTableToExcel() {
-            var wb = XLSX.utils.book_new();
-            var ws = XLSX.utils.table_to_sheet(document.getElementById('beneficiary-table'));
-            XLSX.utils.book_append_sheet(wb, ws, 'Beneficiaries');
-            XLSX.writeFile(wb, 'Beneficiaries.xlsx');
+        function addBeneficiary() {
+            alert('Add Beneficiary functionality is not yet implemented in this view.');
         }
-
-        // Add event listener to the export button
-        document.getElementById("export-btn").addEventListener("click", exportTableToExcel);
-
-
-
-
     </script>
 </body>
 </html>

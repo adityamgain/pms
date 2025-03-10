@@ -8,7 +8,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.3/dist/leaflet.css" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/pivottable/2.23.0/pivot.min.css">
-    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+    <script src="https://cdn.plot.ly/plotly-3.0.0.min.js" charset="utf-8"></script>
 </head>
 <body>
     <div class="eventlist-container">
@@ -75,13 +75,13 @@
                             <option value="<%= activity %>" <%= filters.activity === activity ? 'selected' : '' %>><%= activity %></option>
                         <% }) %>
                     </select>
-                </div><br><p>
+                </div>
 
                 <div class="filter-group">
                     <label for="municipality">Municipality:</label>
                     <select name="municipality">
                         <option value="" <%= !filters.municipality ? 'selected' : '' %>>All</option>
-                        <% uniquemunicipality.forEach(municipality => { %>
+                        <% uniqueMunicipalities.forEach(municipality => { %>
                             <option value="<%= municipality %>" <%= filters.municipality === municipality ? 'selected' : '' %>><%= municipality %></option>
                         <% }) %>
                     </select>
@@ -128,14 +128,14 @@
         <% if (datas && datas.length > 0) { %>
             <div class="event-grid">
                 <% datas.forEach((event, index) => { %>
-                    <a href="/viewevent/<%= event._id %>" class="event-card">
+                    <a href="/viewevent/<%= event.id %>" class="event-card">
                         <div class="event-header">
                             <h2><%= event.eventName %></h2>
                             <span class="event-type"><%= event.eventType %></span>
                         </div>
                         <div class="event-details">
-                            <p><strong>Attendees:</strong> <%= overview.find(o => o.eventId.toString() === event._id.toString()).totalAttendees %></p>
-                            <p><strong>Benefited Ratio:</strong> <%= overview.find(o => o.eventId.toString() === event._id.toString()).benefitedRatio %>%</p>
+                            <p><strong>Attendees:</strong> <%= overview.find(o => o.eventId.toString() === event.id.toString()).totalAttendees %></p>
+                            <p><strong>Benefited Ratio:</strong> <%= overview.find(o => o.eventId.toString() === event.id.toString()).benefitedRatio %>%</p>
                             <p><strong>Venue:</strong> 
                                 <%= event.venue 
                                     ? event.venue.municipality + ', ' + event.venue.district + ', ' + event.venue.province 
@@ -169,7 +169,6 @@
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pivottable/2.23.0/pivot.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pivottable/2.23.0/plotly_renderers.min.js"></script>
-    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/pivottable@2.23.0/dist/plotly_renderers.min.js"></script>
     <% } %>
 

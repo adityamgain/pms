@@ -21,12 +21,13 @@
     font-weight: 700;
 }
 
-.viewone-container h3 {
+.viewone-container legend {
     font-size: 1.5rem;
     margin-bottom: 1rem;
     color: #2c3e50;
     font-weight: 600;
     padding-bottom: 0.5rem;
+    display: inline-block; /* Makes the element fit the text width */
     border-bottom: 2px solid #4CAF50;
 }
 
